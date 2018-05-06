@@ -75,14 +75,16 @@ class MonitorSocketAction(Thread):
             while True and self.active:
                 try:
                     status = dict()
-                    status['general:active:gpu:coin'] = self.config['machine'].get('gpu_miner', 'coin')
-                    status['general:active:gpu:pool'] = self.config['machine'].get('gpu_miner', 'pool')
-                    if self.config['machine'].getboolean('gpu_miner', 'dual'):
-                        status['general:active:gpu:second_coin'] = self.config['machine'].get('gpu_miner', 'second_coin')
-                        status['general:active:gpu:second_pool'] = self.config['machine'].get('gpu_miner', 'second_pool')
+                    if self.config['machine'].getboolean('gpu_miner', 'enable'):
+                        status['general:active:gpu:coin'] = self.config['machine'].get('gpu_miner', 'coin')
+                        status['general:active:gpu:pool'] = self.config['machine'].get('gpu_miner', 'pool')
+                        if self.config['machine'].getboolean('gpu_miner', 'dual'):
+                            status['general:active:gpu:second_coin'] = self.config['machine'].get('gpu_miner', 'second_coin')
+                            status['general:active:gpu:second_pool'] = self.config['machine'].get('gpu_miner', 'second_pool')
 
-                    status['general:active:cpu:coin'] = self.config['machine'].get('cpu_miner', 'coin')
-                    status['general:active:cpu:pool'] = self.config['machine'].get('cpu_miner', 'pool')
+                    if self.config['machine'].getboolean('cpu_miner', 'enable'):
+                        status['general:active:cpu:coin'] = self.config['machine'].get('cpu_miner', 'coin')
+                        status['general:active:cpu:pool'] = self.config['machine'].get('cpu_miner', 'pool')
 
                     status['general:boxname'] = self.config['machine'].get('settings', 'box_name')
 
@@ -235,6 +237,7 @@ class MonitorSocketAction(Thread):
     def destroy(self):
         try:
             self.transfer.send('Server closing...')
+            self.transfer.wait()
             self.connection.close()
             if self.job:
                 self.job.shutdown_flag.set()
@@ -249,22 +252,28 @@ class MonitorSocketAction(Thread):
 
     def readMinerBuffer(self, miner):
         lastRead = ''
-        for output in miner.display('all'):
-            if output:
-                if lastRead != output:
-                    self.transfer.send(output)
-                    lastRead = output
+        results = miner.display('all')
+        try:
+            if results:
+                for output in results:
+                    if output:
+                        if lastRead != output:
+                            self.transfer.send(output)
+                            lastRead = output
 
-        while True:
-            try:
-                output = miner.display('last')
-                if output:
-                    if lastRead != output:
-                        self.transfer.send(output)
-                        lastRead = output
+                while True:
+                    try:
+                        output = miner.display('last')
+                        if output:
+                            if lastRead != output:
+                                self.transfer.send(output)
+                                lastRead = output
 
-                time.sleep(0.5)
+                        time.sleep(0.5)
 
-            except:
-                self.stop()
-                break
+                    except:
+                        self.stop()
+                        break
+
+        except Exception as e:
+            print e

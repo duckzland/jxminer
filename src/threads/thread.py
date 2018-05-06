@@ -27,14 +27,11 @@ class Thread:
         try:
             if self.job:
                 self.job.start()
-            status = 'success'
         except:
-            status = 'error'
             self.active = False
 
         finally:
             self.active = True
-            printLog("Starting new thread", status)
 
 
     def update(self, runner):
@@ -45,12 +42,10 @@ class Thread:
         try:
             if self.job:
                 self.job.shutdown_flag.set()
-            status = 'success'
         except:
-            status = 'error'
+            pass
         finally:
             self.active = False
-            printLog("Stopping active thread", status)
 
 
     def check(self):

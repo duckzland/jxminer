@@ -201,7 +201,8 @@ def loadThreads():
                 try:
                     JobThreads.add('gpu_miner', MonitorGPUMiner(True, Config))
                     status = 'success'
-                except:
+                except Exception as e:
+                    print e
                     status = 'error'
                 finally:
                     printLog('Starting GPU miner manager', status)
@@ -211,7 +212,8 @@ def loadThreads():
                 try:
                     JobThreads.remove('gpu_miner')
                     status = 'success'
-                except:
+                except Exception as e:
+                    print e
                     status = 'error'
                 finally:
                     printLog('Stopping GPU miner manager', status)
@@ -393,6 +395,7 @@ def main():
 
     finally:
         printLog('Exiting main program', 'success')
+        os._exit(1)
 
 
 def shutdown():
@@ -430,8 +433,6 @@ def shutdown():
         finally:
             printLog("Stopping Xorg server", status)
 
-
-    sys.exit(0)
 
 if __name__ == "__main__":
     main()

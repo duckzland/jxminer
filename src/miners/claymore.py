@@ -37,4 +37,31 @@ class Claymore(Miner):
                     .replace('{nofee}', '0')
             )
 
-        #self.setupEnvironment()
+        self.setupEnvironment()
+
+
+    def parse(self, text):
+        self.bufferStatus['diff'] = 'N/A'
+        if 'Total' in text:
+            try:
+                regex = r"Total Shares: \d+, Rejected: \d+"
+                m = re.search(regex, text)
+                shares = m.group(0)
+                print output
+                if output:
+                    self.bufferStatus['shares'] = output.replace('Total Shares: ', '').replace(', ', '/').replace('Rejected: ', '')
+            except:
+                pass
+
+            try:
+                regex = r"Total Speed: \d+ [Mh|H]/s"
+                m = re.search(regex, text)
+                output = m.group(0)
+                print output
+                if output:
+                    self.bufferStatus['hashrate'] = output.replace('Total Speed: ', '')
+
+            except:
+                pass
+
+        return text

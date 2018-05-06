@@ -24,14 +24,14 @@ class ETHMiner(Miner):
 
         # Nvidia only - use Cuda
         if amdGPU == 0 and nvidiaGPU > 0:
-            self.option = self.option + self.miner_config.get('nvidia')
+            self.option = self.option + self.miner_config.get('default', 'nvidia')
 
         # AMD only - use OpenCL
         elif amdGPU > 0 and nvidiaGPU == 0:
-            self.option = self.option + self.miner_config.get('amd')
+            self.option = self.option + self.miner_config.get('default', 'amd')
 
         # Both mode - use both Cuda and OpenCL
         elif amdGPU > 0 and nvidiaGPU > 0:
-            self.option = self.option + self.miner_config.get('mixed')
+            self.option = self.option + self.miner_config.get('default', 'mixed')
 
         self.setupEnvironment()

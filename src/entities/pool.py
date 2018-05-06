@@ -48,6 +48,8 @@ class Pool:
         self.coin = coin
         return self.pool.get(self.coin, 'url')
 
+    def getRawProtocol(self, coin):
+        return self.pool.get(self.coin, 'protocol')
 
     def getAddress(self, coin):
         self.coin = coin
