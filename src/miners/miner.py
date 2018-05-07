@@ -94,12 +94,10 @@ class Miner:
                 )
 
             if self.miner_config.has_section('remote') and self.miner_config.getboolean('remote', 'enable'):
-
                 try:
                     self.remote_ip = self.miner_config.get('remote', 'ip')
                 except:
                     self.remote_ip = '127.0.0.1'
-
                 self.remote_port = self.miner_config.get('remote', 'port')
                 self.remote_token = self.miner_config.get('remote', 'token')
                 self.option = (
@@ -132,7 +130,7 @@ class Miner:
                 command.append(single)
 
         try:
-            self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+            self.process = subprocess.Popen(command, env=self.environment, bufsize=4096, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
             #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdin=subprocess.PIPE)
             self.proc = psutil.Process(self.process.pid)
             self.monitor()

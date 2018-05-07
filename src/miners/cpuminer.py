@@ -1,4 +1,4 @@
-import sys
+import sys, re
 sys.path.append('../')
 from miners.miner import Miner
 from modules.utility import explode
@@ -12,6 +12,7 @@ class CpuMiner(Miner):
     def init(self):
         self.miner = 'cpuminer'
         self.setupMiner('cpu')
+        self.checkKeywords = []
 
         allowed = explode(self.miner_config.get('default', 'algo'))
         miner_algo = self.algo
@@ -22,3 +23,4 @@ class CpuMiner(Miner):
             raise ValueError('Invalid coin algo for cpuminer miner')
 
         self.option = self.option.replace('{cpuminer_algo}', miner_algo)
+        print self.option

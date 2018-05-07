@@ -75,36 +75,55 @@ class MonitorSocketAction(Thread):
             while True and self.active:
                 try:
                     status = dict()
-                    if self.config['machine'].getboolean('gpu_miner', 'enable'):
-                        status['general:active:gpu:coin'] = self.config['machine'].get('gpu_miner', 'coin')
-                        status['general:active:gpu:pool'] = self.config['machine'].get('gpu_miner', 'pool')
-                        if self.config['machine'].getboolean('gpu_miner', 'dual'):
-                            status['general:active:gpu:second_coin'] = self.config['machine'].get('gpu_miner', 'second_coin')
-                            status['general:active:gpu:second_pool'] = self.config['machine'].get('gpu_miner', 'second_pool')
 
-                    if self.config['machine'].getboolean('cpu_miner', 'enable'):
-                        status['general:active:cpu:coin'] = self.config['machine'].get('cpu_miner', 'coin')
-                        status['general:active:cpu:pool'] = self.config['machine'].get('cpu_miner', 'pool')
+                    try:
+                        if self.config['machine'].getboolean('gpu_miner', 'enable'):
+                            status['general:active:gpu:coin'] = self.config['machine'].get('gpu_miner', 'coin')
+                            status['general:active:gpu:pool'] = self.config['machine'].get('gpu_miner', 'pool')
+                            if self.config['machine'].getboolean('gpu_miner', 'dual'):
+                                status['general:active:gpu:second_coin'] = self.config['machine'].get('gpu_miner', 'second_coin')
+                                status['general:active:gpu:second_pool'] = self.config['machine'].get('gpu_miner', 'second_pool')
+                    except:
+                        pass
 
-                    status['general:boxname'] = self.config['machine'].get('settings', 'box_name')
+                    try:
+                        if self.config['machine'].getboolean('cpu_miner', 'enable'):
+                            status['general:active:cpu:coin'] = self.config['machine'].get('cpu_miner', 'coin')
+                            status['general:active:cpu:pool'] = self.config['machine'].get('cpu_miner', 'pool')
+                    except:
+                        pass
 
-                    status['temperature:average'] = getAverageTemps(self.gpu)
-                    status['temperature:highest'] = getHighestTemps(self.gpu)
+                    try:
+                        status['general:boxname'] = self.config['machine'].get('settings', 'box_name')
+                    except:
+                        pass
 
-                    for unit in self.fans:
-                        status['%s:%s:%s' % ('fan', 'speed', unit.index)] = unit.speed
+                    try:
+                        status['temperature:average'] = getAverageTemps(self.gpu)
+                        status['temperature:highest'] = getHighestTemps(self.gpu)
+                    except:
+                        pass
 
-                    totalGPUWatt = float(0.00)
-                    for unit in self.gpu:
-                        status['%s:%s:%s:%s' % ('gpu', 'fan', unit.type, unit.index)] = unit.fanSpeed
-                        status['%s:%s:%s:%s' % ('gpu', 'core', unit.type, unit.index)] = unit.coreLevel
-                        status['%s:%s:%s:%s' % ('gpu', 'memory', unit.type, unit.index)] = unit.memoryLevel
-                        status['%s:%s:%s:%s' % ('gpu', 'power', unit.type, unit.index)] = unit.powerLevel
-                        status['%s:%s:%s:%s' % ('gpu', 'temperature', unit.type, unit.index)] = unit.temperature
-                        status['%s:%s:%s:%s' % ('gpu', 'watt', unit.type, unit.index)] = unit.wattUsage
-                        totalGPUWatt += float(unit.wattUsage)
+                    try:
+                        for unit in self.fans:
+                            status['%s:%s:%s' % ('fan', 'speed', unit.index)] = unit.speed
+                    except:
+                        pass
 
-                    status['%s:%s' % ('gpu', 'total_watt')] = totalGPUWatt
+                    try:
+                        totalGPUWatt = float(0.00)
+                        for unit in self.gpu:
+                            status['%s:%s:%s:%s' % ('gpu', 'fan', unit.type, unit.index)] = unit.fanSpeed
+                            status['%s:%s:%s:%s' % ('gpu', 'core', unit.type, unit.index)] = unit.coreLevel
+                            status['%s:%s:%s:%s' % ('gpu', 'memory', unit.type, unit.index)] = unit.memoryLevel
+                            status['%s:%s:%s:%s' % ('gpu', 'power', unit.type, unit.index)] = unit.powerLevel
+                            status['%s:%s:%s:%s' % ('gpu', 'temperature', unit.type, unit.index)] = unit.temperature
+                            status['%s:%s:%s:%s' % ('gpu', 'watt', unit.type, unit.index)] = unit.wattUsage
+                            totalGPUWatt += float(unit.wattUsage)
+
+                        status['%s:%s' % ('gpu', 'total_watt')] = totalGPUWatt
+                    except:
+                        pass
 
                     try:
                         miners = self.threads.get('gpu_miner').miners
@@ -225,28 +244,40 @@ class MonitorSocketAction(Thread):
 
 
     def stop(self):
-        try:
-            self.connection.close()
-            self.parent.remove(self.name)
-
-        except:
-            pass
+        if self.active:
+            try:
+                self.connection.close()
+                self.parent.remove(self.name)
+                status = 'success'
+            except:
+                status = 'error'
+            finally:
+                self.active = False
+                printLog("Stopping active thread connection", status)
 
 
 
     def destroy(self):
-        try:
-            self.transfer.send('Server closing...')
-            self.transfer.wait()
-            self.connection.close()
-            if self.job:
-                self.job.shutdown_flag.set()
-            status = 'success'
-        except:
-            status = 'error'
-        finally:
-            self.active = False
-            printLog("Stopping active thread", status)
+        if self.active:
+            try:
+                if self.transfer:
+                    self.transfer.send('Server closing...')
+                    self.transfer.wait()
+
+                if self.connection:
+                    self.connection.close()
+
+                if self.job:
+                    self.job.shutdown_flag.set()
+
+                status = 'success'
+
+            except:
+                status = 'error'
+
+            finally:
+                self.active = False
+                printLog("Destroying active thread", status)
 
 
 

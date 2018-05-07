@@ -13,6 +13,8 @@ class XMRig(Miner):
     def init(self):
         self.miner = 'xmrig'
         self.setupMiner('cpu')
+        self.checkKeywords = []
+
         allowed = [
             'cryptonight',
             'cryptonight7',
