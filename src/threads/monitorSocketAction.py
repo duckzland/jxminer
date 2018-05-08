@@ -48,13 +48,12 @@ class MonitorSocketAction(Thread):
         elif action in ('monitorCpuMiner'):
             try:
                 miner = self.threads.get('cpu_miner').miner
+                if miner:
+                    self.readMinerBuffer(miner)
             except:
                 miner = False
                 self.transfer.send('Failed to retrieve miner')
                 self.stop()
-
-            if miner:
-                self.readMinerBuffer(miner)
 
 
         elif 'monitorGpuMiner' in action:
@@ -284,27 +283,23 @@ class MonitorSocketAction(Thread):
     def readMinerBuffer(self, miner):
         lastRead = ''
         results = miner.display('all')
-        try:
-            if results:
-                for output in results:
+        if results:
+            for output in results:
+                if output:
+                    if lastRead != output:
+                        self.transfer.send(output)
+                        lastRead = output
+
+            while True:
+                try:
+                    output = miner.display('last')
                     if output:
                         if lastRead != output:
                             self.transfer.send(output)
                             lastRead = output
 
-                while True:
-                    try:
-                        output = miner.display('last')
-                        if output:
-                            if lastRead != output:
-                                self.transfer.send(output)
-                                lastRead = output
+                    time.sleep(0.5)
 
-                        time.sleep(0.5)
-
-                    except:
-                        self.stop()
-                        break
-
-        except Exception as e:
-            print e
+                except:
+                    self.stop()
+                    break

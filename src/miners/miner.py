@@ -130,7 +130,7 @@ class Miner:
                 command.append(single)
 
         try:
-            self.process = subprocess.Popen(command, env=self.environment, bufsize=4096, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+            self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
             #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdin=subprocess.PIPE)
             self.proc = psutil.Process(self.process.pid)
             self.monitor()
@@ -233,9 +233,9 @@ class Miner:
 
                 if not self.isHealthy(output):
                     self.reboot()
-
             except:
                 break
+
 
 
     def parse(self, text):

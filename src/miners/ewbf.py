@@ -1,6 +1,7 @@
-import sys, re
+import sys, os, subprocess, psutil, time, re
 sys.path.append('../')
 from miners.miner import Miner
+from modules.utility import which, getOption, printLog, findFile, explode, stripAnsi
 
 class EWBF(Miner):
 
@@ -20,6 +21,7 @@ class EWBF(Miner):
             raise ValueError('No Nvidia card,  ewbf miner only support Nvidia card')
 
         self.setupEnvironment()
+
 
 
     def parse(self, text):
