@@ -1,4 +1,4 @@
-import sys, os, subprocess, psutil, time, re
+import sys, os, subprocess, psutil, time, re, pexpect
 sys.path.append('../')
 from entities.pool import Pool
 from modules.transfer import *
@@ -124,20 +124,24 @@ class Miner:
 
     def start(self):
         self.status = 'stop'
-        command = [findFile(os.path.join('/usr', 'local'), self.executable)]
+        command = findFile(os.path.join('/usr', 'local'), self.executable)
+        #command = [findFile(os.path.join('/usr', 'local'), self.executable)]
+        args = []
         for arg in explode(self.option, ' #-# '):
             for single in explode(arg, ' '):
-                command.append(single)
+                args.append(single)
 
         try:
-            self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+            self.process = pexpect.spawn(command, args, env=self.environment, timeout=None)
+            #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
             #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdin=subprocess.PIPE)
             self.proc = psutil.Process(self.process.pid)
             self.monitor()
             self.status = 'ready'
             status = 'success'
 
-        except:
+        except Exception as e:
+            print e
             status = 'error'
 
         finally:
@@ -148,7 +152,6 @@ class Miner:
     def stop(self):
         self.status = 'stop'
         try:
-            self.process.stdin.close()
             self.process.kill()
             self.process.wait()
             if psutil.pid_exists(self.process.pid):
@@ -219,21 +222,21 @@ class Miner:
 
 
     def monitor(self):
-        i = self.process.stdin
-        p =  self.process.stdout
+        p = self.process
         while True:
             try:
                 output = p.readline()
                 if not output:
                     break
 
-                self.record(output)
-                i.flush()
-                p.flush()
+                self.record(output.replace('\r\n', '\n').replace('\r', '\n'))
+                #i.flush()
+                #p.flush()
 
                 if not self.isHealthy(output):
                     self.reboot()
-            except:
+            except Exception as e:
+                print e
                 break
 
 

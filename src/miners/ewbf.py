@@ -1,7 +1,6 @@
-import sys, os, subprocess, psutil, time, re
+import sys, re
 sys.path.append('../')
 from miners.miner import Miner
-from modules.utility import which, getOption, printLog, findFile, explode, stripAnsi
 
 class EWBF(Miner):
 

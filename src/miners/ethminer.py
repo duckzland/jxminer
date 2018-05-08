@@ -1,7 +1,7 @@
 import sys, re
 sys.path.append('../')
 from miners.miner import Miner
-from modules.utility import explode
+from modules.utility import stripAnsi
 
 class ETHMiner(Miner):
 
@@ -24,14 +24,41 @@ class ETHMiner(Miner):
 
         # Nvidia only - use Cuda
         if amdGPU == 0 and nvidiaGPU > 0:
-            self.option = self.option + self.miner_config.get('default', 'nvidia')
+            self.option = self.option + ' #-# ' + self.miner_config.get('default', 'nvidia')
 
         # AMD only - use OpenCL
         elif amdGPU > 0 and nvidiaGPU == 0:
-            self.option = self.option + self.miner_config.get('default', 'amd')
+            self.option = self.option + ' #-# ' + self.miner_config.get('default', 'amd')
 
         # Both mode - use both Cuda and OpenCL
         elif amdGPU > 0 and nvidiaGPU > 0:
-            self.option = self.option + self.miner_config.get('default', 'mixed')
+            self.option = self.option + ' #-# ' + self.miner_config.get('default', 'mixed')
 
         self.setupEnvironment()
+
+
+    def parse(self, text):
+        # Ethminer produces weird ansi color text, remove them all!
+        text = stripAnsi(text).encode('ascii', 'ignore')
+
+        if 'Speed:' in text:
+            try:
+                regex = r" [A\d++\d+:R\d++\d+"
+                m = re.search(regex, text)
+                output = m.group(0)
+                if output:
+                    self.bufferStatus['shares'] = output.replace(' [A', '').replace(':', '/').replace('R', '')
+            except:
+                pass
+
+            try:
+                regex = r"\d+.\d+ (?:Mh|H)/s"
+                m = re.search(regex, text)
+                output = m.group(0)
+                if output:
+                    self.bufferStatus['hashrate'] = output
+
+            except:
+                pass
+
+        return text
