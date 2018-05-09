@@ -28,24 +28,34 @@ class AMD(GPU):
     def init(self):
         self.type = 'AMD'
         self.strictPowerMode = False
-        self.maxCoreLevel = getMaxLevel(self.index, 'gpu')
         self.coreLevel = 100
         self.memoryLevel = False
         self.powerLevel = False
         self.fanSpeed = 0
         self.wattUsage = 0
+        self.supportLevels = True
+
+        try:
+            self.maxCoreLevel = getMaxLevel(self.index, 'gpu')
+        except:
+            self.maxCoreLevel = False
+            self.supportLevels = False
+
         self.detect()
 
 
     def detect(self):
         self.temperature = getSysfsValue(self.index, 'temp')
         self.fanSpeed = self.round(int(getSysfsValue(self.index, 'fan')) / 2.55)
-        self.wattUsage = parseSysfsValue('power', getSysfsValue(self.index, 'power'))
+
+        if self.supportLevels:
+            self.wattUsage = parseSysfsValue('power', getSysfsValue(self.index, 'power'))
 
 
     def reset(self):
         resetFans([self.index])
-        resetClocks([self.index])
+        if self.supportLevels:
+            resetClocks([self.index])
 
 
     def tune(self, **kwargs):
@@ -55,18 +65,20 @@ class AMD(GPU):
                 setFanSpeed([self.index], self.round(speed * 2.55))
                 self.fanSpeed = speed
 
-        if kwargs.get('core', False):
-            level = self.round(kwargs.get('core'))
-            if self.coreLevel != level:
-                self.coreLevel = level
-                self.setCoreLevel(level)
+        if self.supportLevels:
+            if kwargs.get('core', False):
+                level = self.round(kwargs.get('core'))
+                if self.coreLevel != level:
+                    self.coreLevel = level
+                    self.setCoreLevel(level)
 
 
     def setCoreLevel(self, level):
-        levels = self.round((level * self.maxCoreLevel) / 100)
-        if not self.strictPowerMode:
-            levels = range(0, levels)
-        else:
-            levels = [ levels ]
+        if self.supportLevels:
+            levels = self.round((level * self.maxCoreLevel) / 100)
+            if not self.strictPowerMode:
+                levels = range(0, levels)
+            else:
+                levels = [ levels ]
 
-        setClocks([self.index], 'gpu', levels)
+            setClocks([self.index], 'gpu', levels)

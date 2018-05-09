@@ -31,7 +31,7 @@ class MonitorGPUTuner(Thread):
     def tune(self, unit, type, mode):
         c = self.config['tuner']
         levelKey = type + 'Level'
-        if getattr(unit, levelKey) and c.getboolean(type, 'enable'):
+        if unit.supportLevels and getattr(unit, levelKey) and c.getboolean(type, 'enable'):
             level = getattr(unit, levelKey)
 
             if mode == 'static':

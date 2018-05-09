@@ -49,6 +49,7 @@ def detectGPU():
             GPUUnits.append(Nvidia(i))
 
     except NVMLError:
+        Config['server'].set('GPU', 'nvidia', '0')
         printLog('No NVidia GPU found in the system', 'info')
 
     try:
@@ -61,7 +62,8 @@ def detectGPU():
             printLog('Initialized AMD GPU %s' % (i), 'success')
             GPUUnits.append(AMD(i))
 
-    except:
+    except Exception as e:
+        print e
         printLog('No AMD GPU found in the system', 'info')
 
 

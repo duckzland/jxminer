@@ -68,7 +68,7 @@ def getSysfsValue(device, key):
         fileValue = parseSysfsValue(key, fileValue)
 
     if fileValue == '':
-        raise AssertionError("Empty SysFS Value")
+        raise AssertionError("Empty SysFS Value when parsing for %s:%s" % (device, key))
 
     return fileValue
 
@@ -300,6 +300,9 @@ def setFanSpeed(deviceList, fan):
         hwmon = getHwmonFromDevice(device)
         if not hwmon:
             continue
+
+        fanpath = os.path.join(hwmon, 'pwm1_enable')
+        writeToSysfs(fanpath, '1')
 
         fanpath = os.path.join(hwmon, 'pwm1')
         maxfan = getSysfsValue(device, 'fanmax')

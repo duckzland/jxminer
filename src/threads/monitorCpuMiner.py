@@ -64,4 +64,4 @@ class MonitorCPUMiner(Thread):
             self.miner = XMRig(self.config)
 
         else:
-            raise ValueError('Refused to load invalid miner program type')
+            printLog('Refused to load invalid miner program type', 'error')

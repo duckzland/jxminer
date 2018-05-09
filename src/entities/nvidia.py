@@ -45,6 +45,7 @@ class Nvidia(GPU):
         self.memoryLevel = 100
         self.powerLevel = 100
         self.wattUsage = 0
+        self.supportLevels = True
         self.detect()
 
 

@@ -140,8 +140,7 @@ class Miner:
             self.status = 'ready'
             status = 'success'
 
-        except Exception as e:
-            print e
+        except:
             status = 'error'
 
         finally:
@@ -170,13 +169,22 @@ class Miner:
     def check(self):
         if 'ready' in self.status:
             if hasattr(self, 'proc'):
-                if psutil.pid_exists(self.process.pid) and self.proc.status() == psutil.STATUS_ZOMBIE:
-                    self.stop()
-                    time.sleep(5)
-                    self.start()
-                    self.max_retries = self.max_retries - 1
-                else:
-                    self.max_retries = 3
+                try:
+                    psutil.pid_exists(self.process.pid)
+                    self.proc.status() != psutil.STATUS_ZOMBIE
+                    alive = True
+                except:
+                    alive = False
+                finally:
+                    if not alive:
+                        self.stop()
+                        time.sleep(5)
+                        self.start()
+                        self.max_retries = self.max_retries - 1
+                        printLog('Restarting crashed %s miner instance' % (self.miner), 'info')
+                    else:
+                        self.max_retries = 3
+
 
             if self.max_retries < 0:
                 printLog('Maximum retry of -#%s#- reached' % 3, 'info')
@@ -230,11 +238,10 @@ class Miner:
                     break
 
                 self.record(output.replace('\r\n', '\n').replace('\r', '\n'))
-                #i.flush()
-                #p.flush()
 
                 if not self.isHealthy(output):
                     self.reboot()
+
             except Exception as e:
                 print e
                 break
