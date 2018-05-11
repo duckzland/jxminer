@@ -242,8 +242,7 @@ class Miner:
                 if not self.isHealthy(output):
                     self.reboot()
 
-            except Exception as e:
-                print e
+            except:
                 break
 
 

@@ -62,8 +62,8 @@ def detectGPU():
             printLog('Initialized AMD GPU %s' % (i), 'success')
             GPUUnits.append(AMD(i))
 
-    except Exception as e:
-        print e
+    except:
+        Config['server'].set('GPU', 'amd', '0')
         printLog('No AMD GPU found in the system', 'info')
 
 
@@ -203,8 +203,7 @@ def loadThreads():
                 try:
                     JobThreads.add('gpu_miner', MonitorGPUMiner(True, Config))
                     status = 'success'
-                except Exception as e:
-                    print e
+                except:
                     status = 'error'
                 finally:
                     printLog('Starting GPU miner manager', status)
@@ -214,8 +213,7 @@ def loadThreads():
                 try:
                     JobThreads.remove('gpu_miner')
                     status = 'success'
-                except Exception as e:
-                    print e
+                except:
                     status = 'error'
                 finally:
                     printLog('Stopping GPU miner manager', status)
