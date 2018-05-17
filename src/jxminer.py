@@ -6,7 +6,6 @@
 # 2. Add ability to change configuration on the fly
 # 4. Different configuration for each of the GPU that falls back into global one
 # 5. Add ability to get GPU and fans data on the fly so other script can reference to this
-# 7. GUI / TUI reporting for GPU, Fans and Miner?
 # 14. Create exit script that reset all the GPU and Fans default automated settings upon script exits
 # 15. Create installation scripts
 #####
@@ -360,8 +359,10 @@ def main():
             socketlimit = 5
             Socket.listen(socketlimit)
             status = 'success'
+
         except:
             status = 'error'
+
         finally:
             printLog("Listening to socket with maximum %s connection" % (socketlimit), status)
 
@@ -372,8 +373,10 @@ def main():
             try:
                 JobThreads.clean()
                 status = 'success'
+
             except:
                 status = 'error'
+
             finally:
                 printLog("Cleaning zombie threads", status)
 
@@ -383,8 +386,10 @@ def main():
                 try:
                     JobThreads.add('actions-' + str(uuid.uuid4()), MonitorSocketAction(True, Config, connection, processAction, JobThreads, FanUnits, GPUUnits))
                     status = 'success'
+
                 except:
                     status = 'error'
+
                 finally:
                     printLog("Connecting with %s:%s" % (ip, port), status)
 
@@ -396,6 +401,7 @@ def main():
     finally:
         printLog('Exiting main program', 'success')
         os._exit(1)
+        os.kill(os.getpid(), signal.SIGINT)
 
 
 def shutdown():
@@ -403,8 +409,10 @@ def shutdown():
         Socket.shutdown(socket.SHUT_WR)
         Socket.close()
         status = 'success'
+
     except:
         status = 'error'
+
     finally:
         printLog("Closing open sockets", status)
 
@@ -412,8 +420,10 @@ def shutdown():
         JobThreads.destroy()
         JobThreads.clean()
         status = 'success'
+
     except:
         status = 'error'
+
     finally:
         printLog("Closing open threads", status)
 
@@ -430,6 +440,7 @@ def shutdown():
 
         except:
             status = 'error'
+
         finally:
             printLog("Stopping Xorg server", status)
 

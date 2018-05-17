@@ -86,21 +86,19 @@ def which(name):
 
 
 def findFile(directory, search):
-    found = None
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file == search:
-                found = os.path.join(root, file)
-                break
+    files = recursive_glob(directory, search)
+    file = False
+    if files[0]:
+        file = files[0]
+    return file
 
-        if not found:
-            for dir in dirs:
-                found = findFile(dir, search)
-                if found:
-                    break
 
-    return found
-
+def recursive_glob(treeroot, pattern):
+    results = []
+    for base, dirs, files in os.walk(treeroot):
+        goodfiles = fnmatch.filter(files, pattern)
+        results.extend(os.path.join(base, f) for f in goodfiles)
+    return results
 
 def getOption(name, default, extra):
     if extra and name in extra:

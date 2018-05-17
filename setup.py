@@ -1,5 +1,5 @@
-import os
-from distutils.core import setup
+#!/usr/bin/env python
+from setuptools import setup, find_packages
 
 setup(
     name = "JXMiner",
@@ -7,9 +7,10 @@ setup(
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
-    packages=['jxminer', 'jxminer.threads', 'jxminer.modules', 'jxminer.miners', 'jxminer.entities'],
-    package_dir={'jxminer': 'src'},
-    package_data={'jxminer': ['data/config/*.ini', 'data/miners/*.ini', 'data/pools/*.ini']},
+    packages=find_packages('src'),
+    package_dir={'':'src'},
+    include_package_data=True,
+    package_data={'': ['data/config/*.ini', 'data/miners/*.ini', 'data/pools/*.ini']},
     data_files=[
         ('/etc/jxminer/config', [
             'src/data/config/coins.ini',
@@ -43,6 +44,10 @@ setup(
             'src/data/pools/ravenminer.ini',
         ]),
 
+    ],
+    install_requires=[
+        'psutil',
+        'pexpect'
     ],
     entry_points = {
         'console_scripts' : ['jxminer = jxminer.jxminer:main']

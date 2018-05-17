@@ -1,0 +1,5 @@
+recursive-include src/data/config *.ini
+recursive-include src/data/miners *.ini
+recursive-include src/data/pools *.ini
+
+

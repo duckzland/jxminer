@@ -56,6 +56,13 @@ class MonitorSocketAction(Thread):
                 self.stop()
 
 
+        elif action in ('serverStatus'):
+            try:
+                self.transfer.send('active')
+            except:
+                self.stop()
+
+
         elif 'monitorGpuMiner' in action:
             try:
                 miners = self.threads.get('gpu_miner').miners

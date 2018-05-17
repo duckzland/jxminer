@@ -1,0 +1,14 @@
+[Unit]
+Description=JXMiner
+After=network.target
+
+[Service]
+Type=simple
+GuessMainPID=yes
+ExecStart=/usr/local/bin/jxminer
+Restart=on-failure
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

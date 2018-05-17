@@ -1,4 +1,4 @@
-import sys, os, subprocess, psutil, time, re, pexpect
+import sys, os, subprocess, psutil, time, re, pexpect, signal
 sys.path.append('../')
 from entities.pool import Pool
 from modules.transfer import *
@@ -151,11 +151,18 @@ class Miner:
     def stop(self):
         self.status = 'stop'
         try:
-            self.process.kill()
+            self.process.terminate(True)
             self.process.wait()
+
+            # Maybe redundant
             if psutil.pid_exists(self.process.pid):
                 self.proc.terminate()
                 self.proc.wait()
+
+            # This is most probably redundant
+            if psutil.pid_exists(self.process.pid):
+                os.kill(self.process.pid, signal.SIGINT)
+
             status = 'success'
 
         except:
