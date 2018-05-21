@@ -56,10 +56,6 @@ class Miner:
         if hasattr(self, 'miner'):
             self.miner_config = self.config[self.miner]
             self.miner_mode = self.algo
-            print self.algo
-            print self.miner_mode
-            print self.miner
-            print self.miner_config
 
             if hasattr(self, 'second_algo') and self.machine.getboolean(name, 'dual'):
                 self.miner_mode = self.miner_mode + '|' + self.second_algo
@@ -67,12 +63,11 @@ class Miner:
             default = dict(self.miner_config.items('default'))
             try:
                 extra = dict(self.miner_config.items(self.miner_mode))
-            except Exception as e:
-                print e
+            # Put exception notice here later
+            except:
                 extra = False
-            print extra
+
             self.executable = getOption('executable', default, extra)
-            print self.executable
             self.option = (
                 str(getOption('options', default, extra))
                     .replace('\n', ' #-# ')

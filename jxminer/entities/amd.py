@@ -44,8 +44,7 @@ class AMD(GPU):
         try:
             self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
 
-        except Exception as e:
-            print e
+        except:
             self.maxCoreLevel = False
             self.supportLevels = False
 

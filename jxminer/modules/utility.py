@@ -86,7 +86,6 @@ def which(name):
 
 
 def findFile(directory, search):
-    print search
     files = recursive_glob(directory, search)
     file = False
     if files and len(files):

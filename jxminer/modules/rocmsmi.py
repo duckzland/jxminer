@@ -227,7 +227,6 @@ def setClocks(deviceList, clktype, clk):
     for device in deviceList:
         if not isPowerplayEnabled(device):
             continue
-        print device
 
         devpath = os.path.join(drmprefix, device, 'device')
         if clktype == 'gpu':
