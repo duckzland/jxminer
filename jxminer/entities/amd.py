@@ -34,7 +34,7 @@ class AMD(GPU):
         self.fanSpeed = 0
         self.wattUsage = 0
         self.supportLevels = True
-        self.machineIndex = 'card %s' % (self.index)
+        self.machineIndex = 'card%s' % (self.index)
 
         try:
             self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
