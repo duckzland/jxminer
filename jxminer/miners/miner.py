@@ -67,6 +67,7 @@ class Miner:
                 extra = False
 
             self.executable = getOption('executable', default, extra)
+            print self.executable
             self.option = (
                 str(getOption('options', default, extra))
                     .replace('\n', ' #-# ')
