@@ -1,6 +1,5 @@
-import sys, time
+import time
 from thread import Thread
-sys.path.append('../')
 from entities.job import *
 from modules.utility import calculateStep, printLog
 

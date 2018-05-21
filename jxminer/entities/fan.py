@@ -1,5 +1,5 @@
-import os, subprocess, math, sys
-sys.path.append('../')
+import os, subprocess, math
+
 from modules.sysfs import *
 
 class Fan:

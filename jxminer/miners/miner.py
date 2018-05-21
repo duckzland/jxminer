@@ -1,5 +1,5 @@
-import sys, os, subprocess, psutil, time, re, pexpect, signal
-sys.path.append('../')
+import os, subprocess, psutil, time, re, pexpect, signal
+
 from entities.pool import Pool
 from modules.transfer import *
 from modules.utility import which, getOption, printLog, findFile, explode, stripAnsi

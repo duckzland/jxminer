@@ -1,5 +1,4 @@
-import sys, re
-sys.path.append('../')
+import re
 from miners.miner import Miner
 
 class Claymore(Miner):

@@ -1,5 +1,4 @@
-import sys
-sys.path.append('../')
+
 from modules.utility import printLog
 
 class Thread:

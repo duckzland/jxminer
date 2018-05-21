@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../')
 from modules.utility import explode, printLog
 
 class Pool:

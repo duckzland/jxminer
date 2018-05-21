@@ -1,5 +1,5 @@
-import sys, re
-sys.path.append('../')
+import re
+
 from miners.miner import Miner
 from modules.utility import explode
 

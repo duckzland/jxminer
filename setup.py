@@ -24,11 +24,11 @@ setup(
             'jxminer/data/miners/ccminer.ini',
             'jxminer/data/miners/claymore.ini',
             'jxminer/data/miners/cpuminer.ini',
+            'jxminer/data/miners/cpuxmrig.ini',
             'jxminer/data/miners/ethminer.ini',
             'jxminer/data/miners/ewbf.ini',
             'jxminer/data/miners/nheqminer.ini',
             'jxminer/data/miners/sgminer.ini',
-            'jxminer/data/miners/xmrig.ini',
         ]),
         ('/etc/jxminer/pools', [
             'jxminer/data/pools/2miners.ini',

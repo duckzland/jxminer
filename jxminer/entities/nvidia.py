@@ -1,5 +1,4 @@
-import sys, subprocess, os, time, signal
-sys.path.append('../')
+import subprocess, os, time, signal
 from modules.pynvml import *
 from gpu import GPU
 

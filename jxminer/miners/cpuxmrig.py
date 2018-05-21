@@ -1,9 +1,9 @@
-import sys, re
-sys.path.append('../')
+import re
+
 from miners.miner import Miner
 from modules.utility import stripAnsi
 
-class XMRig(Miner):
+class CpuXMRig(Miner):
 
     """
         Single mining instance for invoking the xmrig miner
@@ -11,7 +11,7 @@ class XMRig(Miner):
     """
 
     def init(self):
-        self.miner = 'xmrig'
+        self.miner = 'cpuxmrig'
         self.setupMiner('cpu')
         self.checkKeywords = []
 

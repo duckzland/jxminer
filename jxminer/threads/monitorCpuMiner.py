@@ -1,10 +1,7 @@
-import sys
 from thread import Thread
-sys.path.append('../')
 from entities.job import *
-
 from miners.cpuminer import *
-from miners.xmrig import *
+from miners.cpuxmrig import *
 
 from modules.utility import printLog
 
@@ -47,8 +44,10 @@ class MonitorCPUMiner(Thread):
 
             self.started = False
             status = 'success'
+
         except:
             status = 'error'
+
         finally:
             printLog("Stopping cpu miner manager", status)
 
@@ -57,11 +56,13 @@ class MonitorCPUMiner(Thread):
         coin = self.config['machine'].get('cpu_miner', 'coin')
         algo = self.config['coins'].get(coin, 'algo')
         miner = self.config['miner'].get(algo, 'cpu')
+
         if miner in 'cpuminer':
             self.miner = CpuMiner(self.config)
 
-        elif miner in 'xmrig':
-            self.miner = XMRig(self.config)
+        elif miner in 'cpuxmrig':
+            self.miner = CpuXMRig(self.config)
 
         else:
             printLog('Refused to load invalid miner program type', 'error')
+            self.destroy()

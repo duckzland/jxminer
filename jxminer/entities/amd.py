@@ -1,5 +1,5 @@
-import sys, time
-sys.path.append('../')
+import time
+
 from modules.rocmsmi import *
 from gpu import GPU
 
@@ -34,9 +34,10 @@ class AMD(GPU):
         self.fanSpeed = 0
         self.wattUsage = 0
         self.supportLevels = True
+        self.machineIndex = 'card %s' % (self.index)
 
         try:
-            self.maxCoreLevel = getMaxLevel(self.index, 'gpu')
+            self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
         except:
             self.maxCoreLevel = False
             self.supportLevels = False
@@ -45,24 +46,24 @@ class AMD(GPU):
 
 
     def detect(self):
-        self.temperature = getSysfsValue(self.index, 'temp')
-        self.fanSpeed = self.round(int(getSysfsValue(self.index, 'fan')) / 2.55)
+        self.temperature = getSysfsValue(self.machineIndex, 'temp')
+        self.fanSpeed = self.round(int(getSysfsValue(self.machineIndex, 'fan')) / 2.55)
 
         if self.supportLevels:
-            self.wattUsage = parseSysfsValue('power', getSysfsValue(self.index, 'power'))
+            self.wattUsage = parseSysfsValue('power', getSysfsValue(self.machineIndex, 'power'))
 
 
     def reset(self):
-        resetFans([self.index])
+        resetFans([self.machineIndex])
         if self.supportLevels:
-            resetClocks([self.index])
+            resetClocks([self.machineIndex])
 
 
     def tune(self, **kwargs):
         if kwargs.get('fan', False):
             speed = self.round(kwargs.get('fan'))
             if speed != self.fanSpeed:
-                setFanSpeed([self.index], self.round(speed * 2.55))
+                setFanSpeed([self.machineIndex], self.round(speed * 2.55))
                 self.fanSpeed = speed
 
         if self.supportLevels:
@@ -81,4 +82,4 @@ class AMD(GPU):
             else:
                 levels = [ levels ]
 
-            setClocks([self.index], 'gpu', levels)
+            setClocks([self.machineIndex], 'gpu', levels)

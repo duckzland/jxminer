@@ -1,5 +1,5 @@
-import sys, pickle, io, select, time, json, psutil
-sys.path.append('../')
+import pickle, io, select, time, json, psutil
+
 from entities.job import *
 from thread import Thread
 from modules.transfer import *
