@@ -49,13 +49,11 @@ def getSysfsValue(device, key):
 
     if pathDict['prefix'] == hwmonprefix:
         """ HW Monitor values have a different path structure """
-        print getHwmonFromDevice(device)
         if not getHwmonFromDevice(device):
             return None
         filePath = os.path.join(getHwmonFromDevice(device), pathDict['filepath'])
 
     if pathDict['prefix'] == powerprefix:
-        print device[4:]
         """ Power consumption is in debugfs and has a different path structure """
         filePath = os.path.join(powerprefix, device[4:], 'amdgpu_pm_info')
 

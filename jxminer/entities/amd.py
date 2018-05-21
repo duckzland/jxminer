@@ -60,7 +60,7 @@ class AMD(GPU):
             self.fanSpeed = 0
 
         if self.supportLevels:
-            self.wattUsage = parseSysfsValue('power', getSysfsValue(self.machineIndex, 'power'))
+            self.wattUsage = getSysfsValue(self.machineIndex, 'power')
 
 
     def reset(self):
