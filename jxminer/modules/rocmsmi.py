@@ -60,7 +60,7 @@ def getSysfsValue(device, key):
     if not os.path.isfile(filePath):
         return None
 
-    print filepath
+    print filePath
 
     with open(filePath, 'r') as fileContents:
         fileValue = fileContents.read().rstrip('\n')
