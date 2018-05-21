@@ -27,12 +27,13 @@ from entities.amd import AMD
 from entities.fan import Fan
 from entities.threads import *
 
-from threads.monitorCasingFans import *
-from threads.monitorGpuFans import *
-from threads.monitorGpuTuner import *
-from threads.monitorSocketAction import *
-from threads.monitorGpuMiner import *
-from threads.monitorCpuMiner import *
+from threads.casingFansThread import *
+from threads.gpuFansThread import *
+from threads.gpuTunerThread import *
+from threads.socketActionThread import *
+from threads.gpuMinerThread import *
+from threads.cpuMinerThread import *
+from threads.systemdThread import *
 
 
 def detectGPU():
@@ -134,17 +135,17 @@ def loadThreads():
 
     if GPUUnits:
         if 'fans' in Config:
-
             if FanUnits:
                 if Config['fans'].getboolean('casing', 'enable'):
                     if not JobThreads.has('casing_fans'):
                         try:
-                            JobThreads.add('casing_fans', MonitorCasingFans(True, Config, FanUnits, GPUUnits))
+                            JobThreads.add('casing_fans', casingFansThread(True, Config, FanUnits, GPUUnits))
                             status = 'success'
                         except:
                             status = 'error'
                         finally:
                             printLog('Starting Casing fan manager started', status)
+
                 else:
                     if JobThreads.has('casing_fans'):
                         try:
@@ -159,7 +160,7 @@ def loadThreads():
             if Config['fans'].getboolean('gpu', 'enable'):
                 if not JobThreads.has('gpu_fans'):
                     try:
-                        JobThreads.add('gpu_fans', MonitorGPUFans(True, Config, GPUUnits))
+                        JobThreads.add('gpu_fans', gpuFansThread(True, Config, GPUUnits))
                         status = 'success'
                     except:
                         status = 'error'
@@ -181,7 +182,7 @@ def loadThreads():
             if Config['tuner'].getboolean('settings', 'enable'):
                 if not JobThreads.has('gpu_tuner'):
                     try:
-                        JobThreads.add('gpu_tuner', MonitorGPUTuner(True, Config, GPUUnits))
+                        JobThreads.add('gpu_tuner', gpuTunerThread(True, Config, GPUUnits))
                         status = 'success'
                     except:
                         status = 'error'
@@ -204,12 +205,21 @@ def loadThreads():
         if Config['machine'].getboolean('gpu_miner', 'enable'):
             if not JobThreads.has('gpu_miner'):
                 try:
-                    JobThreads.add('gpu_miner', MonitorGPUMiner(True, Config))
+                    JobThreads.add('gpu_miner', gpuMinerThread(True, Config))
                     status = 'success'
                 except:
                     status = 'error'
                 finally:
                     printLog('Starting GPU miner manager', status)
+
+            if not JobThreads.has('systemd'):
+                try:
+                    JobThreads.add('systemd', systemdThread(True))
+                    status = 'success'
+                except:
+                    status = 'error'
+                finally:
+                    printLog('Starting Systemd watcher', status)
 
         else:
             if JobThreads.has('gpu_miner'):
@@ -221,10 +231,20 @@ def loadThreads():
                 finally:
                     printLog('Stopping GPU miner manager', status)
 
+            if JobThreads.has('systemd'):
+                try:
+                    JobThreads.remove('systemd')
+                    status = 'success'
+                except:
+                    status = 'error'
+                finally:
+                    printLog('Stopping Systemd watcher', status)
+
+
         if Config['machine'].getboolean('cpu_miner', 'enable'):
             if not JobThreads.has('cpu_miner'):
                 try:
-                    JobThreads.add('cpu_miner', MonitorCPUMiner(True, Config))
+                    JobThreads.add('cpu_miner', cpuMinerThread(True, Config))
                     status = 'success'
                 except:
                     status = 'error'
@@ -388,7 +408,7 @@ def main():
             if connection and address:
                 ip, port = str(address[0]), str(address[1])
                 try:
-                    JobThreads.add('actions-' + str(uuid.uuid4()), MonitorSocketAction(True, Config, connection, processAction, JobThreads, FanUnits, GPUUnits))
+                    JobThreads.add('actions-' + str(uuid.uuid4()), socketActionThread(True, Config, connection, processAction, JobThreads, FanUnits, GPUUnits))
                     status = 'success'
 
                 except:

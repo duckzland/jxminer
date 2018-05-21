@@ -3,7 +3,7 @@ from thread import Thread
 from entities.job import *
 from modules.utility import calculateStep, printLog
 
-class MonitorGPUFans(Thread):
+class gpuFansThread(Thread):
 
     def __init__(self, start, Config, GPUUnits):
         self.active = False

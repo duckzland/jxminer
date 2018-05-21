@@ -3,7 +3,7 @@ from thread import Thread
 from entities.job import *
 from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog
 
-class MonitorCasingFans(Thread):
+class casingFansThread(Thread):
 
     def __init__(self, start, Config, FanUnits, GPUUnits):
         self.active = False

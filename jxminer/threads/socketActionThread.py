@@ -5,7 +5,7 @@ from thread import Thread
 from modules.transfer import *
 from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog
 
-class MonitorSocketAction(Thread):
+class socketActionThread(Thread):
 
     def __init__(self, start, Config, connection, actionCallback, JobThreads, FanUnits, GPUUnits):
         self.active = False
@@ -45,7 +45,7 @@ class MonitorSocketAction(Thread):
         elif action in ('shutdown', 'reboot', 'update'):
             self.actionCallback(action)
 
-        elif action in ('monitorCpuMiner'):
+        elif action in ('cpuMinerThread'):
             try:
                 miner = self.threads.get('cpu_miner').miner
                 if miner:
@@ -63,7 +63,7 @@ class MonitorSocketAction(Thread):
                 self.stop()
 
 
-        elif 'monitorGpuMiner' in action:
+        elif 'gpuMinerThread' in action:
             try:
                 miners = self.threads.get('gpu_miner').miners
                 a, i = action.split(':')

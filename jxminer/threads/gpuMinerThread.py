@@ -11,7 +11,7 @@ from miners.sgminer import *
 
 from modules.utility import printLog
 
-class MonitorGPUMiner(Thread):
+class gpuMinerThread(Thread):
 
     def __init__(self, start, Config):
         self.active = False

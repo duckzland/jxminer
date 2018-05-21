@@ -5,7 +5,7 @@ from miners.cpuxmrig import *
 
 from modules.utility import printLog
 
-class MonitorCPUMiner(Thread):
+class cpuMinerThread(Thread):
 
     def __init__(self, start, Config):
         self.active = False
