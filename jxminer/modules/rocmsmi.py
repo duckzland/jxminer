@@ -55,6 +55,7 @@ def getSysfsValue(device, key):
         filePath = os.path.join(getHwmonFromDevice(device), pathDict['filepath'])
 
     if pathDict['prefix'] == powerprefix:
+        print device[4:]
         """ Power consumption is in debugfs and has a different path structure """
         filePath = os.path.join(powerprefix, device[4:], 'amdgpu_pm_info')
 
