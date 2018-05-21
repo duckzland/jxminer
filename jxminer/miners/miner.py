@@ -65,7 +65,8 @@ class Miner:
             default = dict(self.miner_config.items('default'))
             try:
                 extra = dict(self.miner_config.items(self.miner_mode))
-            except:
+            except Exception as e:
+                print e
                 extra = False
             print extra
             self.executable = getOption('executable', default, extra)
