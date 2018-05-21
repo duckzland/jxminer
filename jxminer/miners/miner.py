@@ -134,8 +134,6 @@ class Miner:
 
         try:
             self.process = pexpect.spawn(command, args, env=self.environment, timeout=None, cwd=os.path.dirname(command))
-            print command
-            print os.path.dirname(command)
             #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
             #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdin=subprocess.PIPE)
             self.proc = psutil.Process(self.process.pid)
