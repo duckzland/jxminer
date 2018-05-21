@@ -56,7 +56,6 @@ def detectGPU():
 
     try:
         devices = listDevices()
-        print devices
         Config['server'].set('GPU', 'amd', str(len(devices)))
         if not devices:
             raise
@@ -66,8 +65,7 @@ def detectGPU():
             printLog('Initialized AMD GPU %s' % (index), 'success')
             GPUUnits.append(AMD(index))
 
-    except Exception as e:
-        print e
+    except:
         Config['server'].set('GPU', 'amd', '0')
         printLog('No AMD GPU found in the system', 'info')
 

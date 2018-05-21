@@ -47,8 +47,11 @@ class AMD(GPU):
 
     def detect(self):
         self.temperature = getSysfsValue(self.machineIndex, 'temp')
-        print self.machineIndex
-        self.fanSpeed = self.round(int(getSysfsValue(self.machineIndex, 'fan')) / 2.55)
+
+        try:
+            self.fanSpeed = self.round(int(getSysfsValue(self.machineIndex, 'fan')) / 2.55)
+        except:
+            self.fanSpeed = 0
 
         if self.supportLevels:
             self.wattUsage = parseSysfsValue('power', getSysfsValue(self.machineIndex, 'power'))
