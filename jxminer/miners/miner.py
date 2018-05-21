@@ -65,7 +65,7 @@ class Miner:
                 extra = dict(self.miner_config.items(self.miner_mode))
             except:
                 extra = False
-
+            print extra
             self.executable = getOption('executable', default, extra)
             print self.executable
             self.option = (
