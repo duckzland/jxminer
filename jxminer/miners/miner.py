@@ -56,6 +56,8 @@ class Miner:
         if hasattr(self, 'miner'):
             self.miner_config = self.config[self.miner]
             self.miner_mode = self.algo
+            print self.algo
+            print self.miner_mode
 
             if hasattr(self, 'second_algo') and self.machine.getboolean(name, 'dual'):
                 self.miner_mode = self.miner_mode + '|' + self.second_algo
