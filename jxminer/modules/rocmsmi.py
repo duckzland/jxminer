@@ -49,6 +49,7 @@ def getSysfsValue(device, key):
 
     if pathDict['prefix'] == hwmonprefix:
         """ HW Monitor values have a different path structure """
+        print getHwmonFromDevice(device)
         if not getHwmonFromDevice(device):
             return None
         filePath = os.path.join(getHwmonFromDevice(device), pathDict['filepath'])
