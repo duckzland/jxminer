@@ -1,7 +1,11 @@
 import os, fnmatch, re
 from datetime import datetime
 
+MainBuffers = []
+
 def printLog(text, status = 'info'):
+    global MainBuffers
+
     if 'error' in status:
         status = '-#' + status + '  #-'
     elif 'info' in status:
@@ -30,7 +34,17 @@ def printLog(text, status = 'info'):
             .replace('#-', '\033[0m')
     )
 
-    print("[ {0} ][ {1} ] {2}".format(datetime.now().strftime('%m-%d %H:%M'), status, text).strip())
+    output = "[ {0} ][ {1} ] {2}".format(datetime.now().strftime('%m-%d %H:%M'), status, text).strip()
+    if len(MainBuffers) > 10 :
+        MainBuffers.pop(0)
+
+    MainBuffers.append(output)
+
+    print(output)
+
+
+def getLogBuffers():
+    return MainBuffers
 
 
 def getHighestTemps(GPUUnits):

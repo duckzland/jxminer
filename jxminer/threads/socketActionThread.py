@@ -1,9 +1,9 @@
-import pickle, io, select, time, json, psutil
+import io, select, time, json, psutil
 
 from entities.job import *
 from thread import Thread
 from modules.transfer import *
-from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog
+from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog, getLogBuffers
 
 class socketActionThread(Thread):
 
@@ -21,6 +21,7 @@ class socketActionThread(Thread):
             self.start()
 
     def init(self):
+        self.active = True
         self.job = Job(1, self.update)
         self.transfer = Transfer(self.connection)
 
@@ -35,17 +36,17 @@ class socketActionThread(Thread):
         if not action:
             pass
 
-        elif action in ('refresh', 'gpuInfo', 'fansInfo'):
-            msg = pickle.dumps(self.actionCallback(action))
+        elif action in ('server:status'):
             try:
-                self.transfer.send(msg)
+                self.transfer.send('active')
             except:
-                self.stop()
+                pass
 
-        elif action in ('shutdown', 'reboot', 'update'):
+        elif action in ('server:shutdown', 'server:reboot', 'server:update'):
             self.actionCallback(action)
 
-        elif action in ('monitorCpuMiner'):
+
+        elif action in ('monitor:miner:cpu'):
             try:
                 miner = self.threads.get('cpu_miner').miner
                 if miner:
@@ -56,17 +57,10 @@ class socketActionThread(Thread):
                 self.stop()
 
 
-        elif action in ('serverStatus'):
-            try:
-                self.transfer.send('active')
-            except:
-                self.stop()
-
-
-        elif 'monitorGpuMiner' in action:
+        elif 'monitor:miner:gpu' in action:
             try:
                 miners = self.threads.get('gpu_miner').miners
-                a, i = action.split(':')
+                x, m, a, i = action.split(':')
                 i = int(i)
                 miner = miners[i]
             except:
@@ -77,7 +71,8 @@ class socketActionThread(Thread):
             if miner:
                 self.readMinerBuffer(miner)
 
-        elif 'getStatus' in action:
+
+        elif 'monitor:server' in action:
             while True and self.active:
                 try:
                     status = dict()
@@ -235,6 +230,11 @@ class socketActionThread(Thread):
                     except:
                         pass
 
+                    try:
+                        status['serverlog'] = "\n".join(getLogBuffers())
+                    except:
+                        pass
+
                     self.transfer.send(json.dumps(status))
                     time.sleep(0.5)
 
@@ -267,11 +267,17 @@ class socketActionThread(Thread):
         if self.active:
             try:
                 if self.transfer:
-                    self.transfer.send('Server closing...')
-                    self.transfer.wait()
+                    try:
+                        self.transfer.send('Server closing...')
+                        self.transfer.wait()
+                    except:
+                        pass
 
                 if self.connection:
-                    self.connection.close()
+                    try:
+                        self.connection.close()
+                    except:
+                        pass
 
                 if self.job:
                     self.job.shutdown_flag.set()

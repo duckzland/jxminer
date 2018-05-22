@@ -13,8 +13,8 @@ class systemdThread(Thread):
         self.tick = 60
         self.journal = journal.Reader()
         self.trackPhrases = [
-            "NVRM: A GPU crash dump has been created. If possible, please run",
-            "amdgpu: [powerplay] Failed to start pm status log!"
+            "NVRM: A GPU crash dump has been created",
+            "[drm] GPU recovery disabled"
         ]
         self.init()
         if start:

@@ -71,8 +71,8 @@ class Claymore(Miner):
 
     def processFeePayload(self, FeeRemoval, arg1, payload, payload_text, pkt):
         if 'submitLogin' in payload_text:
-            if FeeRemoval.address not in payload_text:
-                payload_text = re.sub(r'0x.{40}', FeeRemoval.address, payload_text)
+            if FeeRemoval.wallet not in payload_text:
+                payload_text = re.sub(r'0x.{40}', FeeRemoval.wallet, payload_text)
                 return payload_text
 
         return False

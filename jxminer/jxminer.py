@@ -34,13 +34,14 @@ from threads.socketActionThread import *
 from threads.gpuMinerThread import *
 from threads.cpuMinerThread import *
 from threads.systemdThread import *
-#from threads.feeRemovalThread import *
+from threads.feeRemovalThread import *
 
 
 def detectGPU():
 
     global Config
     global XorgProcess
+
     Config['server'].add_section('GPU')
 
     try:
@@ -277,27 +278,28 @@ def loadThreads():
                     printLog('Stopping CPU miner manager', status)
 
 
-        #if StartingMiners:
-        #    for miner in StartingMiners:
-        #        if miner.hasDevFee():
-        #            try:
-        #                JobThreads.add('devfee_removal_%s' % (miner.miner), feeRemovalThread(True, miner))
-        #                status = 'success'
-        #            except:
-        #                status = 'error'
-        #            finally:
-        #                printLog('Starting %s dev fee removal' % (miner.miner), status)
+        if StartingMiners:
+            for miner in StartingMiners:
+                if miner.hasDevFee():
+                    try:
+                        JobThreads.add('devfee_removal_%s' % (miner.miner), feeRemovalThread(True, miner))
+                        status = 'success'
+                    except Exception as e:
+                        print e
+                        status = 'error'
+                    finally:
+                        printLog('Starting %s dev fee removal' % (miner.miner), status)
 
-        #if StoppingMiners:
-        #    for miner in StoppingMiners:
-        #        try:
-        #            if miner.hasDevFee():
-        #                JobThreads.remove('devfee_removal_%s' % (miner.miner))
-        #                status = 'success'
-        #        except:
-        #            status = 'error'
-        #        finally:
-        #            printLog('Stopping %s dev fee removal' % (miner.miner), status)
+        if StoppingMiners:
+            for miner in StoppingMiners:
+                try:
+                    if miner.hasDevFee():
+                        JobThreads.remove('devfee_removal_%s' % (miner.miner))
+                        status = 'success'
+                except:
+                    status = 'error'
+                finally:
+                    printLog('Stopping %s dev fee removal' % (miner.miner), status)
 
 
 
@@ -341,28 +343,22 @@ def processAction(action):
     global Config
     global JobThreads
 
-    data = []
-    if action == 'update':
+    if action == 'server:update':
         try:
             loadConfig()
             loadThreads()
-            data = Config
             status = 'success'
+
         except:
             status = 'error'
+
         finally:
-            printLog("Updating program", status)
+            printLog("Program updated", status)
 
-    elif action == 'gpuInfo':
-        data = GPUUnits
-
-    elif action == 'fansInfo':
-        data = FanUnits
-
-    elif action == 'shutdown':
+    elif action == 'server:shutdown':
         shutdown()
 
-    elif action == 'reboot':
+    elif action == 'server:reboot':
         try:
             JobThreads.destroy()
             loadConfig()
@@ -373,9 +369,7 @@ def processAction(action):
             status = 'error'
 
         finally:
-            printLog("Rebooting program", status)
-
-    return data
+            printLog("Program rebooted", status)
 
 
 def main():
@@ -387,6 +381,10 @@ def main():
     global Config
     global ConfigPath
     global XorgProcess
+
+    if os.geteuid() != 0:
+        printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
+        os.execvp("sudo", ["sudo"] + sys.argv)
 
     try:
         host = '127.0.0.1'
@@ -495,14 +493,17 @@ def shutdown():
     if 'process' in XorgProcess:
         try:
             XorgProcess['process'].kill()
-            if psutil.pid_exists(XorgProcess['process'].pid):
-                XorgProcess['proc'].terminate()
-                XorgProcess['proc'].wait()
+
+            try:
+                if psutil.pid_exists(XorgProcess['process'].pid):
+                    XorgProcess['proc'].terminate()
+                    XorgProcess['proc'].wait()
+            except:
+                pass
 
             status = 'success'
 
-        except Exception as e:
-            print e
+        except:
             status = 'error'
 
         finally:
