@@ -45,7 +45,7 @@ class socketActionThread(Thread):
         elif action in ('shutdown', 'reboot', 'update'):
             self.actionCallback(action)
 
-        elif action in ('cpuMinerThread'):
+        elif action in ('monitorCpuMiner'):
             try:
                 miner = self.threads.get('cpu_miner').miner
                 if miner:
@@ -63,7 +63,7 @@ class socketActionThread(Thread):
                 self.stop()
 
 
-        elif 'gpuMinerThread' in action:
+        elif 'monitorGpuMiner' in action:
             try:
                 miners = self.threads.get('gpu_miner').miners
                 a, i = action.split(':')

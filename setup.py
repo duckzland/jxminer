@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.2-alpha",
+    version = "0.3.2",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -48,7 +48,10 @@ setup(
     install_requires=[
         'psutil',
         'pexpect',
-        'setuptools'
+        'setuptools',
+        # Fix this!
+        #'systemd',
+        #'python-nfqueue'
     ],
     entry_points = {
         'console_scripts' : ['jxminer = jxminer.jxminer:main']

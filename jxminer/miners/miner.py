@@ -20,6 +20,7 @@ class Miner:
         self.bufferStatus['diff'] = 0
         self.bufferStatus['hashrate'] = 0
         self.bufferStatus['shares'] = 0
+        self.hasFee = False
         self.init()
 
 
@@ -276,3 +277,10 @@ class Miner:
 
     def getStatus(self):
         return self.bufferStatus
+
+
+    def hasDevFee(self):
+        return self.hasFee
+
+    def processFeePayload(self, FeeRemoval, arg1, payload):
+        pass

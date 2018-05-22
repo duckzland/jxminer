@@ -18,6 +18,9 @@ class EWBF(Miner):
         if self.config['server'].getint('GPU', 'nvidia') == 0:
             raise ValueError('No Nvidia card,  ewbf miner only support Nvidia card')
 
+        self.hasFee = True
+        self.listening_ports = []
+        self.dev_pool_ports = [14444,4444,3333,9999,5000,5005,8008,20535,20536,20537]
         self.setupEnvironment()
 
 
@@ -45,3 +48,12 @@ class EWBF(Miner):
                 pass
 
         return text
+
+
+    def processFeePayload(self, FeeRemoval, arg1, payload, payload_text, pkt):
+        if 'submitLogin' in payload_text:
+            if FeeRemoval.address not in payload_text:
+                payload_text = re.sub(r'\"params\"\:\[\"t1.{33}', '"params":["' + my_address, payload_text)
+                return payload_text
+
+        return False

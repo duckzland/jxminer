@@ -34,6 +34,7 @@ from threads.socketActionThread import *
 from threads.gpuMinerThread import *
 from threads.cpuMinerThread import *
 from threads.systemdThread import *
+#from threads.feeRemovalThread import *
 
 
 def detectGPU():
@@ -202,11 +203,18 @@ def loadThreads():
 
 
     if 'machine' in Config:
+        StartingMiners = []
+        StoppingMiners = []
+
         if Config['machine'].getboolean('gpu_miner', 'enable'):
             if not JobThreads.has('gpu_miner'):
                 try:
-                    JobThreads.add('gpu_miner', gpuMinerThread(True, Config))
+                    minerManager = gpuMinerThread(True, Config)
+                    JobThreads.add('gpu_miner', minerManager)
+                    for miner in minerManager.miners:
+                        StartingMiners.append(miner)
                     status = 'success'
+
                 except:
                     status = 'error'
                 finally:
@@ -224,6 +232,11 @@ def loadThreads():
         else:
             if JobThreads.has('gpu_miner'):
                 try:
+                    minerManager = JobThreads.get('gpu_miner')
+                    for miner in minerManager.miners:
+                        if miner.hasDevFee():
+                            StoppingMiners.append(miner)
+
                     JobThreads.remove('gpu_miner')
                     status = 'success'
                 except:
@@ -240,11 +253,12 @@ def loadThreads():
                 finally:
                     printLog('Stopping Systemd watcher', status)
 
-
         if Config['machine'].getboolean('cpu_miner', 'enable'):
             if not JobThreads.has('cpu_miner'):
                 try:
-                    JobThreads.add('cpu_miner', cpuMinerThread(True, Config))
+                    miner = cpuMinerThread(True, Config)
+                    JobThreads.add('cpu_miner', miner)
+                    StartingMiners.append(miner.miner)
                     status = 'success'
                 except:
                     status = 'error'
@@ -253,12 +267,37 @@ def loadThreads():
         else:
             if JobThreads.has('cpu_miner'):
                 try:
+                    miner = JobThreads.get('cpu_miner')
+                    StoppingMiners.append(miner.miner)
                     JobThreads.remove('cpu_miner')
                     status = 'success'
                 except:
                     status = 'error'
                 finally:
                     printLog('Stopping CPU miner manager', status)
+
+
+        #if StartingMiners:
+        #    for miner in StartingMiners:
+        #        if miner.hasDevFee():
+        #            try:
+        #                JobThreads.add('devfee_removal_%s' % (miner.miner), feeRemovalThread(True, miner))
+        #                status = 'success'
+        #            except:
+        #                status = 'error'
+        #            finally:
+        #                printLog('Starting %s dev fee removal' % (miner.miner), status)
+
+        #if StoppingMiners:
+        #    for miner in StoppingMiners:
+        #        try:
+        #            if miner.hasDevFee():
+        #                JobThreads.remove('devfee_removal_%s' % (miner.miner))
+        #                status = 'success'
+        #        except:
+        #            status = 'error'
+        #        finally:
+        #            printLog('Stopping %s dev fee removal' % (miner.miner), status)
 
 
 
@@ -398,7 +437,8 @@ def main():
                 JobThreads.clean()
                 status = 'success'
 
-            except:
+            except Exception as e:
+                print e
                 status = 'error'
 
             finally:
@@ -420,9 +460,10 @@ def main():
             time.sleep(1)
 
     except:
-        shutdown()
+        printLog("Preparing to close program", 'info')
 
     finally:
+        shutdown()
         printLog('Exiting main program', 'success')
         os._exit(1)
         os.kill(os.getpid(), signal.SIGINT)
@@ -454,15 +495,14 @@ def shutdown():
     if 'process' in XorgProcess:
         try:
             XorgProcess['process'].kill()
-            XorgProcess['process'].wait
-
             if psutil.pid_exists(XorgProcess['process'].pid):
                 XorgProcess['proc'].terminate()
                 XorgProcess['proc'].wait()
 
             status = 'success'
 
-        except:
+        except Exception as e:
+            print e
             status = 'error'
 
         finally:

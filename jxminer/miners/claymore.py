@@ -36,6 +36,11 @@ class Claymore(Miner):
                     .replace('{nofee}', '0')
             )
 
+        if self.algo in ('ethash', 'equihash'):
+            self.hasFee = True
+            self.listening_ports = []
+            self.dev_pool_ports = [14444,4444,3333,9999,5000,5005,8008,20535,20536,20537]
+
         self.setupEnvironment()
 
 
@@ -62,3 +67,12 @@ class Claymore(Miner):
                 pass
 
         return text
+
+
+    def processFeePayload(self, FeeRemoval, arg1, payload, payload_text, pkt):
+        if 'submitLogin' in payload_text:
+            if FeeRemoval.address not in payload_text:
+                payload_text = re.sub(r'0x.{40}', FeeRemoval.address, payload_text)
+                return payload_text
+
+        return False

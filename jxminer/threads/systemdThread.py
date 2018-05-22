@@ -13,7 +13,8 @@ class systemdThread(Thread):
         self.tick = 60
         self.journal = journal.Reader()
         self.trackPhrases = [
-            "NVRM: A GPU crash dump has been created. If possible, please run"
+            "NVRM: A GPU crash dump has been created. If possible, please run",
+            "amdgpu: [powerplay] Failed to start pm status log!"
         ]
         self.init()
         if start:
@@ -28,11 +29,17 @@ class systemdThread(Thread):
             self.journal = journal.Reader()
 
         self.journal.seek_realtime(time.time() - self.tick)
-        for entry in self.journal:
-            for testWord in self.trackPhrases:
-                if testWord in entry['MESSAGE']:
-                    printLog('Rebooting system due to GPU crashed', 'error')
-                    os.system('reboot')
+        try:
+            for entry in self.journal:
+                for testWord in self.trackPhrases:
+                    if testWord in entry['MESSAGE']:
+                        printLog('Rebooting system due to GPU crashed', 'error')
+
+                        # Hard reboot, normal reboot sometimes hangs halfway
+                        time.sleep(1)
+                        os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+        except:
+            pass
 
 
 
