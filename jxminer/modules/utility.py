@@ -1,15 +1,29 @@
 import os, fnmatch, re
 from datetime import datetime
+from slackclient import SlackClient
 
 MainBuffers = []
+Config = None
+SlackToken = None
+SlackChannel = None
 
-def printLog(text, status = 'info'):
+def printLog(text, status = 'info', buffer = True, console = True, config = False):
     global MainBuffers
+    global Config
+
+    if config:
+        Config = config
+
+    mode = False
+    if Config and 'dynamic' in Config:
+        mode = Config['dynamic'].get('settings', 'mode', False)
 
     if 'error' in status:
         status = '-#' + status + '  #-'
+
     elif 'info' in status:
         status = '---#' + status + '   #-'
+
     else:
         status = '--#' + status + '#-'
 
@@ -34,14 +48,43 @@ def printLog(text, status = 'info'):
             .replace('#-', '\033[0m')
     )
 
-    output = "[ {0} ][ {1} ] {2}".format(datetime.now().strftime('%m-%d %H:%M'), status, text).strip()
-    if len(MainBuffers) > 10 :
-        MainBuffers.pop(0)
+    if mode not in ['daemon']:
+        output = "[ {0} ][ {1} ] {2}".format(datetime.now().strftime('%m-%d %H:%M'), status, text).strip()
 
-    MainBuffers.append(output)
+    else:
+        output = "[ {0} ] {1}".format(status, text).strip()
 
-    print(output)
+    if buffer:
+        if len(MainBuffers) > 10 :
+            MainBuffers.pop(0)
+        MainBuffers.append(output)
 
+    if console:
+        print(output)
+
+
+
+def sendSlack(message, token = None, channel = None):
+    global SlackChannel
+    global SlackToken
+
+    if token:
+        SlackToken = token
+
+    if channel:
+        SlackChannel = channel
+
+    if message:
+        try:
+            s = SlackClient(SlackToken)
+            output = "[{0}] {1}".format(datetime.now().strftime('%m-%d %H:%M'), message)
+            s.api_call(
+                 "chat.postMessage",
+                 channel=SlackChannel,
+                 text=output
+             )
+        except:
+            pass
 
 def getLogBuffers():
     return MainBuffers

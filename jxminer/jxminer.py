@@ -3,16 +3,13 @@
 # Main Miner Controller
 # Todo :
 # 1. Implements Curve method for setting up GPU Fans and Casing Fans against temperature
-# 2. Add ability to change configuration on the fly
-# 4. Different configuration for each of the GPU that falls back into global one
-# 5. Add ability to get GPU and fans data on the fly so other script can reference to this
-# 14. Create exit script that reset all the GPU and Fans default automated settings upon script exits
-# 15. Create installation scripts
+# 2. Different configuration for each of the GPU that falls back into global one
+# 3. Split Config into separate Class
+# 4. Split PrintLog into separate Class
+#
 #####
 
-from pprint import pprint
-
-import os, sys, traceback, ConfigParser, socket, uuid
+import os, sys, traceback, ConfigParser, socket, uuid, getopt, signal
 
 # Registering main root path for sane building!
 sys.path.append(os.path.dirname(__file__))
@@ -20,7 +17,7 @@ sys.path.append(os.path.dirname(__file__))
 from modules.pynvml import *
 from modules.rocmsmi import *
 from modules.sysfs import *
-from modules.utility import printLog
+from modules.utility import printLog, sendSlack
 
 from entities.nvidia import Nvidia
 from entities.amd import AMD
@@ -223,7 +220,7 @@ def loadThreads():
 
             if not JobThreads.has('systemd'):
                 try:
-                    JobThreads.add('systemd', systemdThread(True))
+                    JobThreads.add('systemd', systemdThread(True, Config))
                     status = 'success'
                 except:
                     status = 'error'
@@ -317,8 +314,10 @@ def loadConfig():
 
                 localPath = os.path.join('/etc', 'jxminer', type, file)
                 userPath = os.path.join('~/', '.jxminer', type, file)
+
                 if os.path.isfile(userPath):
                     path = userPath
+
                 elif os.path.isfile(localPath):
                     path = localPath
 
@@ -372,6 +371,18 @@ def processAction(action):
             printLog("Program rebooted", status)
 
 
+def usage():
+    print 'jxminer -m|-h'
+    print '   -m <mode>'
+    print '      daemon         Run the program as daemon, logging will be minimized'
+    print '   -h Prints this help message'
+    print '   -v Prints the server version'
+
+
+def version():
+    print '0.3.6'
+
+
 def main():
 
     global FanUnits
@@ -386,6 +397,38 @@ def main():
         printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
         os.execvp("sudo", ["sudo"] + sys.argv)
 
+    # Setup tools dont allow argument
+    argv = sys.argv[1:]
+
+    try:
+        opts, args = getopt.getopt(argv,"hi:m:vi",["--mode="])
+
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+
+    action = False
+    for opt, arg in opts:
+        if opt == '-h':
+            usage()
+            sys.exit()
+
+        if opt == '-v':
+            version()
+            sys.exit()
+
+        if opt in ["-m", "--mode"]:
+            action = arg
+
+    if action:
+        if action not in ('daemon'):
+            usage()
+            sys.exit(2)
+
+    # Catch exit and shutdown gracefully
+    signal.signal(signal.SIGINT, shutdown)
+    signal.signal(signal.SIGTERM, shutdown)
+
     try:
         host = '127.0.0.1'
         port = 8129
@@ -398,12 +441,22 @@ def main():
         os._exit(0)
 
     finally:
-        printLog('Starting Program', 'info')
         Config = dict()
+        Config['dynamic'] = ConfigParser.ConfigParser(allow_no_value=True)
+        Config['dynamic'].add_section('settings')
+        Config['dynamic'].set('settings', 'mode', action)
+        printLog('Starting Program', 'info', True, True, Config)
+
         ConfigPath = os.path.join(os.path.dirname(__file__), 'data')
         loadConfig()
+        sendSlack(
+            '%s started JXMiner' % (Config['machine'].get('settings', 'box_name')),
+            Config['slack'].get('settings', 'token'),
+            Config['slack'].get('settings', 'channel'
+        ))
 
     try:
+
         FanUnits = []
         GPUUnits = []
 
@@ -435,8 +488,7 @@ def main():
                 JobThreads.clean()
                 status = 'success'
 
-            except Exception as e:
-                print e
+            except:
                 status = 'error'
 
             finally:
@@ -462,6 +514,7 @@ def main():
 
     finally:
         shutdown()
+        sendSlack('%s stopped JXMiner' % (Config['machine'].get('settings', 'box_name')))
         printLog('Exiting main program', 'success')
         os._exit(1)
         os.kill(os.getpid(), signal.SIGINT)
