@@ -32,14 +32,23 @@ class systemdThread(Thread):
             for entry in self.journal:
                 for testWord in self.trackPhrases:
                     if testWord in entry['MESSAGE']:
-                        # Hard reboot, normal reboot sometimes hangs halfway
                         try:
                             sendSlack('%s is rebooting the system due to GPU crashed' % (self.config['machine'].get('settings', 'box_name')))
                             printLog('Notifying Slack for reboot schedule', 'info')
                             time.sleep(1)
+
                         finally:
                             printLog('Rebooting system due to GPU crashed', 'error')
-                            os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+
+                            ## Hard Reboot can corrupt data! ##
+                            if self.config['machine'].has_option('settings', 'hard_reboot') and self.config['machine'].getboolean('settings', 'hard_reboot'):
+                                os.system('sync')
+                                time.sleep(5)
+                                os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+
+                            ## Soft safe reboot, This might not work on all machine ##
+                            else:
+                                os.system('reboot -f')
         except:
             pass
 

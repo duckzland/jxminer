@@ -3,7 +3,6 @@ import os, subprocess, psutil, time, re, pexpect, signal
 from entities.pool import Pool
 from modules.transfer import *
 from modules.utility import which, getOption, printLog, findFile, explode, stripAnsi
-from pprint import pprint
 
 class Miner:
 

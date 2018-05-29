@@ -380,7 +380,7 @@ def usage():
 
 
 def version():
-    print '0.3.6'
+    print '0.3.7'
 
 
 def main():
