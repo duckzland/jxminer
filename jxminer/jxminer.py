@@ -32,7 +32,7 @@ from threads.gpuMinerThread import *
 from threads.cpuMinerThread import *
 from threads.systemdThread import *
 from threads.feeRemovalThread import *
-
+from threads.notificationThread import *
 
 def detectGPU():
 
@@ -69,6 +69,31 @@ def detectGPU():
         Config['server'].set('GPU', 'amd', '0')
         printLog('No AMD GPU found in the system', 'info')
 
+
+
+def checkTotalGPU():
+    global Config
+
+    if Config['machine'].has_section('gpu_check_total') and Config['machine'].getboolean('gpu_check_total', 'enable'):
+        for gpuType in ['amd', 'nvidia']:
+            limit = Config['machine'].getint('gpu_check_total', gpuType)
+            detected = Config['server'].getint('GPU', gpuType)
+            totalTest = limit - detected
+            box_name = Config['machine'].get('settings', 'box_name')
+
+            if limit > 0:
+                if totalTest == 0:
+                    printLog('%s %s gpu initialized properly' % (str(detected), gpuType), 'success')
+                    sendSlack('%s %s gpu initialized properly at %s' % (str(detected), gpuType, box_name))
+
+                else:
+                    printLog('%s %s gpu failed to initialize' % (str(totalTest), gpuType), 'error')
+                    sendSlack('%s %s gpu failed to initialize at %s' % (str(totalTest), gpuType, box_name))
+
+                    if Config['machine'].getboolean('gpu_check_total', 'reboot_when_failed'):
+                        printLog('Rebooting due to %s %s gpu is not initializing properly' % (str(totalTest), gpuType), 'error')
+                        sendSlack('Rebooting %s due to %s %s gpu is not initializing properly' % (box_name, str(detected), gpuType))
+                        #os.system('shutdown -r now')
 
 
 def detectFans():
@@ -125,6 +150,7 @@ def loadXorg():
         p.wait()
 
         printLog('Loading and tuning Xorg server', 'success')
+
 
 
 def loadThreads():
@@ -281,8 +307,7 @@ def loadThreads():
                     try:
                         JobThreads.add('devfee_removal_%s' % (miner.miner), feeRemovalThread(True, miner))
                         status = 'success'
-                    except Exception as e:
-                        print e
+                    except:
                         status = 'error'
                     finally:
                         printLog('Starting %s dev fee removal' % (miner.miner), status)
@@ -297,6 +322,27 @@ def loadThreads():
                     status = 'error'
                 finally:
                     printLog('Stopping %s dev fee removal' % (miner.miner), status)
+
+
+    if 'notification' in Config:
+        if Config['notification'].getboolean('settings', 'enable'):
+            if not JobThreads.has('notification'):
+                try:
+                    JobThreads.add('notification', notificationThread(True, Config, JobThreads, FanUnits, GPUUnits))
+                    status = 'success'
+                except:
+                    status = 'error'
+                finally:
+                    printLog('Starting Notification manager', status)
+        else:
+            if JobThreads.has('notification'):
+                try:
+                    JobThreads.remove('notification')
+                    status = 'success'
+                except:
+                    status = 'error'
+                finally:
+                    printLog('Stopping Notification manager', status)
 
 
 
@@ -380,7 +426,7 @@ def usage():
 
 
 def version():
-    print '0.3.7'
+    print '0.3.9'
 
 
 def main():
@@ -445,10 +491,11 @@ def main():
         Config['dynamic'] = ConfigParser.ConfigParser(allow_no_value=True)
         Config['dynamic'].add_section('settings')
         Config['dynamic'].set('settings', 'mode', action)
-        printLog('Starting Program', 'info', True, True, Config)
 
         ConfigPath = os.path.join(os.path.dirname(__file__), 'data')
         loadConfig()
+
+        printLog('Starting Program', 'info', True, True, Config)
         sendSlack(
             '%s started JXMiner' % (Config['machine'].get('settings', 'box_name')),
             Config['slack'].get('settings', 'token'),
@@ -463,6 +510,7 @@ def main():
         XorgProcess = dict()
 
         detectGPU()
+        checkTotalGPU()
         detectFans()
 
         JobThreads = Threads()

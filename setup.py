@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.3.7",
+    version = "0.3.9",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -21,6 +21,7 @@ setup(
             'jxminer/data/config/tuner.ini',
             'jxminer/data/config/systemd.ini',
             'jxminer/data/config/slack.ini',
+            'jxminer/data/config/notification.ini',
         ]),
         ('/etc/jxminer/miners', [
             'jxminer/data/miners/ccminer.ini',
@@ -51,11 +52,12 @@ setup(
         'psutil',
         'pexpect',
         'setuptools',
-        # Fix this!
-        #'systemd',
+        'websocket',
+        'scapy',
+        'systemd',
         #'nfqueue',
-        #'scapy',
-        #'slackclient',
+        'addict',
+        'slackclient',
     ],
     entry_points = {
         'console_scripts' : ['jxminer = jxminer.jxminer:main']

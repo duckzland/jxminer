@@ -11,7 +11,7 @@ class Job(threading.Thread):
 
     def __init__(self, ticks, func, *args):
         threading.Thread.__init__(self)
-        self.ticks = int(ticks)
+        self.setPauseTime(ticks)
         self.function = func
         self.args = args
         self.shutdown_flag = threading.Event()
@@ -23,3 +23,6 @@ class Job(threading.Thread):
             for i in range(self.ticks):
                 if not self.shutdown_flag.is_set():
                     time.sleep(1)
+
+    def setPauseTime(self, tick):
+        self.ticks = int(tick)
