@@ -2,6 +2,8 @@
 
 Python script for managing crypto miner instance under Linux OS.
 
+![Alt text](docs/jxminer.png?raw=true "JXMiner Screenshot")
+
 ## Features
 - Casing Fan speed management, speed is calculated from GPU temperature.
 - GPU Fan speed management for both AMD and Nvidia GPU
@@ -12,7 +14,7 @@ Python script for managing crypto miner instance under Linux OS.
 - Notification system for sending json data to designated server
 - CPU miner using xmr-rig
 - GPU miner supported: ccminer, claymore, xmr-rig(cpu only), ethminer, ewbf, sgminer
-
+- Notification to Slack
 
 
 ## Requirement
@@ -28,7 +30,7 @@ Python script for managing crypto miner instance under Linux OS.
 
 
 
-# Installation (Ubuntu)
+## Installation (Ubuntu)
 1. Install dependencies via apt:
 ```ubuntu
     sudo apt install libsystemd-dev
@@ -47,14 +49,14 @@ Python script for managing crypto miner instance under Linux OS.
     
 
 
-# Configuration
+## Configuration
 The configuration files will be placed under `/etc/jxminer folder`, at the minimum you must change
 the `/etc/jxminer/config/coins.ini` to enter your own wallet address and the `/etc/jxminer/config/machine.ini`
 to set what coin to mine.
 
 
 
-# Monitoring
+## Monitoring
 By default, the `python-jxminer-VERSION.deb` will install the script as a systemd service, then to monitor the script activity
 you can use systemd by invoking:
 
