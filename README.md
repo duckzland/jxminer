@@ -39,7 +39,7 @@ Python script for managing crypto miner instance under Linux OS.
         
 2. Install python dependencies via requirement.txt:
 ```bash
-    sudo pip install -r requirements.txt  
+    sudo pip install -r requirement.txt  
 ```
     
 3. Install the deb
@@ -57,12 +57,42 @@ to set what coin to mine.
 
 
 ## Monitoring
+
+### Via SystemD
 By default, the `python-jxminer-VERSION.deb` will install the script as a systemd service, then to monitor the script activity
 you can use systemd by invoking:
 
 ```bash
     sudo journalctl -u jxminer.service -f
 ```
+
+### Via JXClient
+You can use [ JXClient ](https://github.com/duckzland/jxclient) to monitor and control JXMiner via CLI
+
+Monitoring a miner progress:
+```bash
+    jxclient -a monitor:gpu:0
+```
+
+Monitoring server logs:
+```bash
+    jxclient -a monitor:server
+```
+
+
+### Via JXMonitor
+You can use [ JXMonitor ](https://github.com/duckzland/jxmonitor) to monitor JXMiner via TUI interface
+
+```bash
+    jxmonitor 
+```
+
+Use a single column only for monitoring multiple server instance
+```bash
+    jxmonitor -s
+```
+
+
 
 
 
