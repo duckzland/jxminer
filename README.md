@@ -22,7 +22,7 @@ Python script for managing crypto miner instance under Linux OS.
 - Kernel driver for motherboard fan header control installed
 - Systemd installed
 - Tuning up the server for proper mining machine (eg. large page files for CPU mining)
-- Miner software installed in /usr/local/bin folder
+- Miner software installed in `/usr/local/bin folder`
 - Python installed
 
 
@@ -46,9 +46,17 @@ Python script for managing crypto miner instance under Linux OS.
     
 
 # Configuration
-The configuration files will be placed under /etc/jxminer folder, at the minimum you must change
-the /etc/jxminer/config/coins.ini to enter your own crypto wallet address and the /etc/jxminer/config/machine.ini
+The configuration files will be placed under `/etc/jxminer folder`, at the minimum you must change
+the `/etc/jxminer/config/coins.ini` to enter your own wallet address and the `/etc/jxminer/config/machine.ini`
 to set what coin to mine.
+
+# Monitoring
+By default, the `python-jxminer-VERSION.deb` will install the script as a systemd service, then to monitor the script activity
+you can use systemd by invoking:
+
+```bash
+    sudo journalctl -u jxminer.service -f
+```
 
 
 ## Authors
