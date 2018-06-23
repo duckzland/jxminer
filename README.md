@@ -14,7 +14,8 @@ Python script for managing crypto miner instance under Linux OS.
 - GPU miner supported: ccminer, claymore, xmr-rig(cpu only), ethminer, ewbf, sgminer
 
 
-# Requirement
+
+## Requirement
 - Nvidia driver installed
 - Nvidia-smi installed
 - AMDGPU pro driver with compute mode enabled
@@ -22,7 +23,7 @@ Python script for managing crypto miner instance under Linux OS.
 - Kernel driver for motherboard fan header control installed
 - Systemd installed
 - Tuning up the server for proper mining machine (eg. large page files for CPU mining)
-- Miner software installed in `/usr/local/bin folder`
+- Miner software installed in `/usr/local/bin` folder
 - Python installed
 
 
@@ -30,25 +31,28 @@ Python script for managing crypto miner instance under Linux OS.
 # Installation (Ubuntu)
 1. Install dependencies via apt:
 ```ubuntu
-    apt install libsystemd-dev
-    apt install python-nfqueue
+    sudo apt install libsystemd-dev
+    sudo apt install python-nfqueue
 ```
         
 2. Install python dependencies via requirement.txt:
 ```bash
-    pip install -r requirements.txt  
+    sudo pip install -r requirements.txt  
 ```
     
 3. Install the deb
 ```bash
-    dpkg -i python-jxminer-VERSION.deb
+    sudo dpkg -i python-jxminer-VERSION.deb
 ```
     
+
 
 # Configuration
 The configuration files will be placed under `/etc/jxminer folder`, at the minimum you must change
 the `/etc/jxminer/config/coins.ini` to enter your own wallet address and the `/etc/jxminer/config/machine.ini`
 to set what coin to mine.
+
+
 
 # Monitoring
 By default, the `python-jxminer-VERSION.deb` will install the script as a systemd service, then to monitor the script activity
@@ -59,9 +63,12 @@ you can use systemd by invoking:
 ```
 
 
+
 ## Authors
 
 * **Jason Xie** - *Initial work* - [VicTheme.com](https://victheme.com)
+
+
 
 ## License
 
