@@ -32,14 +32,17 @@ Python script for managing crypto miner instance under Linux OS.
 ```ubuntu
     apt install libsystemd-dev
     apt install python-nfqueue
+```
         
 2. Install python dependencies via requirement.txt:
 ```bash
     pip install -r requirements.txt  
+```
     
 3. Install the deb
 ```bash
     dpkg -i python-jxminer-VERSION.deb
+```
     
 
 # Configuration
