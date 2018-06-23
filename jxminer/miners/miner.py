@@ -239,19 +239,38 @@ class Miner:
 
     def monitor(self):
         p = self.process
+        errorCounter = 0;
+        lastHashRate = False;
         while True:
+
+            # Too many error, probably the miner hang?
+            # or its hashing without shares found
+            if errorCounter > 200:
+                self.reboot()
+
             try:
+                error = False
                 output = p.readline()
                 if not output:
-                    break
+                    errorCounter += 1
 
-                self.record(output.replace('\r\n', '\n').replace('\r', '\n'))
+                else:
+                    self.record(output.replace('\r\n', '\n').replace('\r', '\n'))
+                    if not self.isHealthy(output):
+                        self.reboot()
 
-                if not self.isHealthy(output):
-                    self.reboot()
+                    if ('shares' in self.bufferStatus):
+                        if (self.bufferStatus['shares'] == lastHashRate):
+                            errorCounter += 1
+                            error = True
+                        else:
+                            lastHashRate = self.bufferStatus['shares']
+
+                    if (error == False):
+                        errorCounter = 0
 
             except:
-                break
+                errorCounter += 1
 
 
 

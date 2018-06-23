@@ -46,4 +46,4 @@ class casingFansThread(Thread):
                 except:
                     status = 'error'
                 finally:
-                    printLog('Set fan speed %s:%s%% [%s|%sC]' % (unit.index, newSpeed, c.get('casing', 'strategy'), temperature), status)
+                    printLog('Set PWM:%s fan speed to %s%% [%sC]' % (unit.index.replace('pwm', ''), newSpeed, temperature), status)

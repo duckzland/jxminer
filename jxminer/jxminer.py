@@ -9,7 +9,7 @@
 #
 #####
 
-import os, sys, traceback, ConfigParser, socket, uuid, getopt, signal
+import os, sys, traceback, ConfigParser, socket, uuid, getopt, signal, time
 
 # Registering main root path for sane building!
 sys.path.append(os.path.dirname(__file__))
@@ -92,8 +92,9 @@ def checkTotalGPU():
 
                     if Config['machine'].getboolean('gpu_check_total', 'reboot_when_failed'):
                         printLog('Rebooting due to %s %s gpu is not initializing properly' % (str(totalTest), gpuType), 'error')
-                        sendSlack('Rebooting %s due to %s %s gpu is not initializing properly' % (box_name, str(detected), gpuType))
-                        #os.system('shutdown -r now')
+                        sendSlack('Rebooting %s due to %s %s gpu is not initializing properly' % (box_name, str(totalTest), gpuType))
+                        time.sleep(30)
+                        os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
 
 
 def detectFans():
@@ -161,189 +162,62 @@ def loadThreads():
     if GPUUnits:
         if 'fans' in Config:
             if FanUnits:
-                if Config['fans'].getboolean('casing', 'enable'):
-                    if not JobThreads.has('casing_fans'):
-                        try:
-                            JobThreads.add('casing_fans', casingFansThread(True, Config, FanUnits, GPUUnits))
-                            status = 'success'
-                        except:
-                            status = 'error'
-                        finally:
-                            printLog('Starting Casing fan manager started', status)
+                JobThreads.process(
+                    'casing_fans',
+                    casingFansThread(False, Config, FanUnits, GPUUnits),
+                    Config['fans'].getboolean('casing', 'enable'))
 
-                else:
-                    if JobThreads.has('casing_fans'):
-                        try:
-                            JobThreads.remove('casing_fans')
-                            status='success'
-                        except:
-                            status = 'error'
-                        finally:
-                            printLog('Stopping Casing fan manager', status)
-
-
-            if Config['fans'].getboolean('gpu', 'enable'):
-                if not JobThreads.has('gpu_fans'):
-                    try:
-                        JobThreads.add('gpu_fans', gpuFansThread(True, Config, GPUUnits))
-                        status = 'success'
-                    except:
-                        status = 'error'
-                    finally:
-                        printLog('Starting GPU fan manager', status)
-
-            else:
-                if JobThreads.has('gpu_fans'):
-                    try:
-                        JobThreads.remove('gpu_fans')
-                        status = 'success'
-                    except:
-                        status = 'error'
-                    finally:
-                        printLog('GPU fan manager stopped', 'success')
-
+                JobThreads.process(
+                    'gpu_fans',
+                    gpuFansThread(False, Config, GPUUnits),
+                    Config['fans'].getboolean('gpu', 'enable'))
 
         if 'tuner' in Config:
-            if Config['tuner'].getboolean('settings', 'enable'):
-                if not JobThreads.has('gpu_tuner'):
-                    try:
-                        JobThreads.add('gpu_tuner', gpuTunerThread(True, Config, GPUUnits))
-                        status = 'success'
-                    except:
-                        status = 'error'
-                    finally:
-                        printLog('Starting GPU tuner manager', status)
+            JobThreads.process(
+                'gpu_tuner',
+                gpuTunerThread(False, Config, GPUUnits),
+                Config['tuner'].getboolean('settings', 'enable'))
 
-            else:
-                if JobThreads.has('gpu_tuner'):
-                    try:
-                        JobThreads.remove('gpu_tuner')
-                        status = 'success'
-                    except:
-                        status = 'error'
-                    finally:
-                        printLog('Stopping GPU tuner manager', status)
-
+        if 'notification' in Config:
+            JobThreads.process(
+                'notification',
+                notificationThread(False, Config, JobThreads, FanUnits, GPUUnits),
+                Config['notification'].getboolean('settings', 'enable'))
 
 
     if 'machine' in Config:
-        StartingMiners = []
-        StoppingMiners = []
+        JobThreads.process(
+            'gpu_miner',
+            gpuMinerThread(False, Config),
+            Config['machine'].getboolean('gpu_miner', 'enable'))
 
-        if Config['machine'].getboolean('gpu_miner', 'enable'):
-            if not JobThreads.has('gpu_miner'):
-                try:
-                    minerManager = gpuMinerThread(True, Config)
-                    JobThreads.add('gpu_miner', minerManager)
-                    for miner in minerManager.miners:
-                        StartingMiners.append(miner)
-                    status = 'success'
+        JobThreads.process(
+            'cpu_miner',
+            cpuMinerThread(False, Config),
+            Config['machine'].getboolean('cpu_miner', 'enable'))
 
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Starting GPU miner manager', status)
-
-            if not JobThreads.has('systemd'):
-                try:
-                    JobThreads.add('systemd', systemdThread(True, Config))
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Starting Systemd watcher', status)
-
-        else:
-            if JobThreads.has('gpu_miner'):
-                try:
-                    minerManager = JobThreads.get('gpu_miner')
-                    for miner in minerManager.miners:
-                        if miner.hasDevFee():
-                            StoppingMiners.append(miner)
-
-                    JobThreads.remove('gpu_miner')
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Stopping GPU miner manager', status)
-
-            if JobThreads.has('systemd'):
-                try:
-                    JobThreads.remove('systemd')
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Stopping Systemd watcher', status)
-
-        if Config['machine'].getboolean('cpu_miner', 'enable'):
-            if not JobThreads.has('cpu_miner'):
-                try:
-                    miner = cpuMinerThread(True, Config)
-                    JobThreads.add('cpu_miner', miner)
-                    StartingMiners.append(miner.miner)
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Starting CPU miner manager', status)
-        else:
-            if JobThreads.has('cpu_miner'):
-                try:
-                    miner = JobThreads.get('cpu_miner')
-                    StoppingMiners.append(miner.miner)
-                    JobThreads.remove('cpu_miner')
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Stopping CPU miner manager', status)
-
-
-        if StartingMiners:
-            for miner in StartingMiners:
+        if JobThreads.has('gpu_miner'):
+            minerManager = JobThreads.get('gpu_miner')
+            for miner in minerManager.miners:
                 if miner.hasDevFee():
-                    try:
-                        JobThreads.add('devfee_removal_%s' % (miner.miner), feeRemovalThread(True, miner))
-                        status = 'success'
-                    except:
-                        status = 'error'
-                    finally:
-                        printLog('Starting %s dev fee removal' % (miner.miner), status)
-
-        if StoppingMiners:
-            for miner in StoppingMiners:
-                try:
-                    if miner.hasDevFee():
-                        JobThreads.remove('devfee_removal_%s' % (miner.miner))
-                        status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Stopping %s dev fee removal' % (miner.miner), status)
-
-
-    if 'notification' in Config:
-        if Config['notification'].getboolean('settings', 'enable'):
-            if not JobThreads.has('notification'):
-                try:
-                    JobThreads.add('notification', notificationThread(True, Config, JobThreads, FanUnits, GPUUnits))
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Starting Notification manager', status)
+                    JobThreads.add('gpu_miner_devfee_removal_%s' % (miner.miner), feeRemovalThread(False, miner))
         else:
-            if JobThreads.has('notification'):
-                try:
-                    JobThreads.remove('notification')
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    printLog('Stopping Notification manager', status)
+            JobThreads.remove('gpu_miner_devfee_removal_')
 
+        if JobThreads.has('cpu_miner'):
+            minerManager = JobThreads.get('cpu_miner')
+            if minerManager.miner.hasDevFee():
+                JobThreads.add('cpu_miner_devfee_removal_%s' % (miner.miner), feeRemovalThread(False, miner))
+        else:
+            JobThreads.remove('cpu_miner_devfee_removal_')
+
+    if 'systemd' in Config:
+        JobThreads.process(
+            'systemd',
+            systemdThread(False, Config),
+            Config['systemd'].getboolean('settings', 'enable'))
+
+    JobThreads.start()
 
 
 
@@ -371,8 +245,10 @@ def loadConfig():
                     conf.read(path)
                     Config[name] = conf
                     status = 'success'
+
                 except:
                     status = 'error'
+
                 finally:
                     printLog('Loading %s configuration from %s' % (name, path), status)
 
@@ -426,7 +302,7 @@ def usage():
 
 
 def version():
-    print '0.3.9'
+    print '0.3.12'
 
 
 def main():
@@ -499,8 +375,7 @@ def main():
         sendSlack(
             '%s started JXMiner' % (Config['machine'].get('settings', 'box_name')),
             Config['slack'].get('settings', 'token'),
-            Config['slack'].get('settings', 'channel'
-        ))
+            Config['slack'].get('settings', 'channel'))
 
     try:
 
@@ -518,35 +393,26 @@ def main():
 
         # Program ready, listen to socket now
         try:
-            socketlimit = 5
-            Socket.listen(socketlimit)
+            socket_limit = 5
+            Socket.listen(socket_limit)
             status = 'success'
 
         except:
             status = 'error'
 
         finally:
-            printLog("Listening to socket with maximum %s connection" % (socketlimit), status)
+            printLog("Listening to socket with maximum %s connection" % (socket_limit), status)
 
         # Keep the main thread running, otherwise signals are ignored.
         while True:
 
-            # Clean Zombies
-            try:
-                JobThreads.clean()
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                printLog("Cleaning zombie threads", status)
+            JobThreads.clean()
 
             connection, address = Socket.accept()
             if connection and address:
                 ip, port = str(address[0]), str(address[1])
                 try:
-                    JobThreads.add('actions-' + str(uuid.uuid4()), socketActionThread(True, Config, connection, processAction, JobThreads, FanUnits, GPUUnits))
+                    JobThreads.add('connection_' + str(uuid.uuid4()), socketActionThread(True, Config, connection, processAction, JobThreads, FanUnits, GPUUnits))
                     status = 'success'
 
                 except:
@@ -569,6 +435,8 @@ def main():
 
 
 def shutdown():
+    JobThreads.destroy()
+
     try:
         Socket.shutdown(socket.SHUT_WR)
         Socket.close()
@@ -579,17 +447,6 @@ def shutdown():
 
     finally:
         printLog("Closing open sockets", status)
-
-    try:
-        JobThreads.destroy()
-        JobThreads.clean()
-        status = 'success'
-
-    except:
-        status = 'error'
-
-    finally:
-        printLog("Closing open threads", status)
 
     if 'process' in XorgProcess:
         try:

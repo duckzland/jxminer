@@ -15,6 +15,7 @@ class CCMiner(Miner):
         self.checkKeywords = [
             "watchdog: BUG: soft lockup",
             "Cuda error",
+            "illegal memory",
         ]
 
         allowed = explode(self.miner_config.get('default', 'algo'))

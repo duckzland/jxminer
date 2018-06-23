@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.3.9",
+    version = "0.3.12",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -54,7 +54,7 @@ setup(
         'setuptools',
         'websocket',
         'scapy',
-        'systemd',
+        'systemd-python',
         #'nfqueue',
         'addict',
         'slackclient',

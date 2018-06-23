@@ -1,3 +1,5 @@
+from modules.utility import printLog, sendSlack
+
 class Threads:
 
     """
@@ -22,28 +24,55 @@ class Threads:
         return Threads.threads[name]
 
 
+    def process(self, name, thread, action):
+        if action is True:
+            self.add(name, thread)
+        else:
+            self.remove(name)
+
+
     def add(self, name, thread):
-        if name not in Threads.threads:
-            thread.register(name, self)
-            Threads.threads[name] = thread
+        if not self.has(name):
+            try:
+                thread.register(name, self)
+                Threads.threads[name] = thread
+                status = 'success'
+
+            except:
+                status = 'error'
+
+            finally:
+                printLog('Starting %s manager' % (name.replace('_', ' ')) , status)
+
 
 
     def remove(self, name):
-        for threadName, thread in Threads.threads.items():
-            if name in threadName:
+        if self.has(name):
+            thread = self.get(name)
+            try:
                 thread.destroy()
-                del Threads.threads[threadName]
+                del Threads.threads[name]
+                status='success'
+
+            except:
+                status = 'error'
+
+            finally:
+                printLog('Stopping %s manager' % (name.replace('_', ' ')) , status)
 
 
     def clean(self):
         for threadName, thread in Threads.threads.items():
             if not thread.active:
-                thread.destroy()
-                del Threads.threads[threadName]
+                self.remove(threadName)
 
 
     def destroy(self):
         for threadName, thread in Threads.threads.items():
-            thread.destroy()
-            del Threads.threads[threadName]
+            self.remove(threadName)
+
+
+    def start(self):
+        for threadName, thread in Threads.threads.items():
+            thread.start()
 
