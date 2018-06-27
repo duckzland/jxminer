@@ -21,7 +21,7 @@ class Claymore(Miner):
             raise ValueError('Invalid secondary coin algo for claymore dual miner')
 
         if self.algo in ('equihash', 'cryptonight', 'crytonight7') and self.config['server'].getint('GPU', 'amd') == 0:
-            raise ValueError('No AMD card found, Claymore miner for % does\'t only support AMD card' % (self.algo))
+            raise ValueError('No AMD card found, Claymore miner for % only support AMD card' % (self.algo))
 
         if self.coin not in 'eth':
             self.option = (

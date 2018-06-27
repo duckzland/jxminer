@@ -20,10 +20,19 @@ class gpuFansThread(Thread):
 
     def update(self, runner):
         c = self.config['fans']
+        coin = self.config['machine'].get('gpu_miner', 'coin')
+
         for unit in self.GPUUnits:
             unit.detect()
-            if int(unit.temperature) != int(c.get('gpu', 'target')):
-                newSpeed = calculateStep(c.get('gpu', 'min'), c.get('gpu', 'max'), unit.fanSpeed, c.get('gpu', 'target'), unit.temperature, c.get('gpu', 'up'), c.get('gpu', 'down'))
+
+            type = 'gpu'
+            for section in [ 'gpu|%s|%s' % (unit.index, coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (coin) ] :
+                if c.has_section(section) :
+                    type = section
+                    break
+
+            if int(unit.temperature) != int(c.get(type, 'target')):
+                newSpeed = calculateStep(c.get(type, 'min'), c.get(type, 'max'), unit.fanSpeed, c.get(type, 'target'), unit.temperature, c.get(type, 'up'), c.get(type, 'down'))
                 if int(newSpeed) != int(unit.fanSpeed):
                     try:
                         unit.tune(fan = newSpeed)

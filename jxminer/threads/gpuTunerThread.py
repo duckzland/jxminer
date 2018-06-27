@@ -27,9 +27,17 @@ class gpuTunerThread(Thread):
             self.tune(unit, 'power', mode)
 
 
-    def tune(self, unit, type, mode):
+    def tune(self, unit, key, mode):
         c = self.config['tuner']
-        levelKey = type + 'Level'
+        coin = self.config['machine'].get('gpu_miner', 'coin')
+        levelKey = key + 'Level'
+
+        type = key
+        for section in [ '%s|%s|%s' % (key, unit.index, coin), '%s|%s' % (key, unit.index), '%s|%s' % (key, coin) ] :
+            if c.has_section(section) :
+                type = section
+                break
+
         if unit.supportLevels and getattr(unit, levelKey) and c.getboolean(type, 'enable'):
             level = getattr(unit, levelKey)
 

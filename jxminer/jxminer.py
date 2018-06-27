@@ -3,9 +3,8 @@
 # Main Miner Controller
 # Todo :
 # 1. Implements Curve method for setting up GPU Fans and Casing Fans against temperature
-# 2. Different configuration for each of the GPU that falls back into global one
-# 3. Split Config into separate Class
-# 4. Split PrintLog into separate Class
+# 2. Split Config into separate Class
+# 3. Split PrintLog into separate Class
 #
 #####
 
@@ -302,7 +301,7 @@ def usage():
 
 
 def version():
-    print '0.3.12'
+    print '0.3.13'
 
 
 def main():
@@ -435,7 +434,6 @@ def main():
 
 
 def shutdown():
-    JobThreads.destroy()
 
     try:
         Socket.shutdown(socket.SHUT_WR)
@@ -466,6 +464,16 @@ def shutdown():
 
         finally:
             printLog("Stopping Xorg server", status)
+
+    try:
+        JobThreads.destroy()
+        status = 'success'
+
+    except:
+        status = 'error'
+
+    finally:
+        printLog("Stopping running threads", status)
 
 
 if __name__ == "__main__":

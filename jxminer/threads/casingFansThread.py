@@ -24,6 +24,8 @@ class casingFansThread(Thread):
         newSpeed = None
 
         c = self.config['fans']
+        coin = self.config['machine'].get('gpu_miner', 'coin')
+
         if c.get('casing', 'strategy') == 'highest':
             temperature = getHighestTemps(self.GPUUnits)
 
@@ -33,11 +35,17 @@ class casingFansThread(Thread):
         for unit in self.FanUnits:
             unit.detect()
 
+            type = 'casing'
+            for section in [ 'casing|%s|%s' % (unit.index, coin), 'casing|%s' % (unit.index), 'casing|%s' % (coin) ] :
+                if c.has_section(section) :
+                    type = section
+                    break
+
             if int(unit.pwm) != 1:
                 unit.disablePWM()
 
             if not newSpeed:
-                newSpeed = calculateStep(c.get('casing', 'min'), c.get('casing', 'max'), unit.speed, c.get('casing', 'target'), temperature, c.get('casing', 'up'), c.get('casing', 'down'))
+                newSpeed = calculateStep(c.get(type, 'min'), c.get(type, 'max'), unit.speed, c.get(type, 'target'), temperature, c.get(type, 'up'), c.get(type, 'down'))
 
             if int(newSpeed) != int(unit.speed):
                 try:
