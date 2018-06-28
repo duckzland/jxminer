@@ -46,9 +46,13 @@ class Threads:
 
 
 
-    def remove(self, name):
-        if self.has(name):
-            thread = self.get(name)
+    def remove(self, name, thread = False):
+
+        if not thread:
+            if self.has(name):
+                thread = self.get(name)
+
+        if thread:
             try:
                 thread.destroy()
                 del Threads.threads[name]
@@ -64,12 +68,12 @@ class Threads:
     def clean(self):
         for threadName, thread in Threads.threads.items():
             if not thread.active:
-                self.remove(threadName)
+                self.remove(threadName, thread)
 
 
     def destroy(self):
         for threadName, thread in Threads.threads.items():
-            self.remove(threadName)
+            self.remove(threadName, thread)
 
 
     def start(self):

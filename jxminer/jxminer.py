@@ -301,7 +301,7 @@ def usage():
 
 
 def version():
-    print '0.3.13'
+    print '0.3.14'
 
 
 def main():

@@ -46,7 +46,7 @@ class gpuTunerThread(Thread):
                 newLevel = c.get(type,  'max')
                 if int(newLevel) != int(level):
                     try:
-                        unit.tune(**{ type : c.get(type,  'max')})
+                        unit.tune(**{ key : c.get(type,  'max')})
                         status = 'success'
                     except:
                         status = 'error'
@@ -59,7 +59,7 @@ class gpuTunerThread(Thread):
                     newLevel = calculateStep(c.get(type, 'min'), c.get(type, 'max'), getattr(unit, levelKey), unit.temperature, c.get(type, 'target'), c.get(type, 'up'), c.get(type, 'down'))
                     if int(newLevel) != int(level):
                         try:
-                            unit.tune(**{ type : newLevel})
+                            unit.tune(**{ key : newLevel})
                             status = 'success'
                         except:
                             status = 'error'
@@ -69,10 +69,10 @@ class gpuTunerThread(Thread):
 
                 if mode == 'time':
                     hour = time.strftime('%H')
-                    newLevel = c.get(type,  'min') if (hour < c.get('settings', 'minHour') or hour >= c.get('settings', 'maxHour')) else c.get(type,  'max')
+                    newLevel = c.get(type, 'min') if (hour < c.get('settings', 'minHour') or hour >= c.get('settings', 'maxHour')) else c.get(type,  'max')
                     if int(newLevel) != int(level):
                         try:
-                            unit.tune(**{ type : newLevel})
+                            unit.tune(**{ key : newLevel})
                             status = 'success'
                         except:
                             status = 'error'
