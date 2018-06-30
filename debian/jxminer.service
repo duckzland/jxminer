@@ -9,6 +9,8 @@ ExecStart=/usr/local/bin/jxminer -m daemon
 Restart=on-failure
 User=root
 Group=root
+KillMode=mixed
+TimeoutStopSec=5
 
 [Install]
 WantedBy=multi-user.target

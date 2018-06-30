@@ -22,6 +22,7 @@ from entities.nvidia import Nvidia
 from entities.amd import AMD
 from entities.fan import Fan
 from entities.threads import *
+from entities.shutdown import Shutdown
 
 from threads.casingFansThread import *
 from threads.gpuFansThread import *
@@ -301,7 +302,7 @@ def usage():
 
 
 def version():
-    print '0.3.14'
+    print '0.3.15'
 
 
 def main():
@@ -346,9 +347,7 @@ def main():
             usage()
             sys.exit(2)
 
-    # Catch exit and shutdown gracefully
-    signal.signal(signal.SIGINT, shutdown)
-    signal.signal(signal.SIGTERM, shutdown)
+    Process = Shutdown()
 
     try:
         host = '127.0.0.1'
@@ -404,21 +403,26 @@ def main():
 
         # Keep the main thread running, otherwise signals are ignored.
         while True:
+            if Process.isShuttingDown:
+                raise Exception('Shutting Down')
+                break
 
-            JobThreads.clean()
+            else:
 
-            connection, address = Socket.accept()
-            if connection and address:
-                ip, port = str(address[0]), str(address[1])
-                try:
-                    JobThreads.add('connection_' + str(uuid.uuid4()), socketActionThread(True, Config, connection, processAction, JobThreads, FanUnits, GPUUnits))
-                    status = 'success'
+                JobThreads.clean()
+                connection, address = Socket.accept()
+                if connection and address:
 
-                except:
-                    status = 'error'
+                    ip, port = str(address[0]), str(address[1])
+                    try:
+                        JobThreads.add('connection_' + str(uuid.uuid4()), socketActionThread(True, Config, connection, processAction, JobThreads, FanUnits, GPUUnits))
+                        status = 'success'
 
-                finally:
-                    printLog("Connecting with %s:%s" % (ip, port), status)
+                    except:
+                        status = 'error'
+
+                    finally:
+                        printLog("Connecting with %s:%s" % (ip, port), status)
 
             time.sleep(1)
 
@@ -446,6 +450,16 @@ def shutdown():
     finally:
         printLog("Closing open sockets", status)
 
+    try:
+        JobThreads.destroy()
+        status = 'success'
+
+    except:
+        status = 'error'
+
+    finally:
+        printLog("Stopping running threads", status)
+
     if 'process' in XorgProcess:
         try:
             XorgProcess['process'].kill()
@@ -465,15 +479,6 @@ def shutdown():
         finally:
             printLog("Stopping Xorg server", status)
 
-    try:
-        JobThreads.destroy()
-        status = 'success'
-
-    except:
-        status = 'error'
-
-    finally:
-        printLog("Stopping running threads", status)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,16 @@
-class ServiceExit(Exception):
+import signal
+
+class Shutdown():
 
     """
-    Custom exception which is used to trigger the clean exit
-    of all running threads and the main program.
+    Catching shutdown signal
     """
 
-    pass
+    isShuttingDown = False
+
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.stop)
+        signal.signal(signal.SIGTERM, self.stop)
+
+    def stop(self, signum, frame):
+        self.isShuttingDown = True

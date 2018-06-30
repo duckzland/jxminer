@@ -70,7 +70,6 @@ class Threads:
             if not thread.active:
                 self.remove(threadName, thread)
 
-
     def destroy(self):
         for threadName, thread in Threads.threads.items():
             self.remove(threadName, thread)
