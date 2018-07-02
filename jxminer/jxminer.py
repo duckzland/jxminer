@@ -302,7 +302,7 @@ def usage():
 
 
 def version():
-    print '0.3.15'
+    print '0.3.16'
 
 
 def main():
@@ -379,12 +379,13 @@ def main():
 
         FanUnits = []
         GPUUnits = []
-
         XorgProcess = dict()
 
         detectGPU()
         checkTotalGPU()
         detectFans()
+
+        loadXorg()
 
         JobThreads = Threads()
         loadThreads()
@@ -403,6 +404,10 @@ def main():
 
         # Keep the main thread running, otherwise signals are ignored.
         while True:
+
+            # Continuously check if Xorg available for Nvidia GPU
+            loadXorg()
+
             if Process.isShuttingDown:
                 raise Exception('Shutting Down')
                 break
