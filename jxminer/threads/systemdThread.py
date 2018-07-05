@@ -1,6 +1,5 @@
 import os, time, json
 from systemd import journal
-from slackclient import SlackClient
 
 from entities.job import *
 from thread import Thread

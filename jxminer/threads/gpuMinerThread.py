@@ -8,6 +8,8 @@ from miners.ethminer import *
 from miners.ewbf import *
 from miners.miner import *
 from miners.sgminer import *
+from miners.amdxmrig import *
+from miners.nvidiaxmrig import *
 
 from modules.utility import printLog
 
@@ -24,6 +26,7 @@ class gpuMinerThread(Thread):
         self.init()
         if start:
             self.start()
+
 
 
     def init(self):
@@ -109,6 +112,11 @@ class gpuMinerThread(Thread):
             elif miner in 'sgminer':
                 self.miners.append(SGMiner(self.config))
 
+            elif miner in 'amdxmrig':
+                self.miners.append(AmdXMRig(self.config))
+
+            elif miner in 'nvidiaxmrig':
+                self.miners.append(NvidiaXMRig(self.config))
+
             else:
                 printLog('Refused to load invalid miner program type', 'error')
-

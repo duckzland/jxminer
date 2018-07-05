@@ -47,7 +47,6 @@ class Threads:
 
 
     def remove(self, name, thread = False):
-
         if not thread:
             if self.has(name):
                 thread = self.get(name)

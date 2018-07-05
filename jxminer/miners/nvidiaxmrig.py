@@ -3,15 +3,15 @@ import re
 from miners.miner import Miner
 from modules.utility import stripAnsi
 
-class CpuXMRig(Miner):
+class NvidiaXMRig(Miner):
 
     """
-        Single mining instance for invoking the xmrig cpu miner
+        Single mining instance for invoking the xmrig nvidia miner
     """
 
     def init(self):
-        self.miner = 'cpuxmrig'
-        self.setupMiner('cpu')
+        self.miner = 'nvidiaxmrig'
+        self.setupMiner('gpu')
         self.checkKeywords = []
 
         allowed = [
@@ -29,7 +29,13 @@ class CpuXMRig(Miner):
         ]
 
         if self.algo not in allowed:
-            raise ValueError('Invalid coin algo for xmrig cpu miner')
+            raise ValueError('Invalid coin algo for xmrig nvidia miner')
+
+        if self.config['server'].getint('GPU', 'nvidia') == 0:
+            raise ValueError('No AMD card found, Nvidia XMRig miner only support Nvidia card')
+
+        self.setupEnvironment()
+
 
 
     def parse(self, text):
