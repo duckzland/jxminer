@@ -43,6 +43,8 @@ class Nvidia(GPU):
         self.coreLevel = 100
         self.memoryLevel = 100
         self.powerLevel = 100
+        self.fanLevel = False
+
         self.wattUsage = 0
         self.supportLevels = True
         self.detect()
@@ -51,15 +53,19 @@ class Nvidia(GPU):
     def detect(self):
         self.temperature = nvmlDeviceGetTemperature(self.handle, 0)
         self.fanSpeed = nvmlDeviceGetFanSpeed(self.handle)
+        if self.fanLevel == False:
+            self.fanLevel = self.fanSpeed
+
         self.wattUsage = '%.2f' % (float(nvmlDeviceGetPowerUsage(self.handle)) / 1000)
 
 
     def tune(self, **kwargs):
         if kwargs.get('fan', False):
             speed = self.round(kwargs.get('fan'))
-            if speed != self.fanSpeed:
+            if speed != self.fanLevel:
                 self.setFanSpeed(speed)
                 self.fanSpeed = speed
+                self.fanLevel = speed
 
         if kwargs.get('core', False):
             level = self.round(kwargs.get('core'))

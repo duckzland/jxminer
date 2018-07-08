@@ -2,9 +2,8 @@
 #####
 # Main Miner Controller
 # Todo :
-# 1. Implements Curve method for setting up GPU Fans and Casing Fans against temperature
-# 2. Split Config into separate Class
-# 3. Split PrintLog into separate Class
+# 1. Split Config into separate Class
+# 2. Split PrintLog into separate Class
 #
 #####
 
@@ -302,7 +301,7 @@ def usage():
 
 
 def version():
-    print '0.3.17'
+    print '0.3.18'
 
 
 def main():

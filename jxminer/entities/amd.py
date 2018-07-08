@@ -13,8 +13,8 @@ class AMD(GPU):
           flash the GPU bios to fine tune the core frequency and its watt usage
 
         Memory Level Tuning
-        - This is not supported by this class, one need to flash the bios to change memory frequency and its
-          watt usage
+        - AMDGPUPRO Linux kernel driver is limited to selecting memory level per level only. It might not be useful
+          to change memory level since mining operation usually will need to have the highest memory clocks available
 
         Power Level Tuning
         - This is not supported yet by this class
@@ -31,6 +31,7 @@ class AMD(GPU):
         self.coreLevel = 100
         self.memoryLevel = False
         self.powerLevel = False
+        self.fanLevel = False
         self.fanSpeed = 0
         self.wattUsage = 0
         self.supportLevels = True
@@ -43,9 +44,11 @@ class AMD(GPU):
 
         try:
             self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
+            self.maxMemoryLevel = getMaxLevel(self.machineIndex, 'mem')
 
         except:
             self.maxCoreLevel = False
+            self.maxMemoryLevel = False
             self.supportLevels = False
 
         self.detect()
@@ -58,6 +61,9 @@ class AMD(GPU):
             self.fanSpeed = self.round(int(getSysfsValue(self.machineIndex, 'fan')) / 2.55)
         except:
             self.fanSpeed = 0
+
+        if self.fanLevel == False:
+            self.fanLevel = self.fanSpeed
 
         if self.supportLevels:
             self.wattUsage = getSysfsValue(self.machineIndex, 'power')
@@ -75,6 +81,7 @@ class AMD(GPU):
             if speed != self.fanSpeed:
                 setFanSpeed([self.machineIndex], self.round(speed * 2.55))
                 self.fanSpeed = speed
+                self.fanLevel = speed
 
         if self.supportLevels:
             if kwargs.get('core', False):
@@ -82,6 +89,12 @@ class AMD(GPU):
                 if self.coreLevel != level:
                     self.coreLevel = level
                     self.setCoreLevel(level)
+
+            if kwargs.get('memory', False):
+                level = self.round(kwargs.get('memory'))
+                if self.memoryLevel != level:
+                    self.memoryLevel = level
+                    self.setMemoryLevel(level)
 
 
     def setCoreLevel(self, level):
@@ -93,3 +106,15 @@ class AMD(GPU):
                 levels = [ levels ]
 
             setClocks([self.machineIndex], 'gpu', levels)
+
+
+
+    def setMemoryLevel(self, level):
+        if self.supportLevels:
+            levels = self.round((level * self.maxCoreLevel) / 100)
+            if not self.strictPowerMode:
+                levels = range(0, levels)
+            else:
+                levels = [ levels ]
+
+            setClocks([self.machineIndex], 'mem', levels)

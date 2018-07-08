@@ -21,7 +21,7 @@ class Miner:
         self.bufferStatus['hashrate'] = 0
         self.bufferStatus['shares'] = 0
         self.hasFee = False
-        #self.watchdog = WatchDog(Config)
+        self.watchdog = WatchDog(Config)
         self.init()
 
 

@@ -2,8 +2,14 @@
 from thread import Thread
 from entities.job import *
 from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog
+from modules.curve import Curve
 
 class casingFansThread(Thread):
+
+    """
+        This is a class for managing threads for tuning casing fans
+    """
+
 
     def __init__(self, start, Config, FanUnits, GPUUnits):
         self.active = False
@@ -11,6 +17,7 @@ class casingFansThread(Thread):
         self.config = Config
         self.GPUUnits = GPUUnits
         self.FanUnits = FanUnits
+        self.coin = self.config['machine'].get('gpu_miner', 'coin')
         self.init()
         if start:
             self.start()
@@ -21,10 +28,7 @@ class casingFansThread(Thread):
 
     def update(self, runner):
         temperature = None
-        newSpeed = None
-
         c = self.config['fans']
-        coin = self.config['machine'].get('gpu_miner', 'coin')
 
         if c.get('casing', 'strategy') == 'highest':
             temperature = getHighestTemps(self.GPUUnits)
@@ -34,9 +38,10 @@ class casingFansThread(Thread):
 
         for unit in self.FanUnits:
             unit.detect()
-
             type = 'casing'
-            for section in [ 'casing|%s|%s' % (unit.index, coin), 'casing|%s' % (unit.index), 'casing|%s' % (coin) ] :
+            newSpeed = False
+
+            for section in [ 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin) ] :
                 if c.has_section(section) :
                     type = section
                     break
@@ -44,13 +49,23 @@ class casingFansThread(Thread):
             if int(unit.pwm) != 1:
                 unit.disablePWM()
 
-            if not newSpeed:
-                newSpeed = calculateStep(c.get(type, 'min'), c.get(type, 'max'), unit.speed, c.get(type, 'target'), temperature, c.get(type, 'up'), c.get(type, 'down'))
+            if int(temperature) != int(c.get(type, 'target')):
 
-            if int(newSpeed) != int(unit.speed):
+                # try curve if available
+                curve = c.get(type, 'curve', False)
+                if curve:
+                    cp = Curve(curve)
+                    newSpeed = cp.evaluate(int(temperature))
+
+                # fallback to steps
+                if not newSpeed:
+                    newSpeed = calculateStep(c.get(type, 'min'), c.get(type, 'max'), unit.speed, c.get(type, 'target'), temperature, c.get(type, 'up'), c.get(type, 'down'))
+
+
+            if newSpeed and int(newSpeed) != int(unit.level):
                 try:
-                    unit.setSpeed(newSpeed)
                     status = 'success'
+                    unit.setSpeed(newSpeed)
                 except:
                     status = 'error'
                 finally:

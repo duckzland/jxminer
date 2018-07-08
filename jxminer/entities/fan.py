@@ -16,12 +16,16 @@ class Fan:
             raise AssertionError("Invalid Paths")
 
         self.index = index
+        self.level = False
         self.sysfs = SysFS(valuePaths)
         self.detect()
 
 
     def detect(self):
         self.speed = self.round(int(self.sysfs.get('speed', [self.index])) / 2.55)
+        if self.level == False:
+            self.level = self.speed
+
         self.pwm = self.round(self.sysfs.get('pwm', [self.index]))
         return self
 
@@ -32,10 +36,11 @@ class Fan:
 
     def setSpeed(self, speed):
 
-        speed = self.round(speed)
-        if speed == self.speed:
+        if speed == self.level:
             return
 
+        self.level = speed
+        speed = self.round(speed)
         self.sysfs.set('speed', self.round(speed * 2.55), [self.index])
         self.speed = speed
 
