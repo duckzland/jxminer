@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.3.18",
+    version = "0.3.19",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -28,6 +28,8 @@ setup(
             'jxminer/data/miners/claymore.ini',
             'jxminer/data/miners/cpuminer.ini',
             'jxminer/data/miners/cpuxmrig.ini',
+            'jxminer/data/miners/nvidiaxmrig.ini',
+            'jxminer/data/miners/amdxmrig.ini',
             'jxminer/data/miners/ethminer.ini',
             'jxminer/data/miners/ewbf.ini',
             'jxminer/data/miners/nheqminer.ini',
@@ -45,6 +47,7 @@ setup(
             'jxminer/data/pools/intensecoin.ini',
             'jxminer/data/pools/minepool.ini',
             'jxminer/data/pools/ravenminer.ini',
+            'jxminer/data/pools/pickaxe.ini',
         ]),
 
     ],
