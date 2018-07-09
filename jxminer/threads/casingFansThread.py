@@ -38,18 +38,18 @@ class casingFansThread(Thread):
 
         for unit in self.FanUnits:
             unit.detect()
-            type = 'casing'
+            type = False
             newSpeed = False
 
-            for section in [ 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin) ] :
+            for section in [ 'casing', 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin) ] :
                 if c.has_section(section) :
                     type = section
                     break
 
-            if int(unit.pwm) != 1:
+            if type and int(unit.pwm) != 1:
                 unit.disablePWM()
 
-            if int(temperature) != int(c.get(type, 'target')):
+            if type and int(temperature) != int(c.get(type, 'target')):
 
                 # try curve if available
                 curve = c.get(type, 'curve', False)

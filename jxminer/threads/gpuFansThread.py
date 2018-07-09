@@ -31,15 +31,15 @@ class gpuFansThread(Thread):
 
         for unit in self.GPUUnits:
             unit.detect()
-            type = 'gpu'
+            type = False
             newSpeed = False
 
-            for section in [ 'gpu|%s|%s' % (unit.index, self.coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (self.coin) ] :
+            for section in [ 'gpu', 'gpu|%s|%s' % (unit.index, self.coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (self.coin) ] :
                 if c.has_section(section) :
                     type = section
                     break
 
-            if int(unit.temperature) != int(c.get(type, 'target')):
+            if type and int(unit.temperature) != int(c.get(type, 'target')):
 
                 # try curve if available
                 curve = c.get(type, 'curve', False)

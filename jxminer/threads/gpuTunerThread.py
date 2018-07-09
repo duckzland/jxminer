@@ -40,14 +40,14 @@ class gpuTunerThread(Thread):
     def tune(self, unit, key, mode):
         c = self.config['tuner']
         levelKey = key + 'Level'
-        type = key
+        type = False
 
-        for section in [ '%s|%s|%s' % (key, unit.index, self.coin), '%s|%s' % (key, unit.index), '%s|%s' % (key, self.coin) ] :
+        for section in [ '%s' % (key), '%s|%s|%s' % (key, unit.index, self.coin), '%s|%s' % (key, unit.index), '%s|%s' % (key, self.coin) ] :
             if c.has_section(section) :
                 type = section
                 break
 
-        if unit.supportLevels and getattr(unit, levelKey) and c.getboolean(type, 'enable'):
+        if type and unit.supportLevels and getattr(unit, levelKey) and c.getboolean(type, 'enable'):
             unit.detect()
             level = getattr(unit, levelKey)
             modeText = mode
