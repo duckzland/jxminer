@@ -11,7 +11,8 @@ class Claymore(Miner):
         self.miner = 'claymore'
         self.setupMiner('gpu')
         self.checkKeywords = [
-            "need to restart miner"
+            "need to restart miner",
+            "hangs in OpenCL call, exit"
         ]
 
         if self.algo not in ('ethash', 'equihash', 'cryptonight7', 'cryptonight'):
