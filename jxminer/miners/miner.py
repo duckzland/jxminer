@@ -98,21 +98,6 @@ class Miner:
                         .replace('{second_wallet}', self.second_wallet)
                 )
 
-            if self.miner_config.has_section('remote') and self.miner_config.getboolean('remote', 'enable'):
-                try:
-                    self.remote_ip = self.miner_config.get('remote', 'ip')
-                except:
-                    self.remote_ip = '127.0.0.1'
-                self.remote_port = self.miner_config.get('remote', 'port')
-                self.remote_token = self.miner_config.get('remote', 'token')
-                self.option = (
-                    self.option
-                        .replace('{remote_ip}', self.remote_ip)
-                        .replace('{remote_port}', self.remote_port)
-                        .replace('{remote_token}', self.remote_token)
-                        .replace('{worker}', self.worker)
-                )
-
 
 
     def setupEnvironment(self):
@@ -129,17 +114,27 @@ class Miner:
 
     def start(self):
         self.status = 'stop'
-        command = findFile(os.path.join('/usr', 'local'), self.executable)
-        #command = [findFile(os.path.join('/usr', 'local'), self.executable)]
+        path = os.path.join('/usr', 'local')
+        if ('machine' in self.config
+            and self.config['machine'].has_section('settings')
+            and self.config['machine'].has_option('settings', 'executable_location')):
+                path = self.config['machine'].get('settings', 'executable_location')
+
+        command = findFile(path, self.executable)
+
         args = []
         for arg in explode(self.option, ' #-# '):
             for single in explode(arg, ' '):
                 args.append(single)
 
         try:
-            self.process = pexpect.spawn(command, args, env=self.environment, timeout=None, cwd=os.path.dirname(command))
-            #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-            #self.process = subprocess.Popen(command, env=self.environment, bufsize=-1, stdin=subprocess.PIPE)
+            self.process = pexpect.spawn(
+                command,
+                self.setupArgs(args),
+                env=self.environment,
+                timeout=None,
+                cwd=os.path.dirname(command)
+            )
             self.proc = psutil.Process(self.process.pid)
             self.monitor()
             self.status = 'ready'
@@ -308,3 +303,7 @@ class Miner:
 
     def hasDevFee(self):
         return self.hasFee
+
+
+    def setupArgs(self, args):
+        return args
