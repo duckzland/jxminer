@@ -1,4 +1,4 @@
-import re
+import re, os
 from miners.miner import Miner
 
 class Claymore(Miner):
@@ -12,7 +12,8 @@ class Claymore(Miner):
         self.setupMiner('gpu')
         self.checkKeywords = [
             "need to restart miner",
-            "hangs in OpenCL call, exit"
+            "hangs in OpenCL call, exit",
+            "Quit, please wait..."
         ]
 
         if self.algo not in ('ethash', 'equihash', 'cryptonight7', 'cryptonight'):
@@ -21,7 +22,7 @@ class Claymore(Miner):
         if hasattr(self, 'second_algo') and self.second_algo not in ('blake2s'):
             raise ValueError('Invalid secondary coin algo for claymore dual miner')
 
-        if self.algo in ('equihash', 'cryptonight', 'crytonight7') and self.config['server'].getint('GPU', 'amd') == 0:
+        if self.algo in ('equihash', 'cryptonight', 'cryptonight7') and self.config['server'].getint('GPU', 'amd') == 0:
             raise ValueError('No AMD card found, Claymore miner for % only support AMD card' % (self.algo))
 
         if self.coin not in 'eth':
@@ -77,3 +78,13 @@ class Claymore(Miner):
                 return payload_text
 
         return False
+
+
+    def reboot(self):
+        # AMD need full server reboot when hang
+        if self.config['server'].getint('GPU', 'amd') > 0:
+            # If we are here probably server crashed badly, invoke hard reboot
+            os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+        else:
+            self.stop()
+            self.start()

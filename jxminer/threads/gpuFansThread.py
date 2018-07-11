@@ -34,7 +34,7 @@ class gpuFansThread(Thread):
             type = False
             newSpeed = False
 
-            for section in [ 'gpu', 'gpu|%s|%s' % (unit.index, self.coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (self.coin) ] :
+            for section in [ 'gpu|%s|%s' % (unit.index, self.coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (self.coin), 'gpu' ] :
                 if c.has_section(section) :
                     type = section
                     break

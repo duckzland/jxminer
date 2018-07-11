@@ -32,6 +32,7 @@ from threads.cpuMinerThread import *
 from threads.systemdThread import *
 from threads.feeRemovalThread import *
 from threads.notificationThread import *
+from threads.watchdogThread import *
 
 def detectGPU():
 
@@ -200,15 +201,25 @@ def loadThreads():
             for miner in minerManager.miners:
                 if miner.hasDevFee():
                     JobThreads.add('gpu_miner_devfee_removal_%s' % (miner.miner), feeRemovalThread(False, miner))
+
+                if 'watchdog' in Config and Config['watchdog'].getboolean('settings', 'enable'):
+                    JobThreads.add('gpu_miner_watchdog_%s' % (miner.miner), watchdogThread(False, Config, miner))
+
         else:
             JobThreads.remove('gpu_miner_devfee_removal_')
+            JobThreads.remove('gpu_miner_watchdog_')
 
         if JobThreads.has('cpu_miner'):
             minerManager = JobThreads.get('cpu_miner')
             if minerManager.miner.hasDevFee():
-                JobThreads.add('cpu_miner_devfee_removal_%s' % (miner.miner), feeRemovalThread(False, miner))
+                JobThreads.add('cpu_miner_devfee_removal_%s' % (minerManager.miner.miner), feeRemovalThread(False, minerManager.miner))
+
+            if 'watchdog' in Config and Config['watchdog'].getboolean('settings', 'enable'):
+                JobThreads.add('cpu_miner_watchdog', watchdogThread(False, Config, minerManager.miner))
+
         else:
             JobThreads.remove('cpu_miner_devfee_removal_')
+            JobThreads.remove('cpu_miner_watchdog')
 
     if 'systemd' in Config:
         JobThreads.process(
@@ -301,7 +312,7 @@ def usage():
 
 
 def version():
-    print '0.3.19'
+    print '0.3.20'
 
 
 def main():

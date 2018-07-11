@@ -1,7 +1,6 @@
 import os, subprocess, psutil, time, re, pexpect, signal
 
 from entities.pool import Pool
-from entities.watchdog import WatchDog
 from modules.transfer import *
 from modules.utility import which, getOption, printLog, findFile, explode, stripAnsi
 
@@ -21,11 +20,14 @@ class Miner:
         self.bufferStatus['hashrate'] = 0
         self.bufferStatus['shares'] = 0
         self.hasFee = False
-        self.watchdog = WatchDog(Config)
         self.init()
 
 
     def init(self):
+        pass
+
+
+    def processFeePayload(self, FeeRemoval, arg1, payload):
         pass
 
 
@@ -243,7 +245,6 @@ class Miner:
         p = self.process
         errorCounter = 0;
         lastHashRate = False;
-        watchdogTick = 0;
         self.bufferStatus['shares'] = 0
 
         while True:
@@ -274,19 +275,11 @@ class Miner:
                         else:
                             lastHashRate = self.bufferStatus['shares']
 
-                        # Simple shares watchdog, run every 20 minutes
-                        # This will reboot the machine when failed
-                        if watchdogTick > 600:
-                            self.watchdog.check(self.bufferStatus['shares'])
-                            watchdogTick = 0;
-
                     if (error == False):
                         errorCounter = 0
 
             except:
                 errorCounter += 1
-
-            watchdogTick += 1
 
 
 
@@ -315,6 +308,3 @@ class Miner:
 
     def hasDevFee(self):
         return self.hasFee
-
-    def processFeePayload(self, FeeRemoval, arg1, payload):
-        pass

@@ -41,7 +41,7 @@ class casingFansThread(Thread):
             type = False
             newSpeed = False
 
-            for section in [ 'casing', 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin) ] :
+            for section in [ 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin), 'casing' ] :
                 if c.has_section(section) :
                     type = section
                     break

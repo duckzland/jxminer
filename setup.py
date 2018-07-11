@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.3.19",
+    version = "0.3.20",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -22,6 +22,7 @@ setup(
             'jxminer/data/config/systemd.ini',
             'jxminer/data/config/slack.ini',
             'jxminer/data/config/notification.ini',
+            'jxminer/data/config/watchdog.ini',
         ]),
         ('/etc/jxminer/miners', [
             'jxminer/data/miners/ccminer.ini',
