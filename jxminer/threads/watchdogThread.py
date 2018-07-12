@@ -12,10 +12,11 @@ class watchdogThread(Thread):
         self.config = Config
         self.miner = Miner
         self.isRebooting = False
-        self.minHashRate = Config['watchdog'].get('settings', 'minimum_hashrate')
+        self.minHashRate = self.miner.wd_hashrate
         self.lastShareCount = False
         self.delay = 60
         self.softRebootCount = 0
+        self.loopCount = 0
         self.maxRetry = Config['watchdog'].getint('settings', 'maximum_retry')
         self.boxName = Config['machine'].get('settings', 'box_name')
         self.tick = Config['watchdog'].getint('settings', 'tick')
@@ -32,7 +33,7 @@ class watchdogThread(Thread):
             self.isRebooting = True
             self.rebootMachine('no share found after %s seconds' % (self.tick))
 
-        elif newHashRate and self.minHashRate != False and int(newHashRate) < int(self.minHashRate):
+        elif newHashRate and self.minHashRate != False and float(newHashRate) < float(self.minHashRate):
             self.isRebooting = True
             self.rebootMachine('low hash rate after %s seconds' % (self.tick))
 
@@ -44,32 +45,43 @@ class watchdogThread(Thread):
 
 
     def rebootMachine(self, message):
-        printLog('Watchdog scheduled to reboot the system in %s seconds due to %s' % (self.delay, message), 'info')
         countdown = 0
+        printLog('Watchdog scheduled to reboot the system in %s seconds due to %s' % (self.delay, message), 'info')
+        rebootMessage = 'Watchdog %s is %s rebooting the system due to %s'
         while True:
             countdown += 1
-            if countdown == self.delay and self.isRebooting:
-                if self.softRebootCount == self.maxRetry:
-                    sendSlack('Watchdog %s is hard rebooting the system due to %s' % (self.boxName, message))
+            if countdown == self.delay:
+                if self.softRebootCount == self.maxRetry and self.isRebooting:
+                    printLog(rebootMessage % (self.boxName, 'hard', message), 'info')
+                    sendSlack(rebootMessage % (self.boxName, 'hard', message))
                     time.sleep(3)
                     os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+
                 else:
                     self.softRebootCount += 1
-                    sendSlack('Watchdog %s is soft rebooting the miner due to %s' % (self.boxName, message))
+                    printLog(rebootMessage % (self.boxName, 'soft', message), 'info')
+                    sendSlack(rebootMessage % (self.boxName, 'soft', message))
                     self.miner.reboot()
+
+                self.isRebooting = False
+                break
+
 
 
 
     def update(self, runner):
-        status = self.miner.getStatus()
-        shareCount = False
-        hashRate = False
-        if status and 'shares' in status:
-            shareCount = status['shares']
+        if self.loopCount > 0:
+            status = self.miner.getStatus()
+            shareCount = False
+            hashRate = False
+            if status and 'shares' in status:
+                shareCount = status['shares']
 
-        if status and 'hashrate' in status:
-            non_decimal = re.compile(r'[^\d.]+')
-            hashRate = non_decimal.sub('', status['hashrate'])
+            if status and 'hashrate' in status:
+                non_decimal = re.compile(r'[^\d.]+')
+                hashRate = non_decimal.sub('', str(status['hashrate']))
 
-        self.check(shareCount, hashRate)
+            self.check(shareCount, hashRate)
+
+        self.loopCount = 1
 

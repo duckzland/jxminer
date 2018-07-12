@@ -441,8 +441,7 @@ def main():
 
             time.sleep(1)
 
-    except Exception as e:
-        print e
+    except:
         printLog("Preparing to close program", 'info')
 
     finally:

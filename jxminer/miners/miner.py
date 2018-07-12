@@ -50,6 +50,10 @@ class Miner:
         self.email = self.machine.get('settings', 'email')
         self.environment = os.environ.copy()
 
+        self.wd_hashrate = self.machine.get(name, 'minimum_hashrate', False)
+        if self.wd_hashrate == 'false':
+            self.wd_hashrate = False
+
         if 'gpu' in type and self.machine.getboolean(name, 'dual'):
             self.second_coin = self.machine.get(name, 'second_coin')
             self.second_algo = self.coins.get(self.second_coin, 'algo')
@@ -113,80 +117,82 @@ class Miner:
 
 
     def start(self):
-        self.status = 'stop'
-        path = os.path.join('/usr', 'local')
-        if ('machine' in self.config
-            and self.config['machine'].has_section('settings')
-            and self.config['machine'].has_option('settings', 'executable_location')):
-                path = self.config['machine'].get('settings', 'executable_location')
+        if self.status == 'stop':
+            path = os.path.join('/usr', 'local')
+            if ('machine' in self.config
+                and self.config['machine'].has_section('settings')
+                and self.config['machine'].has_option('settings', 'executable_location')):
+                    path = self.config['machine'].get('settings', 'executable_location')
 
-        command = findFile(path, self.executable)
+            command = findFile(path, self.executable)
 
-        args = []
-        for arg in explode(self.option, ' #-# '):
-            for single in explode(arg, ' '):
-                args.append(single)
+            args = []
+            for arg in explode(self.option, ' #-# '):
+                for single in explode(arg, ' '):
+                    args.append(single)
 
-        try:
-            self.process = pexpect.spawn(
-                command,
-                self.setupArgs(args),
-                env=self.environment,
-                timeout=None,
-                cwd=os.path.dirname(command)
-            )
-            self.proc = psutil.Process(self.process.pid)
+            try:
+                self.process = pexpect.spawn(
+                    command,
+                    self.setupArgs(args),
+                    env=self.environment,
+                    timeout=None,
+                    cwd=os.path.dirname(command)
+                )
+                self.proc = psutil.Process(self.process.pid)
+                self.status = 'ready'
+                status = 'success'
+
+            except:
+                status = 'error'
+
+            finally:
+                printLog('Initializing %s miner instance' % (self.miner), status)
+
+        if self.status == 'ready':
             self.monitor()
-            self.status = 'ready'
-            status = 'success'
-
-        except:
-            status = 'error'
-
-        finally:
-            printLog('Initializing %s miner instance' % (self.miner), status)
 
 
 
     def stop(self):
-        self.status = 'stop'
-        try:
-            self.process.terminate(True)
-            self.process.wait()
+        if self.status == 'ready':
+            try:
+                self.process.terminate(True)
+                self.process.wait()
 
-            # Maybe redundant
-            if psutil.pid_exists(self.process.pid):
-                self.proc.terminate()
-                self.proc.wait()
+                # Maybe redundant
+                if psutil.pid_exists(self.process.pid):
+                    self.proc.terminate()
+                    self.proc.wait()
 
-            # This is most probably redundant
-            if psutil.pid_exists(self.process.pid):
-                os.kill(self.process.pid, signal.SIGINT)
+                # This is most probably redundant
+                if psutil.pid_exists(self.process.pid):
+                    os.kill(self.process.pid, signal.SIGINT)
 
-            status = 'success'
+                self.status = 'stop'
+                status = 'success'
 
-        except:
-            status = 'error'
+            except:
+                status = 'error'
 
-        finally:
-            printLog('Stopping %s miner instance' % (self.miner), status)
+            finally:
+                printLog('Stopping %s miner instance' % (self.miner), status)
 
 
 
     def check(self):
-        if 'ready' in self.status:
+        if self.status == 'ready':
             if hasattr(self, 'proc'):
                 try:
-                    psutil.pid_exists(self.process.pid)
-                    self.proc.status() != psutil.STATUS_ZOMBIE
-                    alive = True
+                    if psutil.pid_exists(self.process.pid) and self.proc.status() != psutil.STATUS_ZOMBIE:
+                        alive = True
+
                 except:
                     alive = False
+
                 finally:
                     if not alive:
-                        self.stop()
-                        time.sleep(5)
-                        self.start()
+                        self.reboot()
                         self.max_retries = self.max_retries - 1
                         printLog('Restarting crashed %s miner instance' % (self.miner), 'info')
                     else:
@@ -200,8 +206,8 @@ class Miner:
             return 'running'
 
 
+
     def shutdown(self):
-        self.status = 'stop'
         try:
             self.stop()
             status = 'success'
@@ -214,6 +220,7 @@ class Miner:
 
     def reboot(self):
         self.stop()
+        time.sleep(5)
         self.start()
 
 
@@ -238,48 +245,32 @@ class Miner:
 
     def monitor(self):
         p = self.process
-        errorCounter = 0;
-        lastHashRate = False;
-        self.bufferStatus['shares'] = 0
-
         while True:
-
-            # Too many error, probably the miner hang?
-            # or its hashing without shares found
-            if errorCounter > 200:
-                self.reboot()
-
             try:
                 error = False
                 output = p.readline()
-                if not output:
-                    errorCounter += 1
-
-                else:
+                if output:
                     self.record(output.replace('\r\n', '\n').replace('\r', '\n'))
+
                     if not self.isHealthy(output):
-                        self.reboot()
-
-                    if ('shares' in self.bufferStatus):
-
-                        # Soft checking for miner error
-                        # this will just restart the miner
-                        if (self.bufferStatus['shares'] == lastHashRate):
-                            errorCounter += 1
-                            error = True
-                        else:
-                            lastHashRate = self.bufferStatus['shares']
-
-                    if (error == False):
-                        errorCounter = 0
+                        self.minerSickAction()
+                        break
 
             except:
-                errorCounter += 1
+                pass
+
+            time.sleep(1)
+
+
+
+    def minerSickAction(self):
+        self.reboot()
 
 
 
     def parse(self, text):
         return text
+
 
 
     def display(self, lines = 'all'):
@@ -297,8 +288,10 @@ class Miner:
         return result
 
 
+
     def getStatus(self):
         return self.bufferStatus
+
 
 
     def hasDevFee(self):
