@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.3.20",
+    version = "0.3.21",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -38,9 +38,7 @@ setup(
         ]),
         ('/etc/jxminer/pools', [
             'jxminer/data/pools/2miners.ini',
-            'jxminer/data/pools/cryptopool.ini',
             'jxminer/data/pools/flypool.ini',
-            'jxminer/data/pools/krawww-miner.ini',
             'jxminer/data/pools/nanopool.ini',
             'jxminer/data/pools/turtlepool.ini',
             'jxminer/data/pools/coinmine.ini',

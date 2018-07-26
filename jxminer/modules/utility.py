@@ -6,6 +6,7 @@ MainBuffers = []
 Config = None
 SlackToken = None
 SlackChannel = None
+SlackEnable = None
 
 def printLog(text, status = 'info', buffer = True, console = True, config = False):
     global MainBuffers
@@ -64,9 +65,10 @@ def printLog(text, status = 'info', buffer = True, console = True, config = Fals
 
 
 
-def sendSlack(message, token = None, channel = None):
+def sendSlack(message, token = None, channel = None, send = None):
     global SlackChannel
     global SlackToken
+    global SlackEnable
 
     if token:
         SlackToken = token
@@ -74,7 +76,10 @@ def sendSlack(message, token = None, channel = None):
     if channel:
         SlackChannel = channel
 
-    if message:
+    if send:
+        SlackEnable = send
+
+    if message and SlackEnable:
         try:
             s = SlackClient(SlackToken)
             output = "[{0}] {1}".format(datetime.now().strftime('%m-%d %H:%M'), message)

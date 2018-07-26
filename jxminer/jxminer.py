@@ -277,6 +277,8 @@ def processAction(action):
     if action == 'server:update':
         try:
             loadConfig()
+            detectGPU()
+            detectFans()
             loadThreads()
             status = 'success'
 
@@ -312,7 +314,7 @@ def usage():
 
 
 def version():
-    print '0.3.20'
+    print '0.3.21'
 
 
 def main():
@@ -383,7 +385,9 @@ def main():
         sendSlack(
             '%s started JXMiner' % (Config['machine'].get('settings', 'box_name')),
             Config['slack'].get('settings', 'token'),
-            Config['slack'].get('settings', 'channel'))
+            Config['slack'].get('settings', 'channel'),
+            Config['slack'].get('settings', 'enable')
+            )
 
     try:
 
