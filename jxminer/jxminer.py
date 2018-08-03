@@ -57,13 +57,14 @@ class Main():
         try:
             devices = listDevices()
             self.config.data.server.GPU.amd = int(len(devices))
-            if not devices:
+            if len(devices) < 1:
                 raise
 
-            for i in devices:
-                index = i.replace('card', '')
-                printLog('Initialized AMD GPU %s' % (index), 'success')
-                self.cards.append(AMD(index))
+            else:
+                for i in devices:
+                    index = i.replace('card', '')
+                    printLog('Initialized AMD GPU %s' % (index), 'success')
+                    self.cards.append(AMD(index))
 
         except:
             self.config.data.server.GPU.amd = 0
@@ -79,7 +80,7 @@ class Main():
                 detected = self.config.data.server.GPU[gpuType]
                 totalTest = int(limit) - int(detected)
                 box_name = self.config.data.machine.settings.box_name
-                if limit > 0:
+                if int(limit) > 0:
                     if totalTest == 0:
                         printLog('%s %s gpu initialized properly' % (str(detected), gpuType), 'success')
                         sendSlack('%s %s gpu initialized properly at %s' % (str(detected), gpuType, box_name))
