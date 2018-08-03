@@ -17,9 +17,9 @@ class watchdogThread(Thread):
         self.delay = 60
         self.softRebootCount = 0
         self.loopCount = 0
-        self.maxRetry = Config['watchdog'].getint('settings', 'maximum_retry')
-        self.boxName = Config['machine'].get('settings', 'box_name')
-        self.tick = Config['watchdog'].getint('settings', 'tick')
+        self.maxRetry = Config.data.watchdog.settings.maximum_retry
+        self.boxName = Config.data.watchdog.settings.box_name
+        self.tick = Config.data.watchdog.settings.tick
         self.init()
         if start:
             self.start()

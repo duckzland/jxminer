@@ -16,23 +16,23 @@ class ETHMiner(Miner):
             "Error CUDA mining:"
         ]
 
-        amdGPU = self.config['server'].getint('GPU', 'amd')
-        nvidiaGPU = self.config['server'].getint('GPU', 'nvidia')
+        amdGPU = self.config.data.server.GPU.amd
+        nvidiaGPU = self.config.data.server.GPU.nvidia
 
         if self.algo not in ('ethash'):
             raise ValueError('Invalid coin algo for ethminer miner')
 
         # Nvidia only - use Cuda
         if amdGPU == 0 and nvidiaGPU > 0:
-            self.option = self.option + ' #-# ' + self.miner_config.get('default', 'nvidia')
+            self.option = self.option + ' #-# ' + self.miner_config.default.nvidia
 
         # AMD only - use OpenCL
         elif amdGPU > 0 and nvidiaGPU == 0:
-            self.option = self.option + ' #-# ' + self.miner_config.get('default', 'amd')
+            self.option = self.option + ' #-# ' + self.miner_config.default.amd
 
         # Both mode - use both Cuda and OpenCL
         elif amdGPU > 0 and nvidiaGPU > 0:
-            self.option = self.option + ' #-# ' + self.miner_config.get('default', 'mixed')
+            self.option = self.option + ' #-# ' + self.miner_config.default.mixed
 
         self.setupEnvironment()
 

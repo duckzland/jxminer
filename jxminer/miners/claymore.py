@@ -22,7 +22,7 @@ class Claymore(Miner):
         if hasattr(self, 'second_algo') and self.second_algo not in ('blake2s'):
             raise ValueError('Invalid secondary coin algo for claymore dual miner')
 
-        if self.algo in ('equihash', 'cryptonight', 'cryptonight7') and self.config['server'].getint('GPU', 'amd') == 0:
+        if self.algo in ('equihash', 'cryptonight', 'cryptonight7') and self.config.data.server.GPU.amd == 0:
             raise ValueError('No AMD card found, Claymore miner for % only support AMD card' % (self.algo))
 
         if self.coin not in 'eth':
@@ -82,7 +82,7 @@ class Claymore(Miner):
 
     def reboot(self):
         # AMD need full server reboot when hang
-        if self.config['server'].getint('GPU', 'amd') > 0:
+        if self.config.data.server.GPU.amd > 0:
             # If we are here probably server crashed badly, invoke hard reboot
             os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
         else:

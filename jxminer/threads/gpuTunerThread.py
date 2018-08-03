@@ -15,15 +15,15 @@ class gpuTunerThread(Thread):
         self.job = False
         self.config = Config
         self.GPUUnits = GPUUnits
-        self.mode = self.config['tuner'].get('settings', 'mode')
-        self.coin = self.config['machine'].get('gpu_miner', 'coin')
+        self.mode = self.config.data.tuner.settings.mode
+        self.coin = self.config.data.machine.gpu_miner.coin
         self.init()
 
         if start:
             self.start()
             
     def init(self):
-        self.job = Job(self.config['tuner'].getint('settings', 'tick'), self.update)
+        self.job = Job(self.config.data.tuner.settings.tick, self.update)
 
 
     def update(self, runner):
@@ -38,31 +38,33 @@ class gpuTunerThread(Thread):
 
 
     def tune(self, unit, key, mode):
-        c = self.config['tuner']
+        c = self.config.data.tuner
         levelKey = key + 'Level'
         type = False
 
         for section in [ '%s|%s|%s' % (key, unit.index, self.coin), '%s|%s' % (key, unit.index), '%s|%s' % (key, self.coin), key ] :
-            if c.has_section(section) :
+            if c[section] :
                 type = section
                 break
 
-        if type and unit.supportLevels and getattr(unit, levelKey) and c.getboolean(type, 'enable'):
+        tuner = c[type]
+
+        if type and unit.supportLevels and getattr(unit, levelKey) and tuner.enable:
             unit.detect()
             level = getattr(unit, levelKey)
             modeText = mode
             newLevel = False
 
             if mode == 'static':
-                newLevel = c.get(type, 'max')
+                newLevel = tuner.max
 
-            elif int(unit.temperature) != int(c.get(type, 'target')):
+            elif int(unit.temperature) != int(tuner.target):
                 if mode == 'dynamic':
-                    newLevel = calculateStep(c.get(type, 'min'), c.get(type, 'max'), getattr(unit, levelKey), unit.temperature, c.get(type, 'target'), c.get(type, 'up'), c.get(type, 'down'))
+                    newLevel = calculateStep(tuner.min, tuner.max, getattr(unit, levelKey), unit.temperature, tuner.target, tuner.up, tuner.down)
 
                 if mode == 'time':
                     hour = time.strftime('%H')
-                    newLevel = c.get(type, 'min') if (hour < c.get('settings', 'minHour') or hour >= c.get('settings', 'maxHour')) else c.get(type,  'max')
+                    newLevel = tuner.min if (hour < c.settings.minHour or hour >= c.settings.maxHour) else tuner.max
                     modeText = 'time based'
 
             if newLevel and int(newLevel) != int(level):

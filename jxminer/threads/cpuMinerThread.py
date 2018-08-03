@@ -53,14 +53,16 @@ class cpuMinerThread(Thread):
 
 
     def selectMiner(self):
-        coin = self.config['machine'].get('cpu_miner', 'coin')
-        algo = self.config['coins'].get(coin, 'algo')
-        miner = self.config['miner'].get(algo, 'cpu')
+        coin = self.config.data.machine.cpu_miner.coin
+        algo = self.config.data.coins[coin].algo
+        miner = self.config.data.miner[algo].cpu
 
         if miner in 'cpuminer':
+            self.config.load('miners', 'cpuminer.ini', True)
             self.miner = CpuMiner(self.config)
 
         elif miner in 'cpuxmrig':
+            self.config.load('miners', 'cpuxmrig.ini', True)
             self.miner = CpuXMRig(self.config)
 
         else:

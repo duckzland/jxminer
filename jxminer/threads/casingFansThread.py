@@ -17,23 +17,23 @@ class casingFansThread(Thread):
         self.config = Config
         self.GPUUnits = GPUUnits
         self.FanUnits = FanUnits
-        self.coin = self.config['machine'].get('gpu_miner', 'coin')
+        self.coin = self.config.data.machine.gpu_miner.coin
         self.init()
         if start:
             self.start()
 
     def init(self):
-        self.job = Job(self.config['fans'].getint('casing', 'tick'), self.update)
+        self.job = Job(self.config.data.fans.casing.tick, self.update)
 
 
     def update(self, runner):
         temperature = None
-        c = self.config['fans']
+        c = self.config.data.fans
 
-        if c.get('casing', 'strategy') == 'highest':
+        if c.casing.strategy == 'highest':
             temperature = getHighestTemps(self.GPUUnits)
 
-        elif c.get('casing', 'strategy') == 'average':
+        elif c.casing.strategy == 'average':
             temperature = getAverageTemps(self.GPUUnits)
 
         for unit in self.FanUnits:
@@ -42,24 +42,26 @@ class casingFansThread(Thread):
             newSpeed = False
 
             for section in [ 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin), 'casing' ] :
-                if c.has_section(section) :
+                if c[section] :
                     type = section
                     break
+
+            fan = c[type]
 
             if type and int(unit.pwm) != 1:
                 unit.disablePWM()
 
-            if type and int(temperature) != int(c.get(type, 'target')):
+            if type and int(temperature) != int(fan.target):
 
                 # try curve if available
-                curve = c.get(type, 'curve', False)
+                curve = fan.curve
                 if curve:
                     cp = Curve(curve)
                     newSpeed = cp.evaluate(int(temperature))
 
                 # fallback to steps
                 if not newSpeed:
-                    newSpeed = calculateStep(c.get(type, 'min'), c.get(type, 'max'), unit.speed, c.get(type, 'target'), temperature, c.get(type, 'up'), c.get(type, 'down'))
+                    newSpeed = calculateStep(fan.min, fan.max, unit.speed, fan.target, temperature, fan.up, fan.down)
 
 
             if newSpeed and int(newSpeed) != int(unit.level):

@@ -12,13 +12,13 @@ class notificationThread(Thread):
         self.active = False
         self.job = False
         self.config = Config
-        self.settings = self.config['notification']
+        self.settings = self.config.data.notification.settings
         self.threads = JobThreads
         self.fans = FanUnits
         self.gpu = GPUUnits
-        self.tick = self.settings.get('settings', 'tick')
-        self.url = self.settings.get('server', 'url')
-        self.port = self.settings.get('server', 'port')
+        self.tick = self.settings.tick
+        self.url = self.settings.server.url
+        self.port = self.settings.server.port
 
         self.init()
         if start:
@@ -35,25 +35,25 @@ class notificationThread(Thread):
 
         ## General Machine information ##
         try:
-            machine = self.config['machine']
-            status.general.boxname = machine.get('settings', 'box_name')
+            machine = self.config.data.machine
+            status.general.boxname = machine.settings.box_name
         except:
             pass
 
         try:
-            if machine.getboolean('gpu_miner', 'enable'):
-                status.general.active.gpu.coin = machine.get('gpu_miner', 'coin')
-                status.general.active.gpu.pool = machine.get('gpu_miner', 'pool')
-                if machine.getboolean('gpu_miner', 'dual'):
-                    status.general.active.gpu.second_coin = machine.get('gpu_miner', 'second_coin')
-                    status.general.active.gpu.second_pool = machine.get('gpu_miner', 'second_pool')
+            if machine.gpu_miner.enable:
+                status.general.active.gpu.coin = machine.gpu_miner.coin
+                status.general.active.gpu.pool = machine.gpu_miner.pool
+                if machine.gpu_miner.dual:
+                    status.general.active.gpu.second_coin = machine.gpu_miner.second_coin
+                    status.general.active.gpu.second_pool = machine.gpu_miner.second_pool
         except:
             pass
 
         try:
-            if machine.getboolean('cpu_miner', 'enable'):
-                status.general.active.cpu.coin = machine.get('cpu_miner', 'coin')
-                status.general.active.cpu.pool = machine.get('cpu_miner', 'pool')
+            if machine.cpu_miner.enable:
+                status.general.active.cpu.coin = machine.cpu_miner.coin
+                status.general.active.cpu.pool = machine.cpu_miner.pool
         except:
             pass
 

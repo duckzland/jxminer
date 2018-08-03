@@ -16,18 +16,18 @@ class gpuFansThread(Thread):
         self.job = False
         self.config = Config
         self.GPUUnits = GPUUnits
-        self.coin = self.config['machine'].get('gpu_miner', 'coin')
+        self.coin = self.config.data.machine.gpu_miner.coin
 
         self.init()
         if start:
             self.start()
 
     def init(self):
-        self.job = Job(self.config['fans'].getint('gpu', 'tick'), self.update)
+        self.job = Job(self.config.data.fans.gpu.tick, self.update)
 
 
     def update(self, runner):
-        c = self.config['fans']
+        c = self.config.data.fans
 
         for unit in self.GPUUnits:
             unit.detect()
@@ -35,21 +35,23 @@ class gpuFansThread(Thread):
             newSpeed = False
 
             for section in [ 'gpu|%s|%s' % (unit.index, self.coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (self.coin), 'gpu' ] :
-                if c.has_section(section) :
+                if c[section] :
                     type = section
                     break
 
-            if type and int(unit.temperature) != int(c.get(type, 'target')):
+            fan = c[type]
+
+            if type and int(unit.temperature) != int(fan.target):
 
                 # try curve if available
-                curve = c.get(type, 'curve', False)
+                curve = fan.curve
                 if curve:
                     cp = Curve(curve)
                     newSpeed = cp.evaluate(int(unit.temperature))
 
                 # fallback to steps
                 if not newSpeed:
-                    newSpeed = calculateStep(c.get(type, 'min'), c.get(type, 'max'), unit.fanSpeed, c.get(type, 'target'), unit.temperature, c.get(type, 'up'), c.get(type, 'down'))
+                    newSpeed = calculateStep(fan.min, fan.max, unit.fanSpeed, fan.target, unit.temperature, fan.up, fan.down)
 
 
             if newSpeed and int(newSpeed) != int(unit.fanLevel):

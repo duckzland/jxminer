@@ -23,7 +23,7 @@ class CpuMiner(Miner):
         self.setupMiner('cpu')
         self.checkKeywords = []
 
-        allowed = explode(self.miner_config.get('default', 'algo'))
+        allowed = explode(self.miner_config.default.algo)
         miner_algo = self.algo
         if 'cryptonight' in miner_algo:
             miner_algo = 'cryptonight'

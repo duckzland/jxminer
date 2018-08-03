@@ -31,7 +31,7 @@ class AmdXMRig(Miner):
         if self.algo not in allowed:
             raise ValueError('Invalid coin algo for xmrig amd miner')
 
-        if self.config['server'].getint('GPU', 'amd') == 0:
+        if self.config.server.GPU.amd == 0:
             raise ValueError('No AMD card found, AMD XMRig miner only support AMD card')
 
         self.setupEnvironment()

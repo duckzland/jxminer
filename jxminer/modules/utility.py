@@ -16,8 +16,8 @@ def printLog(text, status = 'info', buffer = True, console = True, config = Fals
         Config = config
 
     mode = False
-    if Config and 'dynamic' in Config:
-        mode = Config['dynamic'].get('settings', 'mode', False)
+    if Config and Config.data.dynamic:
+        mode = Config.data.dynamic.settings.mode
 
     if 'error' in status:
         status = '-#' + status + '  #-'
@@ -83,12 +83,8 @@ def sendSlack(message, token = None, channel = None, send = None):
         try:
             s = SlackClient(SlackToken)
             output = "[{0}] {1}".format(datetime.now().strftime('%m-%d %H:%M'), message)
-            s.api_call(
-                 "chat.postMessage",
-                 channel=SlackChannel,
-                 text=output
-             )
-        except:
+            s.api_call("chat.postMessage", channel=SlackChannel, text=output)
+        except Exception as e:
             pass
 
 def getLogBuffers():

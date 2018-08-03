@@ -20,7 +20,7 @@ class Transfer:
             if not raw_msglen:
                 return None
             msglen = struct.unpack('>I', raw_msglen)[0]
-        except:
+        except Exception as e:
             raise
 
         # Read the message data

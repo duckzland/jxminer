@@ -31,7 +31,7 @@ class NvidiaXMRig(Miner):
         if self.algo not in allowed:
             raise ValueError('Invalid coin algo for xmrig nvidia miner')
 
-        if self.config['server'].getint('GPU', 'nvidia') == 0:
+        if self.config.data.server.GPU.nvidia == 0:
             raise ValueError('No AMD card found, Nvidia XMRig miner only support Nvidia card')
 
         self.setupEnvironment()

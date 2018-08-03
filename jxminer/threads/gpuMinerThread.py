@@ -67,14 +67,14 @@ class gpuMinerThread(Thread):
 
 
     def selectMiner(self):
-        coin = self.config['machine'].get('gpu_miner', 'coin')
-        algo = self.config['coins'].get(coin, 'algo')
-        doDual = self.config['machine'].getboolean('gpu_miner', 'dual')
-        amd = self.config['miner'].get(algo, 'amd')
-        nvidia = self.config['miner'].get(algo, 'nvidia')
-        dual = self.config['miner'].get(algo, 'dual')
-        amdGPU = self.config['server'].getint('GPU', 'amd')
-        nvidiaGPU = self.config['server'].getint('GPU', 'nvidia')
+        coin = self.config.data.machine.gpu_miner.coin
+        algo = self.config.data.coins[coin].algo
+        doDual = self.config.data.machine.gpu_miner.dual
+        amd = self.config.data.miner[algo].amd
+        nvidia = self.config.data.miner[algo].nvidia
+        dual = self.config.data.miner[algo].dual
+        amdGPU = self.config.data.server.GPU.amd
+        nvidiaGPU = self.config.data.server.GPU.nvidia
         miners = []
 
         if doDual and dual:
@@ -98,24 +98,31 @@ class gpuMinerThread(Thread):
 
         for miner in miners:
             if miner in 'ccminer':
+                self.config.load('miners', 'ccminer.ini', True)
                 self.miners.append(CCMiner(self.config))
 
             elif miner in 'claymore':
+                self.config.load('miners', 'claymore.ini', True)
                 self.miners.append(Claymore(self.config))
 
             elif miner in 'ethminer':
+                self.config.load('miners', 'ethminer.ini', True)
                 self.miners.append(ETHMiner(self.config))
 
             elif miner in 'ewbf':
+                self.config.load('miners', 'ewbf.ini', True)
                 self.miners.append(EWBF(self.config))
 
             elif miner in 'sgminer':
+                self.config.load('miners', 'sgminer.ini', True)
                 self.miners.append(SGMiner(self.config))
 
             elif miner in 'amdxmrig':
+                self.config.load('miners', 'amdxmrig.ini', True)
                 self.miners.append(AmdXMRig(self.config))
 
             elif miner in 'nvidiaxmrig':
+                self.config.load('miners', 'nvidiaxmrig.ini', True)
                 self.miners.append(NvidiaXMRig(self.config))
 
             else:

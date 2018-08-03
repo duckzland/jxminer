@@ -13,7 +13,7 @@ class systemdThread(Thread):
         self.tick = 60
         self.journal = journal.Reader()
         self.config = Config
-        self.trackPhrases = [e.strip() for e in self.config['systemd'].get('settings', 'reboot_phrases').split("\n")]
+        self.trackPhrases = [e.strip() for e in self.config.data.systemd.settings.reboot_phrases.split("\n")]
         self.init()
         if start:
             self.start()
@@ -32,7 +32,7 @@ class systemdThread(Thread):
                 for testWord in self.trackPhrases:
                     if testWord in entry['MESSAGE']:
                         try:
-                            sendSlack('%s is rebooting the system due to GPU crashed' % (self.config['machine'].get('settings', 'box_name')))
+                            sendSlack('%s is rebooting the system due to GPU crashed' % (self.config.data.machine.settingsbox_name))
                             sendSlack(entry['MESSAGE'])
                             printLog('Notifying Slack for reboot schedule', 'info')
                             time.sleep(1)
@@ -41,7 +41,7 @@ class systemdThread(Thread):
                             printLog('Rebooting system due to GPU crashed', 'error')
 
                             ## Hard Reboot can corrupt data! ##
-                            if self.config['machine'].has_option('settings', 'hard_reboot') and self.config['machine'].getboolean('settings', 'hard_reboot'):
+                            if self.config.data.machine.settings.hard_reboot:
                                 # os.system('sync')
                                 # time.sleep(5)
                                 os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')

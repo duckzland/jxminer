@@ -7,14 +7,16 @@ class Pool:
     """
 
     def __init__(self, pool, Config):
+        Config.load('pools', pool + '.ini', True)
         self.init(pool, Config)
 
 
     def init(self, pool, Config):
+
         self.name = pool
         self.config = Config
         try:
-            self.pool = self.config[pool]
+            self.pool = self.config.data[pool]
             status = 'success'
         except:
             status = 'error'
@@ -22,50 +24,49 @@ class Pool:
         finally:
             printLog("Loading %s pool configuration" % (pool), status)
 
-        self.wallet = self.config['coins']
-        self.machine = self.config['machine']
+        self.wallet = self.config.data.coins
+        self.machine = self.config.data.machine
 
 
     def replaceToken(self, text):
         return (
-            text.replace('{protocol}', self.pool.get(self.coin, 'protocol'))
-                .replace('{port}', self.pool.get(self.coin, 'port'))
-                .replace('{wallet}', self.wallet.get(self.coin, 'wallet'))
-                .replace('{worker}', self.machine.get('settings', 'worker'))
-                .replace('{email}', self.machine.get('settings', 'email'))
-                .replace('{password}', self.pool.get(self.coin, 'password'))
+            text.replace('{protocol}', self.pool[self.coin].protocol)
+                .replace('{port}', self.pool[self.coin].port)
+                .replace('{wallet}', self.wallet[self.coin].wallet)
+                .replace('{worker}', self.machine.settings.worker)
+                .replace('{email}', self.machine.settings.email)
+                .replace('{password}', self.pool[self.coin].password)
         )
 
 
     def getPort(self, coin):
         self.coin = coin
-        return self.pool.get(self.coin, 'port')
+        return self.pool[self.coin].port
 
 
     def getRawAddress(self, coin):
         self.coin = coin
-        return self.pool.get(self.coin, 'url')
+        return self.pool[self.coin].url
 
     def getRawProtocol(self, coin):
-        return self.pool.get(self.coin, 'protocol')
+        return self.pool[self.coin].protocol
 
     def getAddress(self, coin):
         self.coin = coin
-        url = self.pool.get(self.coin, 'url')
-        format = self.pool.get('format', 'address')
+        url = self.pool[self.coin].url
+        format = self.pool.format.address
         if format:
             address = self.replaceToken(format).replace('{url}', url)
         else:
             address = url
-
         return address
 
 
     def getWallet(self, coin):
         self.coin = coin
-        return self.replaceToken(self.pool.get('format', 'wallet'))
+        return self.replaceToken(self.pool.format.wallet)
 
 
     def getPassword(self, coin):
         self.coin = coin
-        return self.replaceToken(self.pool.get(self.coin, 'password'))
+        return self.replaceToken(self.pool[self.coin].password)

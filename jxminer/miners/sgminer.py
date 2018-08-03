@@ -21,7 +21,7 @@ class SGMiner(Miner):
         if miner_algo not in allowed:
             raise ValueError('Invalid coin algo for sgminer miner')
 
-        if self.config['server'].getint('GPU', 'amd') == 0:
+        if self.config.data.server.GPU.amd == 0:
             raise ValueError('No AMD card found, SGMiner only supports amd card')
 
         self.option = self.option.replace('{sgminer_algo}', miner_algo)
