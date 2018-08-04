@@ -1,15 +1,16 @@
 import os, time, re
 
 from entities.job import *
+from entities.config import *
 from thread import Thread
 from modules.utility import printLog, sendSlack
 
 class watchdogThread(Thread):
 
-    def __init__(self, start, Config, Miner):
+    def __init__(self, start, Miner):
         self.active = False
         self.job = False
-        self.config = Config
+        self.config = Config()
         self.miner = Miner
         self.isRebooting = False
         self.minHashRate = self.miner.wd_hashrate
@@ -17,9 +18,9 @@ class watchdogThread(Thread):
         self.delay = 60
         self.softRebootCount = 0
         self.loopCount = 0
-        self.maxRetry = Config.data.watchdog.settings.maximum_retry
-        self.boxName = Config.data.watchdog.settings.box_name
-        self.tick = Config.data.watchdog.settings.tick
+        self.maxRetry = Config.data.config.watchdog.settings.maximum_retry
+        self.boxName = Config.data.config.watchdog.settings.box_name
+        self.tick = Config.data.config.watchdog.settings.tick
         self.init()
         if start:
             self.start()

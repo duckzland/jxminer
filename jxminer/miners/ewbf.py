@@ -15,7 +15,7 @@ class EWBF(Miner):
         if self.algo not in ('equihash'):
             raise ValueError('Invalid coin algo for ewbf miner')
 
-        if self.config.data.server.GPU.nvidia == 0:
+        if self.config.data.dynamic.server.GPU.nvidia == 0:
             raise ValueError('No Nvidia card,  ewbf miner only support Nvidia card')
 
         self.hasFee = True

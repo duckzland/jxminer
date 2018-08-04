@@ -16,8 +16,8 @@ class ETHMiner(Miner):
             "Error CUDA mining:"
         ]
 
-        amdGPU = self.config.data.server.GPU.amd
-        nvidiaGPU = self.config.data.server.GPU.nvidia
+        amdGPU = self.config.data.dynamic.server.GPU.amd
+        nvidiaGPU = self.config.data.dynamic.server.GPU.nvidia
 
         if self.algo not in ('ethash'):
             raise ValueError('Invalid coin algo for ethminer miner')

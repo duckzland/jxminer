@@ -1,6 +1,8 @@
 import time
 from thread import Thread
 from entities.job import *
+from entities.config import *
+
 from modules.utility import calculateStep, printLog
 
 class gpuTunerThread(Thread):
@@ -10,24 +12,24 @@ class gpuTunerThread(Thread):
     """
 
 
-    def __init__(self, start, Config, GPUUnits):
+    def __init__(self, start, units):
         self.active = False
         self.job = False
-        self.config = Config
-        self.GPUUnits = GPUUnits
-        self.mode = self.config.data.tuner.settings.mode
-        self.coin = self.config.data.machine.gpu_miner.coin
+        self.config = Config()
+        self.units = units
+        self.mode = self.config.data.config.tuner.settings.mode
+        self.coin = self.config.data.config.machine.gpu_miner.coin
         self.init()
 
         if start:
             self.start()
             
     def init(self):
-        self.job = Job(self.config.data.tuner.settings.tick, self.update)
+        self.job = Job(self.config.data.config.tuner.settings.tick, self.update)
 
 
     def update(self, runner):
-        for unit in self.GPUUnits:
+        for unit in self.units:
             self.tune(unit, 'core', self.mode)
             self.tune(unit, 'memory', self.mode)
             self.tune(unit, 'power', self.mode)
@@ -38,7 +40,7 @@ class gpuTunerThread(Thread):
 
 
     def tune(self, unit, key, mode):
-        c = self.config.data.tuner
+        c = self.config.data.config.tuner
         levelKey = key + 'Level'
         type = False
 

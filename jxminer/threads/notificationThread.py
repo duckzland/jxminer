@@ -1,6 +1,6 @@
 import time, json, psutil
-
 from entities.job import *
+from entities.config import *
 from thread import Thread
 from modules.utility import getHighestTemps, getAverageTemps, printLog, getLogBuffers
 from addict import Dict
@@ -8,14 +8,14 @@ from websocket import create_connection
 
 class notificationThread(Thread):
 
-    def __init__(self, start, Config, JobThreads, FanUnits, GPUUnits):
+    def __init__(self, start, threads, fans, gpu):
         self.active = False
         self.job = False
-        self.config = Config
-        self.settings = self.config.data.notification.settings
-        self.threads = JobThreads
-        self.fans = FanUnits
-        self.gpu = GPUUnits
+        self.config = Config()
+        self.settings = self.config.data.config.notification.settings
+        self.threads = threads
+        self.fans = fans
+        self.gpu = gpu
         self.tick = self.settings.tick
         self.url = self.settings.server.url
         self.port = self.settings.server.port
@@ -35,7 +35,7 @@ class notificationThread(Thread):
 
         ## General Machine information ##
         try:
-            machine = self.config.data.machine
+            machine = self.config.data.config.machine
             status.general.boxname = machine.settings.box_name
         except:
             pass

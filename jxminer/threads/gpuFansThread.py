@@ -1,6 +1,6 @@
-
 from thread import Thread
 from entities.job import *
+from entities.config import *
 from modules.utility import calculateStep, printLog
 from modules.curve import Curve
 
@@ -11,25 +11,25 @@ class gpuFansThread(Thread):
     """
 
 
-    def __init__(self, start, Config, GPUUnits):
+    def __init__(self, start, units):
         self.active = False
         self.job = False
-        self.config = Config
-        self.GPUUnits = GPUUnits
-        self.coin = self.config.data.machine.gpu_miner.coin
+        self.config = Config()
+        self.units = units
+        self.coin = self.config.data.config.machine.gpu_miner.coin
 
         self.init()
         if start:
             self.start()
 
     def init(self):
-        self.job = Job(self.config.data.fans.gpu.tick, self.update)
+        self.job = Job(self.config.data.config.fans.gpu.tick, self.update)
 
 
     def update(self, runner):
-        c = self.config.data.fans
+        c = self.config.data.config.fans
 
-        for unit in self.GPUUnits:
+        for unit in self.units:
             unit.detect()
             type = False
             newSpeed = False

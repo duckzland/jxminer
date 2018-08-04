@@ -1,21 +1,22 @@
 import io, select, time, json, psutil, re
 
 from entities.job import *
+from entities.config import *
 from thread import Thread
 from modules.transfer import *
 from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog, getLogBuffers
 
 class socketActionThread(Thread):
 
-    def __init__(self, start, Config, connection, actionCallback, JobThreads, FanUnits, GPUUnits):
+    def __init__(self, start, connection, callback, threads, fans, cards):
         self.active = False
         self.job = False
-        self.config = Config
+        self.config = Config()
         self.connection = connection
-        self.actionCallback = actionCallback
-        self.threads = JobThreads
-        self.fans = FanUnits
-        self.gpu = GPUUnits
+        self.callback = callback
+        self.threads = threads
+        self.fans = fans
+        self.gpu = cards
         self.init()
         if start:
             self.start()
@@ -43,7 +44,7 @@ class socketActionThread(Thread):
                 pass
 
         elif action in ('server:shutdown', 'server:reboot', 'server:update'):
-            self.actionCallback(action)
+            self.callback(action)
 
 
         elif action in ('monitor:miner:cpu'):
@@ -141,25 +142,26 @@ class socketActionThread(Thread):
 
     def generateStatusOutput(self) :
         status = dict()
+        c = self.config.data.config
         try:
-            if self.config.data.machine.gpu_miner.enable:
-                status['general:active:gpu:coin'] = self.config.data.machine.gpu_miner.coin
-                status['general:active:gpu:pool'] = self.config.data.machine.gpu_miner.pool
-                if self.config.data.machine.gpu_miner.dual:
-                    status['general:active:gpu:second_coin'] = self.config.data.machine.gpu_miner.second_coin
-                    status['general:active:gpu:second_pool'] = self.config.data.machine.gpu_miner.second_pool
+            if c.machine.gpu_miner.enable:
+                status['general:active:gpu:coin'] = c.machine.gpu_miner.coin
+                status['general:active:gpu:pool'] = c.machine.gpu_miner.pool
+                if c.machine.gpu_miner.dual:
+                    status['general:active:gpu:second_coin'] = c.machine.gpu_miner.second_coin
+                    status['general:active:gpu:second_pool'] = c.machine.gpu_miner.second_pool
         except:
             pass
 
         try:
-            if self.config.data.machine.cpu_miner.enable:
-                status['general:active:cpu:coin'] = self.config.data.machine.cpu_miner.coin
-                status['general:active:cpu:pool'] = self.config.data.machine.cpu_miner.pool
+            if c.machine.cpu_miner.enable:
+                status['general:active:cpu:coin'] = c.machine.cpu_miner.coin
+                status['general:active:cpu:pool'] = c.machine.cpu_miner.pool
         except:
             pass
 
         try:
-            status['general:boxname'] = self.config.data.machine.settings.box_name
+            status['general:boxname'] = c.machine.settings.box_name
         except:
             pass
 
@@ -178,12 +180,12 @@ class socketActionThread(Thread):
         try:
             totalGPUWatt = float(0.00)
             for unit in self.gpu:
-                status['%s:%s:%s:%s' % ('gpu', 'fan', unit.type, unit.index)] = unit.fanSpeed
-                status['%s:%s:%s:%s' % ('gpu', 'core', unit.type, unit.index)] = unit.coreLevel
-                status['%s:%s:%s:%s' % ('gpu', 'memory', unit.type, unit.index)] = unit.memoryLevel
-                status['%s:%s:%s:%s' % ('gpu', 'power', unit.type, unit.index)] = unit.powerLevel
+                status['%s:%s:%s:%s' % ('gpu', 'fan', unit.type, unit.index)]         = unit.fanSpeed
+                status['%s:%s:%s:%s' % ('gpu', 'core', unit.type, unit.index)]        = unit.coreLevel
+                status['%s:%s:%s:%s' % ('gpu', 'memory', unit.type, unit.index)]      = unit.memoryLevel
+                status['%s:%s:%s:%s' % ('gpu', 'power', unit.type, unit.index)]       = unit.powerLevel
                 status['%s:%s:%s:%s' % ('gpu', 'temperature', unit.type, unit.index)] = unit.temperature
-                status['%s:%s:%s:%s' % ('gpu', 'watt', unit.type, unit.index)] = unit.wattUsage
+                status['%s:%s:%s:%s' % ('gpu', 'watt', unit.type, unit.index)]        = unit.wattUsage
                 totalGPUWatt += float(unit.wattUsage)
 
             status['%s:%s' % ('gpu', 'total_watt')] = totalGPUWatt
@@ -230,9 +232,9 @@ class socketActionThread(Thread):
                 temps = temperatures['coretemp']
                 for temp in temps:
                     key = re.sub('[^0-9]','', temp.label)
-                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'label', key)] = temp.label
-                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'current', key)] = temp.current
-                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'high', key)] = temp.high
+                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'label', key)]    = temp.label
+                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'current', key)]  = temp.current
+                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'high', key)]     = temp.high
                     status['%s:%s:%s:%s' % ('cpu', 'temp', 'critical', key)] = temp.critical
         except:
             pass
@@ -251,8 +253,8 @@ class socketActionThread(Thread):
             if frequencies:
                 for index, frequency in enumerate(frequencies):
                     status['%s:%s:%s:%s' % ('cpu', 'freq', 'current', index)] = frequency.current
-                    status['%s:%s:%s:%s' % ('cpu', 'freq', 'min', index)] = frequency.min
-                    status['%s:%s:%s:%s' % ('cpu', 'freq', 'max', index)] = frequency.max
+                    status['%s:%s:%s:%s' % ('cpu', 'freq', 'min', index)]     = frequency.min
+                    status['%s:%s:%s:%s' % ('cpu', 'freq', 'max', index)]     = frequency.max
         except:
             pass
 

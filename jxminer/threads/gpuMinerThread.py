@@ -1,6 +1,6 @@
-
 from thread import Thread
 from entities.job import *
+from entities.config import *
 
 from miners.ccminer import *
 from miners.claymore import *
@@ -15,10 +15,10 @@ from modules.utility import printLog
 
 class gpuMinerThread(Thread):
 
-    def __init__(self, start, Config):
+    def __init__(self, start):
         self.active = False
         self.job = False
-        self.config = Config
+        self.config = Config()
         self.miners = []
         self.started = False
         self.exiting = False
@@ -67,14 +67,16 @@ class gpuMinerThread(Thread):
 
 
     def selectMiner(self):
-        coin = self.config.data.machine.gpu_miner.coin
-        algo = self.config.data.coins[coin].algo
-        doDual = self.config.data.machine.gpu_miner.dual
-        amd = self.config.data.miner[algo].amd
-        nvidia = self.config.data.miner[algo].nvidia
-        dual = self.config.data.miner[algo].dual
-        amdGPU = self.config.data.server.GPU.amd
-        nvidiaGPU = self.config.data.server.GPU.nvidia
+        c         = self.config.data.config
+        d         = self.config.data.dynamic
+        coin      = c.machine.gpu_miner.coin
+        algo      = c.coins[coin].algo
+        doDual    = c.machine.gpu_miner.dual
+        amd       = c.miner[algo].amd
+        nvidia    = c.miner[algo].nvidia
+        dual      = c.miner[algo].dual
+        amdGPU    = d.server.GPU.amd
+        nvidiaGPU = d.server.GPU.nvidia
         miners = []
 
         if doDual and dual:
@@ -99,31 +101,31 @@ class gpuMinerThread(Thread):
         for miner in miners:
             if miner in 'ccminer':
                 self.config.load('miners', 'ccminer.ini', True)
-                self.miners.append(CCMiner(self.config))
+                self.miners.append(CCMiner())
 
             elif miner in 'claymore':
                 self.config.load('miners', 'claymore.ini', True)
-                self.miners.append(Claymore(self.config))
+                self.miners.append(Claymore())
 
             elif miner in 'ethminer':
                 self.config.load('miners', 'ethminer.ini', True)
-                self.miners.append(ETHMiner(self.config))
+                self.miners.append(ETHMiner())
 
             elif miner in 'ewbf':
                 self.config.load('miners', 'ewbf.ini', True)
-                self.miners.append(EWBF(self.config))
+                self.miners.append(EWBF())
 
             elif miner in 'sgminer':
                 self.config.load('miners', 'sgminer.ini', True)
-                self.miners.append(SGMiner(self.config))
+                self.miners.append(SGMiner())
 
             elif miner in 'amdxmrig':
                 self.config.load('miners', 'amdxmrig.ini', True)
-                self.miners.append(AmdXMRig(self.config))
+                self.miners.append(AmdXMRig())
 
             elif miner in 'nvidiaxmrig':
                 self.config.load('miners', 'nvidiaxmrig.ini', True)
-                self.miners.append(NvidiaXMRig(self.config))
+                self.miners.append(NvidiaXMRig())
 
             else:
                 printLog('Refused to load invalid miner program type', 'error')

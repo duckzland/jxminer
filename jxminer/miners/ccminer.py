@@ -31,7 +31,7 @@ class CCMiner(Miner):
         if miner_algo not in allowed:
             raise ValueError('Invalid coin algo for ccminer miner')
 
-        if self.config.data.server.GPU.nvidia == 0:
+        if self.config.data.dynamic.server.GPU.nvidia == 0:
             raise ValueError('No Nvidia card found, CCMiner only supports Nvidia card')
 
         self.option = self.option.replace('{ccminer_algo}', miner_algo)

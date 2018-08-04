@@ -1,6 +1,7 @@
 import os, subprocess, psutil, time, re, pexpect, signal
 
 from entities.pool import Pool
+from entities.config import Config
 from modules.transfer import *
 from modules.utility import which, getOption, printLog, findFile, explode, stripAnsi
 
@@ -10,8 +11,8 @@ class Miner:
         This is the base class for invoking miner instance
     """
 
-    def __init__(self, Config):
-        self.config = Config
+    def __init__(self):
+        self.config = Config()
         self.status = 'stop'
         self.checkKeywords = []
         self.buffers = []
@@ -32,36 +33,37 @@ class Miner:
 
 
     def setupMiner(self, type):
-        name = type + '_miner'
-        self.type = type
-        self.max_retries = 3
-        self.machine = self.config.data.machine
-        self.coins = self.config.data.coins
-        self.coin = self.config.data.machine[name].coin
-        self.algo = self.config.data.coins[self.coin].algo
-        self.pool = Pool(self.config.data.machine[name].pool, self.config)
-        self.url = self.pool.getAddress(self.coin)
-        self.raw_url = self.pool.getRawAddress(self.coin)
-        self.raw_protocol = self.pool.getRawProtocol(self.coin)
-        self.port = self.pool.getPort(self.coin)
-        self.wallet = self.pool.getWallet(self.coin)
-        self.password = self.pool.getPassword(self.coin)
-        self.worker = self.config.data.machine.settings.box_name
-        self.email = self.config.data.machine.settings.email
-        self.environment = os.environ.copy()
+        c                   = self.config.data.config
+        name                = type + '_miner'
+        self.type           = type
+        self.max_retries    = 3
+        self.machine        = c.machine
+        self.coins          = c.coins
+        self.coin           = c.machine[name].coin
+        self.algo           = c.coins[self.coin].algo
+        self.worker         = c.machine.settings.box_name
+        self.email          = c.machine.settings.email
+        self.wd_hashrate    = c.machine[name].minimum_hashrate
+        self.environment    = os.environ.copy()
 
-        self.wd_hashrate = self.config.data.machine[name].minimum_hashrate
+        self.pool           = Pool(c.machine[name].pool)
+        self.url            = self.pool.getAddress(self.coin)
+        self.raw_url        = self.pool.getRawAddress(self.coin)
+        self.raw_protocol   = self.pool.getRawProtocol(self.coin)
+        self.port           = self.pool.getPort(self.coin)
+        self.wallet         = self.pool.getWallet(self.coin)
+        self.password       = self.pool.getPassword(self.coin)
 
-        if 'gpu' in type and self.config.data.machine[name].dual:
-            self.second_coin = self.config.data.machine[name].second_coin
-            self.second_algo = self.coins[self.second_coin].algo
-            self.second_pool = Pool(self.machine[name].second_pool, self.config)
-            self.second_url = self.second_pool.getAddress(self.second_coin)
-            self.second_wallet = self.second_pool.getWallet(self.second_coin)
+        if 'gpu' in type and c.machine[name].dual:
+            self.second_coin    = c.machine[name].second_coin
+            self.second_algo    = self.coins[self.second_coin].algo
+            self.second_pool    = Pool(self.machine[name].second_pool)
+            self.second_url     = self.second_pool.getAddress(self.second_coin)
+            self.second_wallet  = self.second_pool.getWallet(self.second_coin)
 
         if hasattr(self, 'miner'):
-            self.miner_config = self.config.data[self.miner]
-            self.miner_mode = self.algo
+            self.miner_config   = self.config.data.miners[self.miner]
+            self.miner_mode     = self.algo
 
             if hasattr(self, 'second_algo') and self.machine[name].dual:
                 self.miner_mode = self.miner_mode + '|' + self.second_algo
@@ -76,27 +78,27 @@ class Miner:
             self.executable = getOption('executable', default, extra)
             self.option = (
                 str(getOption('options', default, extra))
-                    .replace('\n', ' #-# ')
-                    .replace('{raw_url}', self.raw_url)
-                    .replace('{raw_protocol}', self.raw_protocol)
-                    .replace('{port}', self.port)
-                    .replace('{url}', self.url)
-                    .replace('{wallet}', self.wallet)
-                    .replace('{password}', self.password)
-                    .replace('{worker}', self.worker)
+                    .replace('\n',              ' #-# ')
+                    .replace('{raw_url}',       self.raw_url)
+                    .replace('{raw_protocol}',  self.raw_protocol)
+                    .replace('{port}',          self.port)
+                    .replace('{url}',           self.url)
+                    .replace('{wallet}',        self.wallet)
+                    .replace('{password}',      self.password)
+                    .replace('{worker}',        self.worker)
             )
 
             if 'cpu' in type:
                 self.option = (
                     self.option
-                        .replace('{thread}', self.machine[name].thread)
-                        .replace('{priority}', self.machine[name].priority)
+                        .replace('{thread}',    self.machine[name].thread)
+                        .replace('{priority}',  self.machine[name].priority)
                 )
 
             if hasattr(self, 'second_coin'):
                 self.option = (
                     self.option
-                        .replace('{second_url}', self.second_url)
+                        .replace('{second_url}',    self.second_url)
                         .replace('{second_wallet}', self.second_wallet)
                 )
 
@@ -116,9 +118,11 @@ class Miner:
 
     def start(self):
         if self.status == 'stop':
+            c    = self.config.data.config
             path = os.path.join('/usr', 'local')
-            if self.config.data.machine.settings.executable_location:
-                    path = self.config.data.machine.settings.executable_location
+
+            if c.machine.settings.executable_location:
+                path = c.machine.settings.executable_location
 
             command = findFile(path, self.executable)
 

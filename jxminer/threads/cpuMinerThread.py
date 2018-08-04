@@ -1,5 +1,6 @@
 from thread import Thread
 from entities.job import *
+from entities.config import *
 from miners.cpuminer import *
 from miners.cpuxmrig import *
 
@@ -7,10 +8,10 @@ from modules.utility import printLog
 
 class cpuMinerThread(Thread):
 
-    def __init__(self, start, Config):
+    def __init__(self, start):
         self.active = False
         self.job = False
-        self.config = Config
+        self.config = Config()
         self.miner = False
         self.started = False
         self.exiting = False
@@ -53,17 +54,18 @@ class cpuMinerThread(Thread):
 
 
     def selectMiner(self):
-        coin = self.config.data.machine.cpu_miner.coin
-        algo = self.config.data.coins[coin].algo
-        miner = self.config.data.miner[algo].cpu
+        c = self.config.data.config
+        coin = c.machine.cpu_miner.coin
+        algo = c.coins[coin].algo
+        miner = c.miner[algo].cpu
 
         if miner in 'cpuminer':
             self.config.load('miners', 'cpuminer.ini', True)
-            self.miner = CpuMiner(self.config)
+            self.miner = CpuMiner()
 
         elif miner in 'cpuxmrig':
             self.config.load('miners', 'cpuxmrig.ini', True)
-            self.miner = CpuXMRig(self.config)
+            self.miner = CpuXMRig()
 
         else:
             printLog('Refused to load invalid miner program type', 'error')

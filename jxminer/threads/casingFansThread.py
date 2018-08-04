@@ -1,6 +1,7 @@
 
 from thread import Thread
 from entities.job import *
+from entities.config import *
 from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog
 from modules.curve import Curve
 
@@ -11,24 +12,24 @@ class casingFansThread(Thread):
     """
 
 
-    def __init__(self, start, Config, FanUnits, GPUUnits):
+    def __init__(self, start, FanUnits, GPUUnits):
         self.active = False
         self.job = False
-        self.config = Config
+        self.config = Config()
         self.GPUUnits = GPUUnits
         self.FanUnits = FanUnits
-        self.coin = self.config.data.machine.gpu_miner.coin
+        self.coin = self.config.data.config.machine.gpu_miner.coin
         self.init()
         if start:
             self.start()
 
     def init(self):
-        self.job = Job(self.config.data.fans.casing.tick, self.update)
+        self.job = Job(self.config.data.config.fans.casing.tick, self.update)
 
 
     def update(self, runner):
         temperature = None
-        c = self.config.data.fans
+        c = self.config.data.config.fans
 
         if c.casing.strategy == 'highest':
             temperature = getHighestTemps(self.GPUUnits)

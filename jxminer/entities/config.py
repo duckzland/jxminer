@@ -22,6 +22,8 @@ class Config:
         'config/sensors.ini',
         'config/tuner.ini',
         'config/watchdog.ini',
+
+        ## Load these dynamically
         #'miners/amdxmrig.ini',
         #'miners/ccminer.ini',
         #'miners/claymore.ini',
@@ -79,7 +81,7 @@ class Config:
                         if (val == 'false'):
                             val = False
 
-                        Config.data[name][section][key] = val
+                        Config.data[type][name][section][key] = val
 
                 status = 'success'
 
@@ -88,3 +90,14 @@ class Config:
 
             finally:
                 printLog('Loading %s configuration from %s' % (name, path), status)
+
+
+
+    def save(self):
+        pass
+
+    def insert(self, payload):
+        pass
+
+    def extract(self):
+        pass
