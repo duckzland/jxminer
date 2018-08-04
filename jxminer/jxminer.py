@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(__file__))
 from modules.pynvml import *
 from modules.rocmsmi import *
 from modules.sysfs import *
-from modules.utility import printLog, sendSlack
+from modules.utility import printLog, sendSlack, insertConfig
 
 from entities.nvidia import Nvidia
 from entities.amd import AMD
@@ -358,17 +358,12 @@ class Main():
 
         finally:
             self.config = Config(cPath)
-            self.config.scan()
             self.config.data.dynamic.settings.mode = action
-
+            insertConfig(self.config)
+            self.config.scan()
             c = self.config.data.config
-            printLog('Starting Program', 'info', True, True, self.config)
-            sendSlack(
-                '%s started JXMiner' % (c.machine.settings.box_name),
-                c.slack.settings.token,
-                c.slack.settings.channel,
-                c.slack.settings.enable
-            )
+            printLog('Starting Program', 'info')
+            sendSlack('%s started JXMiner' % (c.machine.settings.box_name))
 
         try:
 

@@ -1,23 +1,19 @@
 import os, fnmatch, re
+
 from datetime import datetime
 from slackclient import SlackClient
 
 MainBuffers = []
-Config = None
-SlackToken = None
-SlackChannel = None
-SlackEnable = None
+Conf = None
 
-def printLog(text, status = 'info', buffer = True, console = True, config = False):
+def insertConfig(Config):
+    global Conf
+    Conf = Config
+
+def printLog(text, status = 'info', buffer = True, console = True):
     global MainBuffers
-    global Config
-
-    if config:
-        Config = config
-
-    mode = False
-    if Config and Config.data.dynamic:
-        mode = Config.data.dynamic.settings.mode
+    global Conf
+    mode = Conf.data.dynamic.settings.mode
 
     if 'error' in status:
         status = '-#' + status + '  #-'
@@ -65,25 +61,14 @@ def printLog(text, status = 'info', buffer = True, console = True, config = Fals
 
 
 
-def sendSlack(message, token = None, channel = None, send = None):
-    global SlackChannel
-    global SlackToken
-    global SlackEnable
-
-    if token:
-        SlackToken = token
-
-    if channel:
-        SlackChannel = channel
-
-    if send:
-        SlackEnable = send
-
-    if message and SlackEnable:
+def sendSlack(message):
+    global Conf
+    c = Conf.data.config.slack.settings
+    if message and c.enable:
         try:
-            s = SlackClient(SlackToken)
+            s = SlackClient(c.token)
             output = "[{0}] {1}".format(datetime.now().strftime('%m-%d %H:%M'), message)
-            s.api_call("chat.postMessage", channel=SlackChannel, text=output)
+            s.api_call("chat.postMessage", channel=c.channel, text=output)
         except Exception as e:
             pass
 
