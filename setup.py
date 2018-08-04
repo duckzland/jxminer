@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.3.21",
+    version = "0.4.0",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
