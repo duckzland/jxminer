@@ -90,6 +90,16 @@ class socketActionThread(Thread):
                     self.stop()
                     break
 
+        elif 'config:load:json' in action:
+            self.config.scan(True);
+            data = json.dumps(self.config.extract()).replace('True', 'true').replace('False', 'false')
+            self.transfer.send(data)
+
+        elif 'config:save:json' in action:
+            payload = self.transfer.recv()
+            if payload:
+                self.config.insert(payload, True)
+                self.config.save()
 
         elif action in ('close'):
             self.stop()

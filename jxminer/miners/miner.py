@@ -68,7 +68,7 @@ class Miner:
             if hasattr(self, 'second_algo') and self.machine[name].dual:
                 self.miner_mode = self.miner_mode + '|' + self.second_algo
 
-            default = self.miner_config.default
+            default = self.miner_config.settings
             try:
                 extra = self.miner_config[self.miner_mode]
             # Put exception notice here later

@@ -1,4 +1,4 @@
-import os, ConfigParser
+import os, ConfigParser, json
 from addict import Dict
 from modules.utility import printLog
 
@@ -43,11 +43,13 @@ class Config:
             Config.path = path
 
 
-    def scan(self):
+    def scan(self, all = False):
         for type in os.listdir(Config.default):
             for file in os.listdir(os.path.join(Config.default, type)):
                 if file.lower().endswith('.ini'):
-                    required = type + '/' + file in Config.required
+                    required = all
+                    if not all:
+                        required = type + '/' + file in Config.required
                     self.load(type, file, required)
 
 
@@ -56,7 +58,7 @@ class Config:
         name = file.lower().replace('.ini', '')
 
         localPath = os.path.join('/etc', 'jxminer', type, file)
-        userPath = os.path.join('~/', '.jxminer', type, file)
+        userPath = os.path.join('/home', 'jxminer', '.jxminer', type, file)
 
         path = False
         if os.path.isfile(userPath):
@@ -81,7 +83,7 @@ class Config:
                         if (val == 'false'):
                             val = False
 
-                        Config.data[type][name][section][key] = val
+                        Config.data[type][name][section.lower()][key] = val
 
                 status = 'success'
 
@@ -94,10 +96,68 @@ class Config:
 
 
     def save(self):
-        pass
+        ORIG_DEFAULTSECT = ConfigParser.DEFAULTSECT
+        for dir, content in Config.data.iteritems():
+            if dir == 'dynamic':
+                continue
 
-    def insert(self, payload):
-        pass
+            for name, file in content.iteritems():
+
+                filename = name.lower() + '.ini'
+                savePath = os.path.join('/home', 'jxminer', '.jxminer', dir, filename)
+                conf = ConfigParser.ConfigParser(allow_no_value=True)
+                
+                for section, entries in file.iteritems():
+
+                    if section != 'default':
+                        ConfigParser.DEFAULTSECT = ORIG_DEFAULTSECT
+                        conf.add_section(section)
+                    else:
+                        ConfigParser.DEFAULTSECT = 'default'
+
+                    if entries:
+                        for option, value in entries.iteritems():
+
+                            if (value == True):
+                                value = 'true'
+
+                            if (value == False):
+                                value = 'false'
+
+                            if section != 'default':
+                                conf.set(section, option, value)
+                            else:
+                                conf.set(ConfigParser.DEFAULTSECT, option, value)
+
+                if not os.path.isdir(os.path.dirname(savePath)):
+                    os.makedirs(os.path.dirname(savePath))
+
+                with open(savePath, 'w') as f:
+                    conf.write(f)
+
+
+    def insert(self, data, isJson = False):
+        payload = data
+        if data and isJson:
+            try:
+                payload = json.loads(payload)
+            except Exception as e:
+                print e
+
+        for dir, content in payload.iteritems():
+            for name, file in content.iteritems():
+                for section, entries in file.iteritems():
+                    if entries:
+                        for option, value in entries.iteritems():
+                            if (value == 'true'):
+                                value = True
+
+                            if (value == 'false'):
+                                value = False
+
+                            Config.data[dir][name][section][option] = value
+
+
 
     def extract(self):
-        pass
+        return Config.data

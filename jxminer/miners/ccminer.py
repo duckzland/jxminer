@@ -18,7 +18,7 @@ class CCMiner(Miner):
             "illegal memory",
         ]
 
-        allowed = explode(self.miner_config.default.algo)
+        allowed = explode(self.miner_config.settings.algo)
 
         miner_algo = self.algo
 

@@ -14,7 +14,7 @@ class systemdThread(Thread):
         self.tick = 60
         self.journal = journal.Reader()
         self.config = Config()
-        self.trackPhrases = [e.strip() for e in self.config.data.systemd.config.settings.reboot_phrases.split("\n")]
+        self.trackPhrases = [e.strip() for e in self.config.data.config.systemd.settings.reboot_phrases.split("\n")]
         self.init()
         if start:
             self.start()

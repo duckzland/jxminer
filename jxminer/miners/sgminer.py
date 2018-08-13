@@ -13,7 +13,7 @@ class SGMiner(Miner):
         self.miner = 'sgminer'
         self.setupMiner('gpu')
 
-        allowed = explode(self.miner_config.get('default', 'algo'))
+        allowed = explode(self.miner_config.get('settings', 'algo'))
         miner_algo = self.algo
         if 'cryptonight' in miner_algo:
             miner_algo = 'cryptonight'
