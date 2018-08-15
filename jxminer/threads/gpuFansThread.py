@@ -44,10 +44,11 @@ class gpuFansThread(Thread):
             if type and int(unit.temperature) != int(fan.target):
 
                 # try curve if available
-                curve = fan.curve
-                if curve:
-                    cp = Curve(curve)
-                    newSpeed = cp.evaluate(int(unit.temperature))
+                if fan.curve_enable:
+                    curve = fan.curve
+                    if curve:
+                        cp = Curve(curve)
+                        newSpeed = cp.evaluate(int(unit.temperature))
 
                 # fallback to steps
                 if not newSpeed:

@@ -13,7 +13,11 @@ def insertConfig(Config):
 def printLog(text, status = 'info', buffer = True, console = True):
     global MainBuffers
     global Conf
-    mode = Conf.data.dynamic.settings.mode
+    mode = 'normal'
+    try:
+        mode = Conf.data.dynamic.settings.mode
+    except:
+        pass
 
     if 'error' in status:
         status = '-#' + status + '  #-'
@@ -63,8 +67,12 @@ def printLog(text, status = 'info', buffer = True, console = True):
 
 def sendSlack(message):
     global Conf
-    c = Conf.data.config.slack.settings
-    if message and c.enable:
+    c = False
+    try:
+        c = Conf.data.config.slack.settings
+    except:
+        pass
+    if message and c and c.enable:
         try:
             s = SlackClient(c.token)
             output = "[{0}] {1}".format(datetime.now().strftime('%m-%d %H:%M'), message)

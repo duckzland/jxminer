@@ -49,6 +49,7 @@ class Main():
             for i in range(deviceCount):
                 printLog('Initialized NVidia GPU %s' % (i), 'success')
                 self.cards.append(Nvidia(i))
+                self.config.data.dynamic.detected.amd[i] = i
 
         except NVMLError:
             self.config.data.dynamic.server.GPU.nvidia = 0
@@ -65,6 +66,7 @@ class Main():
                     index = i.replace('card', '')
                     printLog('Initialized AMD GPU %s' % (index), 'success')
                     self.cards.append(AMD(index))
+                    self.config.data.dynamic.detected.amd[index] = index
 
         except:
             self.config.data.dynamic.server.GPU.amd = 0
@@ -128,6 +130,7 @@ class Main():
                             'speed': os.path.join(prefix, sensor, extra, '%s'),
                             'pwm': os.path.join(prefix, sensor, extra, '%s_enable'),
                         }))
+                        self.config.data.dynamic.detected.fans[device] = device
 
         if len(self.fans) == 0:
             printLog('No casing fan found', 'info')
@@ -483,6 +486,9 @@ class Main():
                 printLog("Stopping Xorg server", status)
 
 
+def start_miner():
+    Main().main()
+
 
 if __name__ == "__main__":
-    Main().main()
+    start_miner()

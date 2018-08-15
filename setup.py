@@ -7,7 +7,7 @@ setup(
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
-    packages=['jxminer', 'jxminer.entities', 'jxminer.miners', 'jxminer.miners', 'jxminer.modules', 'jxminer.threads'],
+    packages=['jxminer', 'jxminer.entities', 'jxminer.miners', 'jxminer.modules', 'jxminer.threads'],
     package_dir={'jxminer' : 'jxminer'},
     include_package_data=True,
     package_data={'': ['data/config/*.ini', 'data/miners/*.ini', 'data/pools/*.ini']},
@@ -62,6 +62,6 @@ setup(
         'slackclient',
     ],
     entry_points = {
-        'console_scripts' : ['jxminer = jxminer.jxminer:main']
+        'console_scripts' : ['jxminer = jxminer.jxminer:start_miner']
     },
 )

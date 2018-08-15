@@ -55,10 +55,11 @@ class casingFansThread(Thread):
             if type and int(temperature) != int(fan.target):
 
                 # try curve if available
-                curve = fan.curve
-                if curve:
-                    cp = Curve(curve)
-                    newSpeed = cp.evaluate(int(temperature))
+                if fan.curve_enable:
+                    curve = fan.curve
+                    if curve:
+                        cp = Curve(curve)
+                        newSpeed = cp.evaluate(int(temperature))
 
                 # fallback to steps
                 if not newSpeed:

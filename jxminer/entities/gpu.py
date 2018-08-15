@@ -16,7 +16,6 @@ class GPU:
 
     def call(self, command, options):
         p = subprocess.Popen(command, env=options, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        #p = subprocess.Popen(command, stdin=subprocess.PIPE,env=options)
         p.wait
         return p
 
