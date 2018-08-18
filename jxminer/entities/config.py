@@ -1,6 +1,7 @@
 import os, ConfigParser, json
 from addict import Dict
 from modules.utility import printLog
+from shutil import rmtree
 
 class Config:
 
@@ -9,6 +10,7 @@ class Config:
     """
 
     data = Dict()
+    newData = Dict()
     path = ''
     default = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
     required = [
@@ -96,10 +98,14 @@ class Config:
 
 
     def save(self):
-        ORIG_DEFAULTSECT = ConfigParser.DEFAULTSECT
-        for dir, content in Config.data.iteritems():
+        for dir, content in Config.newData.iteritems():
             if dir == 'dynamic':
                 continue
+
+            if dir == 'pools':
+                basepath = os.path.join('/home', 'jxminer', '.jxminer', 'pools')
+                if os.path.isdir(basepath):
+                    rmtree(basepath)
 
             for name, file in content.iteritems():
 
@@ -108,13 +114,7 @@ class Config:
                 conf = ConfigParser.ConfigParser(allow_no_value=True)
                 
                 for section, entries in file.iteritems():
-
-                    if section != 'default':
-                        ConfigParser.DEFAULTSECT = ORIG_DEFAULTSECT
-                        conf.add_section(section)
-                    else:
-                        ConfigParser.DEFAULTSECT = 'default'
-
+                    conf.add_section(section)
                     if entries:
                         for option, value in entries.iteritems():
 
@@ -124,10 +124,7 @@ class Config:
                             if (value == False):
                                 value = 'false'
 
-                            if section != 'default':
-                                conf.set(section, option, value)
-                            else:
-                                conf.set(ConfigParser.DEFAULTSECT, option, value)
+                            conf.set(section, option, value)
 
                 if not os.path.isdir(os.path.dirname(savePath)):
                     os.makedirs(os.path.dirname(savePath))
@@ -137,26 +134,57 @@ class Config:
 
 
     def insert(self, data, isJson = False):
+        Config.newData = Dict()
         payload = data
         if data and isJson:
             try:
+                while True:
+                    # Crude fix for broken json due to bad javascript struct first 4 bytes
+                    if payload[0] is not "{":
+                        payload = payload[1:]
+                    else:
+                        break;
+
                 payload = json.loads(payload)
             except Exception as e:
-                print e
+                printLog('Failed to insert configuration: %s' % (e), 'error')
+                return
 
-        for dir, content in payload.iteritems():
-            for name, file in content.iteritems():
-                for section, entries in file.iteritems():
-                    if entries:
-                        for option, value in entries.iteritems():
-                            if (value == 'true'):
-                                value = True
+        if isinstance(payload, dict):
+            for dir, content in payload.iteritems():
+                for name, file in content.iteritems():
+                    if name == '':
+                        continue
 
-                            if (value == 'false'):
-                                value = False
+                    if isinstance(file, dict):
+                        for section, entries in file.iteritems():
+                            if entries and isinstance(entries, dict):
+                                if 'config' in dir:
+                                    if name == 'tuner' and not self.validateTuner(entries):
+                                        continue
 
-                            Config.data[dir][name][section][option] = value
+                                    if name == 'fans'  and not self.validateFans(entries):
+                                        continue
 
+                                for option, value in entries.iteritems():
+                                    if (value == 'true'):
+                                        value = True
+
+                                    if (value == 'false'):
+                                        value = False
+
+                                    Config.newData[dir][name][section][option] = value
+
+
+    def validateTuner(self, entries):
+        return entries.get('target', '') != '' and entries.get('min', '') != '' and entries.get('max', '') != '' and entries.get('up', '') != '' and entries.get('down', '') != ''
+
+
+    def validateFans(self, entries):
+        if entries.get('curve_enable', False):
+            return entries.get('curve', '') != ''
+        else:
+            return entries.get('target', '') != '' and entries.get('min', '') != '' and entries.get('max', '') != '' and entries.get('up', '') != '' and entries.get('down', '') != ''
 
 
     def extract(self):

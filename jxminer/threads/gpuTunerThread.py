@@ -13,19 +13,31 @@ class gpuTunerThread(Thread):
 
 
     def __init__(self, start, units):
+
         self.active = False
         self.job = False
         self.config = Config()
         self.units = units
         self.mode = self.config.data.config.tuner.settings.mode
         self.coin = self.config.data.config.machine.gpu_miner.coin
-        self.init()
+        self.settings = self.config.data.config.tuner.settings
 
+        self.tick = 20
+        if (self.mode == 'dynamic' and 'tick' in self.settings):
+            self.tick = self.settings.tick
+
+        if (self.mode == 'static'):
+            self.tick = 999999
+
+        if (self.mode == 'time'):
+            self.tick = 3600
+
+        self.init()
         if start:
             self.start()
             
     def init(self):
-        self.job = Job(self.config.data.config.tuner.settings.tick, self.update)
+        self.job = Job(self.tick, self.update)
 
 
     def update(self, runner):
@@ -45,7 +57,7 @@ class gpuTunerThread(Thread):
         type = False
 
         for section in [ '%s|%s|%s' % (key, unit.index, self.coin), '%s|%s' % (key, unit.index), '%s|%s' % (key, self.coin), key ] :
-            if c[section] :
+            if c[section] and c[section]:
                 type = section
                 break
 

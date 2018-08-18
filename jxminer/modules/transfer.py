@@ -33,8 +33,13 @@ class Transfer:
             while len(data) < n:
                 packet = self.sock.recv(n - len(data))
                 if not packet:
-                    return None
+                    if len(data) > 0:
+                        return data
+                    else:
+                        return None
+
                 data += packet
+
         except:
             raise
         return data

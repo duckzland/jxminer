@@ -142,7 +142,7 @@ class Config:
             try:
                 payload = json.loads(payload)
             except Exception as e:
-                print e
+                printLog(str(e), 'error')
 
         for dir, content in payload.iteritems():
             for name, file in content.iteritems():

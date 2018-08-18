@@ -49,7 +49,7 @@ class Main():
             for i in range(deviceCount):
                 printLog('Initialized NVidia GPU %s' % (i), 'success')
                 self.cards.append(Nvidia(i))
-                self.config.data.dynamic.detected.amd[i] = i
+                self.config.data.dynamic.detected.nvidia[i] = i
 
         except NVMLError:
             self.config.data.dynamic.server.GPU.nvidia = 0
@@ -432,7 +432,7 @@ class Main():
                 time.sleep(1)
 
         except Exception as e:
-            printLog(e, 'error')
+            printLog(str(e), 'error')
             printLog("Preparing to close program", 'info')
 
         finally:

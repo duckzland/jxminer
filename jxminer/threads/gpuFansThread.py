@@ -41,18 +41,19 @@ class gpuFansThread(Thread):
 
             fan = c[type]
 
-            if type and int(unit.temperature) != int(fan.target):
+            if type and fan.enable:
+                if int(unit.temperature) != int(fan.target):
 
-                # try curve if available
-                if fan.curve_enable:
-                    curve = fan.curve
-                    if curve:
-                        cp = Curve(curve)
-                        newSpeed = cp.evaluate(int(unit.temperature))
+                    # try curve if available
+                    if fan.curve_enable:
+                        curve = fan.curve
+                        if curve:
+                            cp = Curve(curve)
+                            newSpeed = cp.evaluate(int(unit.temperature))
 
-                # fallback to steps
-                if not newSpeed:
-                    newSpeed = calculateStep(fan.min, fan.max, unit.fanSpeed, fan.target, unit.temperature, fan.up, fan.down)
+                    # fallback to steps
+                    if not newSpeed:
+                        newSpeed = calculateStep(fan.min, fan.max, unit.fanSpeed, fan.target, unit.temperature, fan.up, fan.down)
 
 
             if newSpeed and int(newSpeed) != int(unit.fanLevel):
