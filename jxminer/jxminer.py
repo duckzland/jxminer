@@ -266,6 +266,9 @@ class Main():
             try:
                 self.threads.destroy()
                 self.config.reset()
+                self.detectGPU()
+                self.detectFans()
+                self.loadXorg()
                 self.config.scan()
                 self.loadThreads()
                 status = 'success'

@@ -217,10 +217,10 @@ class Config:
                         for section, entries in file.iteritems():
                             if entries and isinstance(entries, dict):
                                 if 'config' in dir:
-                                    if name == 'tuner' and not self.validateTuner(entries):
+                                    if name == 'tuner' and section != 'settings' and not self.validateTuner(entries):
                                         continue
 
-                                    if name == 'fans'  and not self.validateFans(entries):
+                                    if name == 'fans'  and section != 'settings' and not self.validateFans(entries):
                                         continue
 
                                 for option, value in entries.iteritems():
