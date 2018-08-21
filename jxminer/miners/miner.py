@@ -41,7 +41,7 @@ class Miner:
         self.coins          = c.coins
         self.coin           = c.machine[name].coin
         self.algo           = c.coins[self.coin].algo
-        self.worker         = c.machine.settings.box_name
+        self.worker         = c.machine.settings.worker
         self.email          = c.machine.settings.email
         self.wd_hashrate    = c.machine[name].minimum_hashrate
         self.environment    = os.environ.copy()

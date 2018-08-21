@@ -24,20 +24,49 @@ class Config:
         'config/sensors.ini',
         'config/tuner.ini',
         'config/watchdog.ini',
-
-        ## Load these dynamically
-        #'miners/amdxmrig.ini',
-        #'miners/ccminer.ini',
-        #'miners/claymore.ini',
-        #'miners/cpuminer.ini',
-        #'miners/cpuxmrig.ini',
-        #'miners/ethminer.ini',
-        #'miners/ewbf.ini',
-        #'miners/nheqminer.ini',
-        #'miners/nvidiaxmrig.ini',
-        #'miners/sgminer.ini'
     ]
 
+    maps = Dict({
+        'config': [
+            'coins.ini',
+            'fans.ini',
+            'machine.ini',
+            'miner.ini',
+            'notification.ini',
+            'sensors.ini',
+            'slack.ini',
+            'systemd.ini',
+            'tuner.ini',
+            'watchdog.ini',
+        ],
+        'miners': [
+            'amdxmrig.ini',
+            'ccminer.ini',
+            'claymore.ini',
+            'cpuminer.ini',
+            'cpuxmrig.ini',
+            'ethminer.ini',
+            'ewbf.ini',
+            'nheqminer.ini',
+            'nvidiaxmrig.ini',
+            'sgminer.ini',
+        ],
+        'pools': [
+            '2miners.ini',
+            'blockcruncher.ini',
+            'coinmine.ini',
+            'cryptopool.ini',
+            'dwarfpool.ini',
+            'flypool.ini',
+            'intensecoin.ini',
+            'minepool.ini',
+            'nanopool.ini',
+            'pickaxe.ini',
+            'ravenminer.ini',
+            'turtlepool.ini'
+        ]
+
+    })
 
 
     def __init__(self, path = None):
@@ -46,13 +75,37 @@ class Config:
 
 
     def scan(self, all = False):
-        for type in os.listdir(Config.default):
-            for file in os.listdir(os.path.join(Config.default, type)):
-                if file.lower().endswith('.ini'):
-                    required = all
-                    if not all:
-                        required = type + '/' + file in Config.required
-                    self.load(type, file, required)
+        distDir = os.path.join('/etc', 'jxminer')
+        userDir = os.path.join('/home', 'jxminer', '.jxminer')
+        extraFiles = Dict()
+
+        for type, files in Config.maps.iteritems():
+            for file in files:
+                required = all
+                if not all and type + '/' + file in Config.required:
+                    required = True
+
+                if type == 'pools' and os.path.isdir(userDir + '/pools'):
+                    required = False
+
+                self.load(type, file, required)
+
+        # Load extra files that might be defined by user
+        if all:
+            for path in [ distDir, userDir ]:
+                for type, files in Config.maps.iteritems():
+                    dir = path + '/' + type
+                    if os.path.isdir(dir):
+                        for file in os.listdir(dir):
+                            if file.lower().endswith('.ini') and file not in files:
+                                extraFiles[file] = Dict({
+                                    'type': type,
+                                    'path': path,
+                                    'file': file,
+                                })
+
+            for key, file in extraFiles.iteritems():
+                self.load(file.type, file.file);
 
 
     def load(self, type, file, required = False):
@@ -106,6 +159,7 @@ class Config:
                 basepath = os.path.join('/home', 'jxminer', '.jxminer', 'pools')
                 if os.path.isdir(basepath):
                     rmtree(basepath)
+                    os.makedirs(basepath)
 
             for name, file in content.iteritems():
 
@@ -152,6 +206,9 @@ class Config:
 
         if isinstance(payload, dict):
             for dir, content in payload.iteritems():
+
+                Config.newData[dir] = Dict()
+
                 for name, file in content.iteritems():
                     if name == '':
                         continue
@@ -189,3 +246,8 @@ class Config:
 
     def extract(self):
         return Config.data
+
+
+    def reset(self):
+        Config.data = Dict()
+        Config.newData = Dict()

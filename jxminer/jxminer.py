@@ -265,6 +265,7 @@ class Main():
         elif action == 'server:reboot':
             try:
                 self.threads.destroy()
+                self.config.reset()
                 self.config.scan()
                 self.loadThreads()
                 status = 'success'
