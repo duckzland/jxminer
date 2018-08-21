@@ -200,6 +200,7 @@ class Config:
                         break;
 
                 payload = json.loads(payload)
+
             except Exception as e:
                 printLog('Failed to insert configuration: %s' % (e), 'error')
                 return

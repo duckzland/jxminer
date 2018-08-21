@@ -52,7 +52,7 @@ class casingFansThread(Thread):
             if type and int(unit.pwm) != 1:
                 unit.disablePWM()
 
-            if type and int(temperature) != int(fan.target):
+            if type:
 
                 # try curve if available
                 if fan.curve_enable:
@@ -62,8 +62,9 @@ class casingFansThread(Thread):
                         newSpeed = cp.evaluate(int(temperature))
 
                 # fallback to steps
-                if not newSpeed:
-                    newSpeed = calculateStep(fan.min, fan.max, unit.speed, fan.target, temperature, fan.up, fan.down)
+                elif int(temperature) != int(fan.target):
+                    if not newSpeed:
+                        newSpeed = calculateStep(fan.min, fan.max, unit.speed, fan.target, temperature, fan.up, fan.down)
 
 
             if newSpeed and int(newSpeed) != int(unit.level):
