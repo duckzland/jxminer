@@ -58,6 +58,7 @@ to set what coin to mine.
 
 
 
+
 ## Monitoring
 
 ### Via SystemD
@@ -67,6 +68,7 @@ you can use systemd by invoking:
 ```bash
     sudo journalctl -u jxminer.service -f
 ```
+
 
 ### Via JXClient
 You can use [ JXClient ](https://github.com/duckzland/jxclient) to monitor and control JXMiner via CLI
@@ -101,6 +103,43 @@ You can use [ JXDashboard ](https://github.com/duckzland/jxdashboard) to monitor
     jxdashboard
 ```
 
+## Server Arguments
+The server has several command line arguments that can be used to modify the default value:
+
+```bash
+    jxminer -m|-h|-v|-s|-p|-c
+```
+
+-m <mode> Run the program as daemon, logging will be minimized
+-h Prints the help message
+-v Prints the server version
+-s Specify the host this server should bind to, by default it will bind to 127.0.0.1 which can only be accessed from local loop
+-p Specify the port to bind to
+-c Path to configuration files directory
+
+
+## TODO
+Patch or pull request for ironing out the todo list is welcomed.
+
+To test and iron out bugs for :
+1. Test Dual mining with claymore
+2. Test trully dual GPU miner running at once
+3. Test SGMiner and Ethminer integration
+4. Test running mixed AMD and Nvidia GPU in the same box
+5. Test with more GPU variant (1080ti, 1050ti, RXVega etc)
+6. Test with different kind of motherboard motherboard
+
+Future improvement :
+1. Add more miner such as xmr-stak
+2. Add more sgminer variant to match ccminer supported algo
+
+
+
+## Help with Donation
+if you found this program useful, consider to donate for the development fund.
+
+Send donation to:
+Monero : 49qh7jAS1Tt9C7rcmirWPNbg8p6eon24FQ7K5mTFE1i9ScRUSYDVuWw3MDcadcybhD8uBEhvJtymx4NpYNBSP3Tm5RHxhuY
 
 
 
@@ -112,4 +151,4 @@ You can use [ JXDashboard ](https://github.com/duckzland/jxdashboard) to monitor
 
 ## License
 
-This project is licensed under the GNU General Public License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNU General Public License - see the [LICENSE](LICENSE) file for details
