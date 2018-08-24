@@ -10,11 +10,13 @@ Python script for managing crypto miner instance under Linux OS.
 - GPU Core speed level control for both AMD and Nvidia GPU
 - GPU Power level control for Nvidia GPU
 - GPU Memory level control for Nvidia GPU
-- SystemD monitoring for rebooting server when GPU crashed
+- Systemd monitoring for rebooting server when GPU crashed
 - Notification system for sending json data to designated server
 - CPU miner using xmr-rig
-- GPU miner supported: ccminer, claymore, xmr-rig(cpu only), ethminer, ewbf, sgminer
+- GPU miner supported: ccminer, claymore, ethminer, ewbf, sgminer
 - Notification to Slack
+- Casing and GPU fan control with curve
+- Detect if hashrate is lower than expected value and reboot the machine (or just reboot the miner) when it happens
 
 
 ## Requirement
@@ -92,6 +94,12 @@ Use a single column only for monitoring multiple server instance
     jxmonitor -s
 ```
 
+### Via JXDashboard
+You can use [ JXDashboard ](https://github.com/duckzland/jxdashboard) to monitor JXMiner via GUI interface, Working Xserver is required to use GUI on Linux OS
+
+```bash
+    jxdashboard
+```
 
 
 
