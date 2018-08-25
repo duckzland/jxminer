@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.4.1",
+    version = "0.4.2",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -33,7 +33,6 @@ setup(
             'jxminer/data/miners/amdxmrig.ini',
             'jxminer/data/miners/ethminer.ini',
             'jxminer/data/miners/ewbf.ini',
-            'jxminer/data/miners/nheqminer.ini',
             'jxminer/data/miners/sgminer.ini',
         ]),
         ('/etc/jxminer/pools', [

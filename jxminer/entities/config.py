@@ -47,7 +47,6 @@ class Config:
             'cpuxmrig.ini',
             'ethminer.ini',
             'ewbf.ini',
-            'nheqminer.ini',
             'nvidiaxmrig.ini',
             'sgminer.ini',
         ],
