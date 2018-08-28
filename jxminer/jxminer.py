@@ -2,7 +2,7 @@
 #####
 # Main Miner Controller
 # Todo :
-# 1. Split PrintLog into separate Class
+# 1. Split Logger.printLog into separate Class
 #
 #####
 
@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(__file__))
 from modules.pynvml import *
 from modules.rocmsmi import *
 from modules.sysfs import *
-from modules.utility import printLog, sendSlack, insertConfig
+from modules.utility import sendSlack, insertConfig
 
 from entities.nvidia import Nvidia
 from entities.amd import AMD
@@ -23,6 +23,7 @@ from entities.fan import Fan
 from entities.threads import *
 from entities.shutdown import Shutdown
 from entities.config import Config
+from entities.logger import *
 
 from threads.casingFansThread import *
 from threads.gpuFansThread import *
@@ -47,13 +48,13 @@ class Main():
             self.config.data.dynamic.server.GPU.nvidia = int(deviceCount)
             self.loadXorg()
             for i in range(deviceCount):
-                printLog('Initialized NVidia GPU %s' % (i), 'success')
+                Logger.printLog('Initialized NVidia GPU %s' % (i), 'success')
                 self.cards.append(Nvidia(i))
                 self.config.data.dynamic.detected.nvidia[i] = i
 
         except NVMLError:
             self.config.data.dynamic.server.GPU.nvidia = 0
-            printLog('No NVidia GPU found in the system', 'info')
+            Logger.printLog('No NVidia GPU found in the system', 'info')
 
         try:
             devices = listDevices()
@@ -64,13 +65,13 @@ class Main():
             else:
                 for i in devices:
                     index = i.replace('card', '')
-                    printLog('Initialized AMD GPU %s' % (index), 'success')
+                    Logger.printLog('Initialized AMD GPU %s' % (index), 'success')
                     self.cards.append(AMD(index))
                     self.config.data.dynamic.detected.amd[index] = index
 
         except:
             self.config.data.dynamic.server.GPU.amd = 0
-            printLog('No AMD GPU found in the system', 'info')
+            Logger.printLog('No AMD GPU found in the system', 'info')
 
 
 
@@ -87,15 +88,15 @@ class Main():
 
                 if int(limit) > 0:
                     if totalTest == 0:
-                        printLog('%s %s gpu initialized properly' % (str(detected), gpuType), 'success')
+                        Logger.printLog('%s %s gpu initialized properly' % (str(detected), gpuType), 'success')
                         sendSlack('%s %s gpu initialized properly at %s' % (str(detected), gpuType, box_name))
 
                     else:
-                        printLog('%s %s gpu failed to initialize' % (str(totalTest), gpuType), 'error')
+                        Logger.printLog('%s %s gpu failed to initialize' % (str(totalTest), gpuType), 'error')
                         sendSlack('%s %s gpu failed to initialize at %s' % (str(totalTest), gpuType, box_name))
 
                         if c.machine.gpu_check_total.reboot_when_failed:
-                            printLog('Rebooting due to %s %s gpu is not initializing properly' % (str(totalTest), gpuType), 'error')
+                            Logger.printLog('Rebooting due to %s %s gpu is not initializing properly' % (str(totalTest), gpuType), 'error')
                             sendSlack('Rebooting %s due to %s %s gpu is not initializing properly' % (box_name, str(totalTest), gpuType))
                             time.sleep(30)
                             os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
@@ -125,7 +126,7 @@ class Main():
             if re.match(r'^hwmon\d+$', sensor) and type not in blacklisted :
                 for device in os.listdir(os.path.join(prefix, sensor, extra)) :
                     if re.match(r'^pwm\d+$', device) :
-                        printLog('Initialized fan %s:%s:%s' % (type, sensor, device), 'success')
+                        Logger.printLog('Initialized fan %s:%s:%s' % (type, sensor, device), 'success')
                         self.fans.append(Fan(device, {
                             'speed': os.path.join(prefix, sensor, extra, '%s'),
                             'pwm': os.path.join(prefix, sensor, extra, '%s_enable'),
@@ -133,7 +134,7 @@ class Main():
                         self.config.data.dynamic.detected.fans[device] = device
 
         if len(self.fans) == 0:
-            printLog('No casing fan found', 'info')
+            Logger.printLog('No casing fan found', 'info')
 
 
     def loadXorg(self):
@@ -143,7 +144,7 @@ class Main():
 
         try:
             subprocess.check_output(['pidof', 'Xorg'])
-            printLog('Xorg instance found', 'info')
+            Logger.printLog('Xorg instance found', 'info')
         except:
             self.xorg['process'] = subprocess.Popen(['X', ':0'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.xorg['process'].wait
@@ -155,7 +156,7 @@ class Main():
             p = subprocess.Popen(['xrandr', '--auto'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             p.wait()
 
-            printLog('Loading and tuning Xorg server', 'success')
+            Logger.printLog('Loading and tuning Xorg server', 'success')
 
 
 
@@ -257,7 +258,7 @@ class Main():
                 status = 'error'
 
             finally:
-                printLog("Program updated", status)
+                Logger.printLog("Program updated", status)
 
         elif action == 'server:shutdown':
             self.shutdown()
@@ -277,7 +278,7 @@ class Main():
                 status = 'error'
 
             finally:
-                printLog("Program rebooted", status)
+                Logger.printLog("Program rebooted", status)
 
 
     def usage(self):
@@ -299,7 +300,7 @@ class Main():
 
         # Only root please
         if os.geteuid() != 0:
-            printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
+            Logger.printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
             os.execvp("sudo", ["sudo"] + sys.argv)
 
 
@@ -359,16 +360,17 @@ class Main():
             self.socket.bind((host, port))
 
         except:
-            printLog('Another instance is running. exiting', 'error')
+            Logger.printLog('Another instance is running. exiting', 'error')
             os._exit(0)
 
         finally:
+            self.logger = Logger(action)
             self.config = Config(cPath)
             self.config.data.dynamic.settings.mode = action
             insertConfig(self.config)
             self.config.scan()
             c = self.config.data.config
-            printLog('Starting Program', 'info')
+            Logger.printLog('Starting Program', 'info')
             sendSlack('%s started JXMiner' % (c.machine.settings.box_name))
 
         try:
@@ -396,7 +398,7 @@ class Main():
                 status = 'error'
 
             finally:
-                printLog("Listening to socket with maximum %s connection" % (socket_limit), status)
+                Logger.printLog("Listening to socket with maximum %s connection" % (socket_limit), status)
 
             # Keep the main thread running, otherwise signals are ignored.
             while True:
@@ -430,18 +432,18 @@ class Main():
                             status = 'error'
 
                         finally:
-                            printLog("Connecting with %s:%s" % (ip, port), status)
+                            Logger.printLog("Connecting with %s:%s" % (ip, port), status)
 
                 time.sleep(1)
 
         except Exception as e:
-            printLog(str(e), 'error')
-            printLog("Preparing to close program", 'info')
+            Logger.printLog(str(e), 'error')
+            Logger.printLog("Preparing to close program", 'info')
 
         finally:
             self.shutdown()
             sendSlack('%s stopped JXMiner' % (c.machine.settings.box_name))
-            printLog('Exiting main program', 'success')
+            Logger.printLog('Exiting main program', 'success')
             os._exit(1)
             os.kill(os.getpid(), signal.SIGINT)
 
@@ -457,7 +459,7 @@ class Main():
             status = 'error'
 
         finally:
-            printLog("Closing open sockets", status)
+            Logger.printLog("Closing open sockets", status)
 
         try:
             self.threads.destroy()
@@ -467,7 +469,7 @@ class Main():
             status = 'error'
 
         finally:
-            printLog("Stopping running threads", status)
+            Logger.printLog("Stopping running threads", status)
 
         if 'process' in self.xorg:
             try:
@@ -486,7 +488,7 @@ class Main():
                 status = 'error'
 
             finally:
-                printLog("Stopping Xorg server", status)
+                Logger.printLog("Stopping Xorg server", status)
 
 
 def start_miner():

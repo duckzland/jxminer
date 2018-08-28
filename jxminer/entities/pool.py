@@ -1,5 +1,6 @@
 from entities.config import *
-from modules.utility import explode, printLog
+from modules.utility import explode
+from entities.logger import *
 
 class Pool:
 
@@ -22,7 +23,7 @@ class Pool:
             status = 'error'
             raise
         finally:
-            printLog("Loading %s pool configuration" % (self.name), status)
+            Logger.printLog("Loading %s pool configuration" % (self.name), status)
 
         self.wallet = self.config.data.config.coins
         self.machine = self.config.data.config.machine

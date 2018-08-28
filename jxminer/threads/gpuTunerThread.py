@@ -2,8 +2,9 @@ import time
 from thread import Thread
 from entities.job import *
 from entities.config import *
+from entities.logger import *
 
-from modules.utility import calculateStep, printLog
+from modules.utility import calculateStep
 
 class gpuTunerThread(Thread):
 
@@ -88,4 +89,4 @@ class gpuTunerThread(Thread):
                 except:
                     status = 'error'
                 finally:
-                    printLog('Tuning GPU %s:%s %s level to %s%%' % (unit.index, type, modeText, newLevel), status)
+                    Logger.printLog('Tuning GPU %s:%s %s level to %s%%' % (unit.index, type, modeText, newLevel), status)

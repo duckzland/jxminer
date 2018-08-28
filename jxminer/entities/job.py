@@ -1,6 +1,6 @@
 import time, threading, signal
 
-from modules.utility import printLog
+from entities.logger import *
 from entities.shutdown import *
 
 class Job(threading.Thread):

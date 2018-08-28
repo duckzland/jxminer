@@ -2,8 +2,9 @@ import os, subprocess, psutil, time, re, pexpect, signal
 
 from entities.pool import Pool
 from entities.config import Config
+from entities.logger import *
 from modules.transfer import *
-from modules.utility import which, getOption, printLog, findFile, explode, stripAnsi
+from modules.utility import which, getOption, findFile, explode, stripAnsi
 
 class Miner:
 
@@ -147,7 +148,7 @@ class Miner:
                 status = 'error'
 
             finally:
-                printLog('Initializing %s miner instance' % (self.miner), status)
+                Logger.printLog('Initializing %s miner instance' % (self.miner), status)
 
         if self.status == 'ready':
             self.monitor()
@@ -176,7 +177,7 @@ class Miner:
                 status = 'error'
 
             finally:
-                printLog('Stopping %s miner instance' % (self.miner), status)
+                Logger.printLog('Stopping %s miner instance' % (self.miner), status)
 
 
 
@@ -194,13 +195,13 @@ class Miner:
                     if not alive:
                         self.reboot()
                         self.max_retries = self.max_retries - 1
-                        printLog('Restarting crashed %s miner instance' % (self.miner), 'info')
+                        Logger.printLog('Restarting crashed %s miner instance' % (self.miner), 'info')
                     else:
                         self.max_retries = 3
 
 
             if self.max_retries < 0:
-                printLog('Maximum retry of -#%s#- reached' % 3, 'info')
+                Logger.printLog('Maximum retry of -#%s#- reached' % 3, 'info')
                 return 'give_up'
 
             return 'running'
@@ -214,7 +215,7 @@ class Miner:
         except:
             status = 'error'
         finally:
-            printLog('Shutting down %s miner' % (self.miner), status)
+            Logger.printLog('Shutting down %s miner' % (self.miner), status)
 
 
 

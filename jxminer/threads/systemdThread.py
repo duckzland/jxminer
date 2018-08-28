@@ -3,8 +3,9 @@ from systemd import journal
 
 from entities.job import *
 from entities.config import *
+from entities.logger import *
 from thread import Thread
-from modules.utility import printLog, sendSlack
+from modules.utility import sendSlack
 
 class systemdThread(Thread):
 
@@ -36,11 +37,11 @@ class systemdThread(Thread):
                         try:
                             sendSlack('%s is rebooting the system due to GPU crashed' % (c.machine.settings.box_name))
                             sendSlack(entry['MESSAGE'])
-                            printLog('Notifying Slack for reboot schedule', 'info')
+                            Logger.printLog('Notifying Slack for reboot schedule', 'info')
                             time.sleep(1)
 
                         finally:
-                            printLog('Rebooting system due to GPU crashed', 'error')
+                            Logger.printLog('Rebooting system due to GPU crashed', 'error')
 
                             ## Hard Reboot can corrupt data! ##
                             if c.machine.settings.hard_reboot:

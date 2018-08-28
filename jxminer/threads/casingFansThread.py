@@ -2,7 +2,8 @@
 from thread import Thread
 from entities.job import *
 from entities.config import *
-from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog
+from entities.logger import *
+from modules.utility import getHighestTemps, getAverageTemps, calculateStep
 from modules.curve import Curve
 
 class casingFansThread(Thread):
@@ -74,4 +75,4 @@ class casingFansThread(Thread):
                 except:
                     status = 'error'
                 finally:
-                    printLog('Set PWM:%s fan speed to %s%% [%sC]' % (unit.index.replace('pwm', ''), newSpeed, temperature), status)
+                    Logger.printLog('Set PWM:%s fan speed to %s%% [%sC]' % (unit.index.replace('pwm', ''), newSpeed, temperature), status)

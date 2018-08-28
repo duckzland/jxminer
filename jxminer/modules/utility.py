@@ -3,66 +3,11 @@ import os, fnmatch, re
 from datetime import datetime
 from slackclient import SlackClient
 
-MainBuffers = []
 Conf = None
 
 def insertConfig(Config):
     global Conf
     Conf = Config
-
-def printLog(text, status = 'info', buffer = True, console = True):
-    global MainBuffers
-    global Conf
-    mode = 'normal'
-    try:
-        mode = Conf.data.dynamic.settings.mode
-    except:
-        pass
-
-    if 'error' in status:
-        status = '-#' + status + '  #-'
-
-    elif 'info' in status:
-        status = '---#' + status + '   #-'
-
-    else:
-        status = '--#' + status + '#-'
-
-    status = (
-        status
-            .upper()
-            # Cyan color
-            .replace('---#', '\033[36m')
-
-            # Green color
-            .replace('--#', '\033[32m')
-
-            # Red color
-            .replace('-#', '\033[91m')
-            .replace('#-', '\033[0m')
-    )
-
-    text = (
-        text
-            .replace('--#', '\033[32m')
-            .replace('-#', '\033[91m')
-            .replace('#-', '\033[0m')
-    )
-
-    if mode not in ['daemon']:
-        output = "[ {0} ][ {1} ] {2}".format(datetime.now().strftime('%m-%d %H:%M'), status, text).strip()
-
-    else:
-        output = "[ {0} ] {1}".format(status, text).strip()
-
-    if buffer:
-        if len(MainBuffers) > 10 :
-            MainBuffers.pop(0)
-        MainBuffers.append(output)
-
-    if console:
-        print(output)
-
 
 
 def sendSlack(message):
@@ -80,8 +25,6 @@ def sendSlack(message):
         except Exception as e:
             pass
 
-def getLogBuffers():
-    return MainBuffers
 
 
 def getHighestTemps(GPUUnits):

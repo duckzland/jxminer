@@ -2,9 +2,10 @@ import io, select, time, json, psutil, re
 
 from entities.job import *
 from entities.config import *
+from entities.logger import *
 from thread import Thread
 from modules.transfer import *
-from modules.utility import getHighestTemps, getAverageTemps, calculateStep, printLog, getLogBuffers
+from modules.utility import getHighestTemps, getAverageTemps, calculateStep
 
 class socketActionThread(Thread):
 
@@ -117,7 +118,7 @@ class socketActionThread(Thread):
                 status = 'error'
             finally:
                 self.active = False
-                printLog("Stopping active thread connection", status)
+                Logger.printLog("Stopping active thread connection", status)
 
 
 
@@ -147,7 +148,7 @@ class socketActionThread(Thread):
 
             finally:
                 self.active = False
-                printLog("Destroying active thread", status)
+                Logger.printLog("Destroying active thread", status)
 
 
     def generateStatusOutput(self) :
@@ -309,7 +310,7 @@ class socketActionThread(Thread):
             pass
 
         try:
-            status['serverlog'] = "\n".join(getLogBuffers())
+            status['serverlog'] = "\n".join(Logger.getLogBuffers())
         except:
             pass
 

@@ -1,7 +1,8 @@
 from thread import Thread
 from entities.job import *
 from entities.config import *
-from modules.utility import calculateStep, printLog
+from entities.logger import *
+from modules.utility import calculateStep
 from modules.curve import Curve
 
 class gpuFansThread(Thread):
@@ -63,4 +64,4 @@ class gpuFansThread(Thread):
                 except:
                     status = 'error'
                 finally:
-                    printLog('Set GPU:%s fan speed to %s%% [%sC]' % (unit.index, newSpeed, unit.temperature), status)
+                    Logger.printLog('Set GPU:%s fan speed to %s%% [%sC]' % (unit.index, newSpeed, unit.temperature), status)

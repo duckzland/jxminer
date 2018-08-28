@@ -2,8 +2,9 @@ import os, time, re
 
 from entities.job import *
 from entities.config import *
+from entities.logger import *
 from thread import Thread
-from modules.utility import printLog, sendSlack
+from modules.utility import sendSlack
 
 class watchdogThread(Thread):
 
@@ -47,20 +48,20 @@ class watchdogThread(Thread):
 
     def rebootMachine(self, message):
         countdown = 0
-        printLog('Watchdog scheduled to reboot the system in %s seconds due to %s' % (self.delay, message), 'info')
+        Logger.printLog('Watchdog scheduled to reboot the system in %s seconds due to %s' % (self.delay, message), 'info')
         rebootMessage = 'Watchdog %s is %s rebooting the system due to %s'
         while True:
             countdown += 1
             if countdown == self.delay:
                 if self.softRebootCount == self.maxRetry and self.isRebooting:
-                    printLog(rebootMessage % (self.boxName, 'hard', message), 'info')
+                    Logger.printLog(rebootMessage % (self.boxName, 'hard', message), 'info')
                     sendSlack(rebootMessage % (self.boxName, 'hard', message))
                     time.sleep(3)
                     os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
 
                 else:
                     self.softRebootCount += 1
-                    printLog(rebootMessage % (self.boxName, 'soft', message), 'info')
+                    Logger.printLog(rebootMessage % (self.boxName, 'soft', message), 'info')
                     sendSlack(rebootMessage % (self.boxName, 'soft', message))
                     self.miner.reboot()
 

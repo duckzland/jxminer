@@ -1,5 +1,5 @@
 
-from modules.utility import printLog
+from entities.logger import *
 
 class Thread:
 

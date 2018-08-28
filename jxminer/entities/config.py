@@ -1,9 +1,9 @@
 import os, ConfigParser, json
 from addict import Dict
-from modules.utility import printLog
+from entities.logger import *
 from shutil import rmtree
 
-class Config:
+class Config():
 
     """
         Class for managing apps configuration
@@ -145,7 +145,7 @@ class Config:
                 status = 'error'
 
             finally:
-                printLog('Loading %s configuration from %s' % (name, path), status)
+                Logger.printLog('Loading %s configuration from %s' % (name, path), status)
 
 
 
@@ -201,7 +201,7 @@ class Config:
                 payload = json.loads(payload)
 
             except Exception as e:
-                printLog('Failed to insert configuration: %s' % (e), 'error')
+                Logger.printLog('Failed to insert configuration: %s' % (e), 'error')
                 return
 
         if isinstance(payload, dict):

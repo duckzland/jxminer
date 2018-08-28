@@ -1,4 +1,5 @@
-from modules.utility import printLog, sendSlack
+from modules.utility import sendSlack
+from entities.logger import *
 
 class Threads:
 
@@ -42,7 +43,7 @@ class Threads:
                 status = 'error'
 
             finally:
-                printLog('Starting %s manager' % (name.replace('_', ' ')) , status)
+                Logger.printLog('Starting %s manager' % (name.replace('_', ' ')) , status)
 
 
 
@@ -61,7 +62,7 @@ class Threads:
                 status = 'error'
 
             finally:
-                printLog('Stopping %s manager' % (name.replace('_', ' ')) , status)
+                Logger.printLog('Stopping %s manager' % (name.replace('_', ' ')) , status)
 
 
     def clean(self):

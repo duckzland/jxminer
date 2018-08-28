@@ -11,7 +11,7 @@ from miners.sgminer import *
 from miners.amdxmrig import *
 from miners.nvidiaxmrig import *
 
-from modules.utility import printLog
+from entities.logger import *
 
 class gpuMinerThread(Thread):
 
@@ -62,7 +62,7 @@ class gpuMinerThread(Thread):
             status = 'error'
 
         finally:
-            printLog("Stopping gpu miner manager", status)
+            Logger.printLog("Stopping gpu miner manager", status)
 
 
 
@@ -128,4 +128,4 @@ class gpuMinerThread(Thread):
                 self.miners.append(NvidiaXMRig())
 
             else:
-                printLog('Refused to load invalid miner program type', 'error')
+                Logger.printLog('Refused to load invalid miner program type', 'error')

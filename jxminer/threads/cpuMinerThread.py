@@ -1,10 +1,9 @@
 from thread import Thread
 from entities.job import *
 from entities.config import *
+from entities.logger import *
 from miners.cpuminer import *
 from miners.cpuxmrig import *
-
-from modules.utility import printLog
 
 class cpuMinerThread(Thread):
 
@@ -50,7 +49,7 @@ class cpuMinerThread(Thread):
             status = 'error'
 
         finally:
-            printLog("Stopping cpu miner manager", status)
+            Logger.printLog("Stopping cpu miner manager", status)
 
 
     def selectMiner(self):
@@ -68,5 +67,5 @@ class cpuMinerThread(Thread):
             self.miner = CpuXMRig()
 
         else:
-            printLog('Refused to load invalid miner program type', 'error')
+            Logger.printLog('Refused to load invalid miner program type', 'error')
             self.destroy()

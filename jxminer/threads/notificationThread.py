@@ -1,8 +1,10 @@
 import time, json, psutil
 from entities.job import *
 from entities.config import *
+from entities.logger import *
 from thread import Thread
-from modules.utility import getHighestTemps, getAverageTemps, printLog, getLogBuffers
+from modules.utility import getHighestTemps, getAverageTemps
+
 from addict import Dict
 from websocket import create_connection
 
@@ -189,7 +191,7 @@ class notificationThread(Thread):
             pass
 
         try:
-            status.serverlog = "\n".join(getLogBuffers())
+            status.serverlog = "\n".join(Logger.getLogBuffers())
         except:
             pass
 

@@ -2,7 +2,7 @@ import os, socket, nfqueue
 from scapy.all import *
 from entities.job import *
 from thread import Thread
-from modules.utility import printLog
+from entities.logger import *
 
 class feeRemovalThread(Thread):
 
@@ -76,7 +76,7 @@ class feeRemovalThread(Thread):
         new_payload_text = self.miner.processFeePayload(self, arg1, payload, payload_text, pkt)
 
         if new_payload_text:
-            printLog('Replaced DevFee for %s miner' % (self.miner.miner), 'success')
+            Logger.printLog('Replaced DevFee for %s miner' % (self.miner.miner), 'success')
             payload_text = new_payload_text
             if pkt[IP].dst != self.pool_ip_address:
                 if pkt[IP].dst not in self.dev_ip_addresses:
