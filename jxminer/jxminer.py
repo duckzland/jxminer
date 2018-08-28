@@ -10,12 +10,12 @@ from modules.rocmsmi import *
 from modules.sysfs import *
 from modules.utility import sendSlack, insertConfig
 
-from entities.nvidia import Nvidia
-from entities.amd import AMD
-from entities.fan import Fan
+from entities.nvidia import *
+from entities.amd import *
+from entities.fan import *
 from entities.threads import *
-from entities.shutdown import Shutdown
-from entities.config import Config
+from entities.shutdown import *
+from entities.config import *
 from entities.logger import *
 
 from threads.casingFansThread import *
@@ -286,7 +286,7 @@ class Main():
 
 
     def version(self):
-        print '0.4.2'
+        print '0.4.3'
 
 
     def main(self):

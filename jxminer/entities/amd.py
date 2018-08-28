@@ -96,6 +96,10 @@ class AMD(GPU):
                     self.memoryLevel = level
                     self.setMemoryLevel(level)
 
+            # Extend this to lower / increase power using power play?
+            if kwargs.get('power', False):
+                pass
+
 
     def setCoreLevel(self, level):
         if self.supportLevels:
@@ -118,3 +122,8 @@ class AMD(GPU):
                 levels = [ levels ]
 
             setClocks([self.machineIndex], 'mem', levels)
+
+
+    # Extend this to lower / increase power using power play?
+    def setPowerLevel(self, level):
+        pass
