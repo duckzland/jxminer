@@ -7,7 +7,7 @@
 #####
 
 
-import os, sys, traceback, ConfigParser, socket, uuid, getopt, signal, time
+import os, sys, traceback, ConfigParser, socket, uuid, getopt, signal, time, fcntl
 
 # Registering main root path for sane building!
 sys.path.append(os.path.dirname(__file__))
@@ -302,15 +302,14 @@ class Main():
             printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
             os.execvp("sudo", ["sudo"] + sys.argv)
 
-        # Stop multiple instance being spawned
-        total = 0
-        for process in psutil.process_iter():
-            for name in process.cmdline():
-                if 'jxminer' in name:
-                    total += 1
 
-        if total > 1:
+        # Only one instance allowed
+        self.lockfile = open('/var/run/jxminer.pid', 'w+')
+        try:
+            fcntl.flock(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except:
             sys.exit('Only one instance of jxminer allowed.')
+
 
         # Setup tools dont allow argument
         argv = sys.argv[1:]
