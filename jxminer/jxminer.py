@@ -1,11 +1,4 @@
 #!/usr/bin/env python
-#####
-# Main Miner Controller
-# Todo :
-# 1. Split Logger.printLog into separate Class
-#
-#####
-
 
 import os, sys, traceback, ConfigParser, socket, uuid, getopt, signal, time, fcntl
 
