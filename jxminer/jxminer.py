@@ -33,7 +33,6 @@ class Main():
 
     "This is the base class for GPU instance"
 
-
     def detectGPU(self):
         try:
             nvmlInit()
@@ -165,10 +164,10 @@ class Main():
                         casingFansThread(False, self.fans, self.cards),
                         c.fans.casing.enable)
 
-                    self.threads.process(
-                        'gpu_fans',
-                        gpuFansThread(False, self.cards),
-                        c.fans.gpu.enable)
+                self.threads.process(
+                    'gpu_fans',
+                    gpuFansThread(False, self.cards),
+                    c.fans.gpu.enable)
 
             if c.tuner:
                 self.threads.process(
@@ -286,7 +285,7 @@ class Main():
 
 
     def version(self):
-        print '0.4.3'
+        print '0.4.4'
 
 
     def main(self):
