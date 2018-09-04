@@ -307,7 +307,10 @@ def setFanSpeed(deviceList, fan):
         fanpath = os.path.join(hwmon, 'pwm1')
         maxfan = getSysfsValue(device, 'fanmax')
         if not maxfan:
-            continue
+            # kernel 4.15 changes the path for max pwm
+            maxfan = getSysfsValue(device, 'pwm1_max')
+	    if not maxfan:
+                continue
 
         if int(fan) > int(maxfan):
             continue
