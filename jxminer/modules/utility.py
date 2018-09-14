@@ -2,6 +2,7 @@ import os, fnmatch, re
 
 from datetime import datetime
 from slackclient import SlackClient
+from entities.logger import *
 
 Conf = None
 
@@ -16,14 +17,16 @@ def sendSlack(message):
     try:
         c = Conf.data.config.slack.settings
     except:
-        pass
+        Logger.printLog('Failed to retrieve slack configuration' , 'error')
+
     if message and c and c.enable:
         try:
             s = SlackClient(c.token)
             output = "[{0}] {1}".format(datetime.now().strftime('%m-%d %H:%M'), message)
             s.api_call("chat.postMessage", channel=c.channel, text=output)
+
         except Exception as e:
-            pass
+            Logger.printLog('Failed to send message via slack' , 'error')
 
 
 

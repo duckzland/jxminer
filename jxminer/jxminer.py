@@ -73,10 +73,11 @@ class Main():
         if c.machine.gpu_check_total.enable:
             for gpuType in ['amd', 'nvidia']:
 
-                limit     = c.machine.gpu_check_total[gpuType]
-                detected  = d.server.GPU[gpuType]
-                totalTest = int(limit) - int(detected)
-                box_name  = c.machine.settings.box_name
+                limit       = c.machine.gpu_check_total[gpuType]
+                detected    = d.server.GPU[gpuType]
+                totalTest   = int(limit) - int(detected)
+                box_name    = c.machine.settings.box_name
+                rebootDelay = 60
 
                 if int(limit) > 0:
                     if totalTest == 0:
@@ -88,10 +89,18 @@ class Main():
                         sendSlack('%s %s gpu failed to initialize at %s' % (str(totalTest), gpuType, box_name))
 
                         if c.machine.gpu_check_total.reboot_when_failed:
-                            Logger.printLog('Rebooting due to %s %s gpu is not initializing properly' % (str(totalTest), gpuType), 'error')
-                            sendSlack('Rebooting %s due to %s %s gpu is not initializing properly' % (box_name, str(totalTest), gpuType))
-                            time.sleep(30)
-                            os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+                            try:
+                                Logger.printLog('Rebooting in %d seconds due to %s %s gpu is not initializing properly' % (rebootDelay, str(totalTest), gpuType), 'error')
+                                sendSlack('Rebooting %s in %d seconds due to %s %s gpu is not initializing properly' % (rebootDelay, box_name, str(totalTest), gpuType))
+
+                                time.sleep(rebootDelay)
+                                os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+
+                            # Allow user to cancel the rebooting process
+                            except:
+                                Logger.printLog('Rebooting cancelled', 'info')
+                                sendSlack('Rebooting %s cancelled' % (box_name))
+
 
 
     def detectFans(self):
@@ -183,10 +192,11 @@ class Main():
 
 
         if c.machine:
-            self.threads.process(
-                'gpu_miner',
-                gpuMinerThread(False),
-                c.machine.gpu_miner.enable)
+            if self.cards:
+                self.threads.process(
+                    'gpu_miner',
+                    gpuMinerThread(False),
+                    c.machine.gpu_miner.enable)
 
             self.threads.process(
                 'cpu_miner',

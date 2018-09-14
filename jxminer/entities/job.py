@@ -1,8 +1,5 @@
 import time, threading, signal
 
-from entities.logger import *
-from entities.shutdown import *
-
 class Job(threading.Thread):
 
     """
