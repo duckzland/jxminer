@@ -14,10 +14,13 @@ def insertConfig(Config):
 def sendSlack(message):
     global Conf
     c = False
+
     try:
         c = Conf.data.config.slack.settings
-    except:
+
+    except Exception as e:
         Logger.printLog('Failed to retrieve slack configuration' , 'error')
+        Logger.printLog(str(e), 'error')
 
     if message and c and c.enable:
         try:
@@ -27,6 +30,7 @@ def sendSlack(message):
 
         except Exception as e:
             Logger.printLog('Failed to send message via slack' , 'error')
+            Logger.printLog(str(e), 'error')
 
 
 

@@ -295,7 +295,7 @@ class Main():
 
 
     def version(self):
-        print '0.4.4'
+        print '0.4.5'
 
 
     def main(self):
@@ -369,8 +369,8 @@ class Main():
             self.logger = Logger(action)
             self.config = Config(cPath)
             self.config.data.dynamic.settings.mode = action
-            insertConfig(self.config)
             self.config.scan()
+            insertConfig(self.config)
             c = self.config.data.config
             Logger.printLog('Starting Program', 'info')
             sendSlack('%s started JXMiner' % (c.machine.settings.box_name))
