@@ -3,20 +3,14 @@ import os, fnmatch, re
 from datetime import datetime
 from slackclient import SlackClient
 from entities.logger import *
-
-Conf = None
-
-def insertConfig(Config):
-    global Conf
-    Conf = Config
+from entities.config import *
 
 
 def sendSlack(message):
-    global Conf
-    c = False
 
+    c = False
     try:
-        c = Conf.data.config.slack.settings
+        c = Config.data.config.slack.settings
 
     except Exception as e:
         Logger.printLog('Failed to retrieve slack configuration' , 'error')

@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(__file__))
 from modules.pynvml import *
 from modules.rocmsmi import *
 from modules.sysfs import *
-from modules.utility import sendSlack, insertConfig
+from modules.utility import sendSlack
 
 from entities.nvidia import *
 from entities.amd import *
@@ -370,7 +370,6 @@ class Main():
             self.config = Config(cPath)
             self.config.data.dynamic.settings.mode = action
             self.config.scan()
-            insertConfig(self.config)
             c = self.config.data.config
             Logger.printLog('Starting Program', 'info')
             sendSlack('%s started JXMiner' % (c.machine.settings.box_name))
