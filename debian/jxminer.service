@@ -1,6 +1,7 @@
 [Unit]
 Description=JXMiner
-After=network.target
+After=rc-local.service
+Before=getty.target
 
 [Service]
 Type=simple

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, traceback, ConfigParser, socket, uuid, getopt, signal, time, fcntl
+import os, sys, socket, uuid, getopt, signal, time, fcntl
 
 # Registering main root path for sane building!
 sys.path.append(os.path.dirname(__file__))
@@ -31,7 +31,9 @@ from threads.watchdogThread import *
 
 class Main():
 
-    "This is the base class for GPU instance"
+    """
+        The main class for managing the miner managers
+    """
 
     def detectGPU(self):
         try:
