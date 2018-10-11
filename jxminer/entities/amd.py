@@ -105,7 +105,15 @@ class AMD(GPU):
         if self.supportLevels:
             levels = self.round((level * self.maxCoreLevel) / 100)
             if not self.strictPowerMode:
+                # Driver < 4.30 wants to allow level
                 levels = range(0, levels)
+
+                # Driver > 4.30 wants to mask level instead.
+                #if levels == self.maxCoreLevel:
+                #    levels = []
+                #else:
+                #    levels = range(levels + 1, self.maxCoreLevel)
+
             else:
                 levels = [ levels ]
 

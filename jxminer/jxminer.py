@@ -297,7 +297,7 @@ class Main():
 
 
     def version(self):
-        print '0.4.5'
+        print '0.5.0'
 
 
     def main(self):

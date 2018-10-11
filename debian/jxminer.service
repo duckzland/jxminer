@@ -7,6 +7,7 @@ Before=getty.target
 Type=simple
 GuessMainPID=yes
 ExecStart=/usr/local/bin/jxminer -m daemon
+WorkingDirectory=/root
 Restart=on-failure
 User=root
 Group=root

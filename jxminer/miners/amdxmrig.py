@@ -34,6 +34,16 @@ class AmdXMRig(Miner):
         if self.config.data.dynamic.server.GPU.amd == 0:
             raise ValueError('No AMD card found, AMD XMRig miner only support AMD card')
 
+        devices = []
+        for i in range(0, int(self.config.data.dynamic.server.GPU.amd)):
+            for x in range(0, int(self.miner_config.settings.threads)):
+                devices.append(str(i))
+
+        self.option = self.option.replace('{xmrig_devices}', ','.join(devices))
+
+        if 'intensity' in self.miner_config.settings:
+            self.option = self.option.replace('{xmrig_intensity}', self.miner_config.settings.intensity)
+
         self.setupEnvironment()
 
 

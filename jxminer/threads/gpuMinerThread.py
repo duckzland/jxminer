@@ -10,6 +10,7 @@ from miners.miner import *
 from miners.sgminer import *
 from miners.amdxmrig import *
 from miners.nvidiaxmrig import *
+from miners.castxmr import *
 
 from entities.logger import *
 
@@ -127,5 +128,8 @@ class gpuMinerThread(Thread):
                 self.config.load('miners', 'nvidiaxmrig.ini', True)
                 self.miners.append(NvidiaXMRig())
 
+            elif miner in 'castxmr':
+                self.config.load('miners', 'castxmr.ini', True)
+                self.miners.append(CastXmr())
             else:
                 Logger.printLog('Refused to load invalid miner program type', 'error')
