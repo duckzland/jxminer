@@ -28,6 +28,7 @@ class AMD(GPU):
     def init(self):
         self.type = 'AMD'
         self.strictPowerMode = False
+        self.strictMemoryMode = False
         self.coreLevel = 100
         self.memoryLevel = False
         self.powerLevel = False
@@ -123,9 +124,16 @@ class AMD(GPU):
 
     def setMemoryLevel(self, level):
         if self.supportLevels:
-            levels = self.round((level * self.maxCoreLevel) / 100)
-            if not self.strictPowerMode:
+            levels = self.round((level * self.maxMemoryLevel) / 100)
+            if not self.strictMemoryMode:
+                # Driver < 4.30 wants to allow level
                 levels = range(0, levels)
+
+                # Driver > 4.30 wants to mask level instead.
+                #if levels == self.maxMemoryLevel:
+                #    levels = []
+                #else:
+                #    levels = range(levels + 1, self.maxMemoryLevel)
             else:
                 levels = [ levels ]
 

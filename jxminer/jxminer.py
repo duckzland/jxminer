@@ -36,6 +36,7 @@ class Main():
     """
 
     def detectGPU(self):
+        c = self.config.data.config
         try:
             nvmlInit()
             deviceCount = nvmlDeviceGetCount()
@@ -60,7 +61,12 @@ class Main():
                 for i in devices:
                     index = i.replace('card', '')
                     Logger.printLog('Initialized AMD GPU %s' % (index), 'success')
-                    self.cards.append(AMD(index))
+
+                    gpu = AMD(index)
+                    if c.machine.settings.gpu_strict_power_mode:
+                        gpu.strictPowerMode = c.machine.settings.gpu_strict_power_mode
+
+                    self.cards.append(gpu)
                     self.config.data.dynamic.detected.amd[index] = index
 
         except:
@@ -297,7 +303,7 @@ class Main():
 
 
     def version(self):
-        print '0.5.0'
+        print '0.5.1'
 
 
     def main(self):
