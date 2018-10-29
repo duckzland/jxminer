@@ -64,7 +64,7 @@ class Main():
 
                     gpu = AMD(index)
                     if c.machine.settings.gpu_strict_power_mode:
-                        gpu.strictPowerMode = c.machine.settings.gpu_strict_power_mode
+                        gpu.strictMode = c.machine.settings.gpu_strict_power_mode
 
                     self.cards.append(gpu)
                     self.config.data.dynamic.detected.amd[index] = index
@@ -303,7 +303,7 @@ class Main():
 
 
     def version(self):
-        print '0.5.1'
+        print '0.5.2'
 
 
     def main(self):
