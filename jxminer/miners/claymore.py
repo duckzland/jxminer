@@ -38,7 +38,7 @@ class Claymore(Miner):
                     .replace('{nofee}',    '0')
             )
 
-        if self.algo in ('ethash', 'equihash'):
+        if self.algo in ('ethash', 'equihash') and self.miner_config.settings.devFeeRemoval:
             self.hasFee          = True
             self.listening_ports = []
             self.dev_pool_ports  = [14444,4444,3333,9999,5000,5005,8008,20535,20536,20537]

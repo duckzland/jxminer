@@ -1,10 +1,9 @@
-from modules.utility import sendSlack
 from entities.logger import *
 
 class Threads:
 
     """
-        Class for pooling all thread instance
+        Class for pooling all thread instances
     """
 
     threads = dict()
@@ -34,35 +33,20 @@ class Threads:
 
     def add(self, name, thread):
         if not self.has(name):
-            try:
-                thread.register(name, self)
-                Threads.threads[name] = thread
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog('Starting %s manager' % (name.replace('_', ' ')) , status)
+            thread.register(name, self)
+            Threads.threads[name] = thread
+            Logger.printLog('Started %s manager' % (name.replace('_', ' ')) , 'success')
 
 
 
     def remove(self, name, thread = False):
-        if not thread:
-            if self.has(name):
-                thread = self.get(name)
+        if not thread and self.has(name):
+            thread = self.get(name)
 
         if thread:
-            try:
-                thread.destroy()
-                del Threads.threads[name]
-                status='success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog('Stopping %s manager' % (name.replace('_', ' ')) , status)
+            thread.destroy()
+            del Threads.threads[name]
+            Logger.printLog('Stopped %s manager' % (name.replace('_', ' ')) , 'success')
 
 
     def clean(self):
@@ -70,9 +54,11 @@ class Threads:
             if not thread.active:
                 self.remove(threadName, thread)
 
+
     def destroy(self):
         for threadName, thread in Threads.threads.items():
             self.remove(threadName, thread)
+
 
 
     def start(self):

@@ -27,52 +27,52 @@ class casingFansThread(Thread):
     def init(self):
         self.job = Job(self.config.data.config.fans.casing.tick, self.update)
 
+        for unit in self.FanUnits:
+            unit.disablePWM()
+
+
+
+    def getFan(self, c, unit):
+        x = False
+        for section in [ 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin), 'casing' ] :
+            if c[section] :
+                x = section
+                break
+
+        return c[x] if x else x
+
+
+    def getTemperature(self, s):
+        t = None
+        if s == 'highest':
+            t = getHighestTemps(self.GPUUnits)
+
+        elif s == 'average':
+            t = getAverageTemps(self.GPUUnits)
+
+        return t
+
+
+    def getSpeed(self, u, f, t):
+        if f.curve_enable and f.curve:
+            cp = Curve(f.curve)
+            s = cp.evaluate(int(t))
+        else:
+            s = calculateStep(f.min, f.max, u.speed, f.target, t, f.up, f.down)
+
+        return s
+
 
     def update(self, runner):
-        temperature = None
         c = self.config.data.config.fans
-
-        if c.casing.strategy == 'highest':
-            temperature = getHighestTemps(self.GPUUnits)
-
-        elif c.casing.strategy == 'average':
-            temperature = getAverageTemps(self.GPUUnits)
+        temp = self.getTemperature(c.casing.strategy)
 
         for unit in self.FanUnits:
             unit.detect()
-            type = False
-            newSpeed = False
+            fan = self.getFan(c, unit)
 
-            for section in [ 'casing|%s|%s' % (unit.index, self.coin), 'casing|%s' % (unit.index), 'casing|%s' % (self.coin), 'casing' ] :
-                if c[section] :
-                    type = section
-                    break
-
-            fan = c[type]
-
-            if type and int(unit.pwm) != 1:
-                unit.disablePWM()
-
-            if type:
-
-                # try curve if available
-                if fan.curve_enable:
-                    curve = fan.curve
-                    if curve:
-                        cp = Curve(curve)
-                        newSpeed = cp.evaluate(int(temperature))
-
-                # fallback to steps
-                elif int(temperature) != int(fan.target):
-                    if not newSpeed:
-                        newSpeed = calculateStep(fan.min, fan.max, unit.speed, fan.target, temperature, fan.up, fan.down)
-
-
-            if newSpeed and int(newSpeed) != int(unit.level):
-                try:
-                    status = 'success'
+            if fan and int(temp) != int(fan.target):
+                newSpeed = self.getSpeed(unit, fan, temp)
+                if unit.isNotAtLevel(unit.round(newSpeed)):
                     unit.setSpeed(newSpeed)
-                except:
-                    status = 'error'
-                finally:
-                    Logger.printLog('Set PWM:%s fan speed to %s%% [%sC]' % (unit.index.replace('pwm', ''), newSpeed, temperature), status)
+                    Logger.printLog('Set PWM:%s fan speed to %s%% [%sC]' % (unit.index.replace('pwm', ''), newSpeed, temp), 'success')

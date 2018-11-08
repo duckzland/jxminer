@@ -35,14 +35,15 @@ class Fan:
 
 
     def setSpeed(self, speed):
+        if self.isNotAtLevel(level):
+            self.level = speed
+            speed = self.round(speed)
+            self.sysfs.set('speed', self.round(speed * 2.55), [self.index])
+            self.speed = speed
 
-        if speed == self.level:
-            return
 
-        self.level = speed
-        speed = self.round(speed)
-        self.sysfs.set('speed', self.round(speed * 2.55), [self.index])
-        self.speed = speed
+    def isNotAtLevel(self, level):
+        return self.level != level
 
 
     def enablePWM(self):

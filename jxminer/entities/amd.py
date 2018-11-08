@@ -66,62 +66,32 @@ class AMD(GPU):
 
 
 
-    def tune(self, **kwargs):
-        if kwargs.get('fan', False):
-            self.setFanLevel(self.round(kwargs.get('fan')))
-
-        if kwargs.get('core', False):
-            self.setCoreLevel(self.round(kwargs.get('core')))
-
-        if kwargs.get('memory', False):
-            self.setMemoryLevel(self.round(kwargs.get('memory')))
-
-        if kwargs.get('power', False):
-            self.setPowerLevel(self.round(kwargs.get('power')))
-
-
-
     def setFanLevel(self, level):
-
-        if level == self.fanSpeed:
-            return
-
-        setFanSpeed([self.machineIndex], self.round(level * 2.55))
-        self.fanSpeed = level
-        self.fanLevel = level
+        if level != self.fanSpeed:
+            setFanSpeed([self.machineIndex], self.round(level * 2.55))
+            self.fanSpeed = level
+            self.fanLevel = level
 
 
 
     def setCoreLevel(self, level):
-
-        if not self.supportLevels or self.coreLevel == level:
-            return
-
-        s = self.strictMode
-        m = self.maxCoreLevel
-        d = self.round((level / (100 / (m + 1))))
-        x = 0 if d < 0 else m if d > m else d
-        levels = [ x ] if s else range(0, x)
-        setClocks([self.machineIndex], 'gpu', levels)
-        self.coreLevel = level
+        if self.supportLevels and self.coreLevel != level:
+            s = self.strictMode
+            m = self.maxCoreLevel
+            d = self.round((level / (100 / (m + 1))))
+            x = 0 if d < 0 else m if d > m else d
+            levels = [ x ] if s else range(0, x)
+            setClocks([self.machineIndex], 'gpu', levels)
+            self.coreLevel = level
 
 
 
     def setMemoryLevel(self, level):
-
-        if not self.supportLevels or self.memoryLevel == level:
-            return
-
-        s = self.strictMode
-        m = self.maxMemoryLevel
-        d = self.round( (level / (100 / (m + 1))))
-        x = 0 if d < 0 else m if d > m else d
-        levels = [ x ] if s else range(1, x)
-        setClocks([self.machineIndex], 'mem', levels)
-        self.memoryLevel = level
-
-
-
-    def setPowerLevel(self, level):
-        # Not supported yet
-        pass
+        if self.supportLevels and self.memoryLevel != level:
+            s = self.strictMode
+            m = self.maxMemoryLevel
+            d = self.round( (level / (100 / (m + 1))))
+            x = 0 if d < 0 else m if d > m else d
+            levels = [ x ] if s else range(1, x)
+            setClocks([self.machineIndex], 'mem', levels)
+            self.memoryLevel = level

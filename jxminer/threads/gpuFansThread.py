@@ -27,41 +27,35 @@ class gpuFansThread(Thread):
         self.job = Job(self.config.data.config.fans.gpu.tick, self.update)
 
 
+    def getFan(self, c, unit):
+        x = False
+        for section in [ 'gpu|%s|%s' % (unit.index, self.coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (self.coin), 'gpu' ] :
+            if c[section] :
+                x = section
+                break
+
+        return c[x] if x else x
+        
+        
+    def getSpeed(self, u, f):
+        if f.curve_enable and f.curve:
+            cp = Curve(f.curve)
+            s = cp.evaluate(int(u.temperature))
+        else:
+            s = calculateStep(f.min, f.max, u.fanSpeed, f.target, u.temperature, f.up, f.down)
+            
+        return s
+
+
     def update(self, runner):
         c = self.config.data.config.fans
 
         for unit in self.units:
             unit.detect()
-            type = False
-            newSpeed = False
+            fan = self.getFan(c, unit)
 
-            for section in [ 'gpu|%s|%s' % (unit.index, self.coin), 'gpu|%s' % (unit.index), 'gpu|%s' % (self.coin), 'gpu' ] :
-                if c[section] :
-                    type = section
-                    break
-
-            fan = c[type]
-
-            if type and fan.enable:
-                if int(unit.temperature) != int(fan.target):
-
-                    # try curve if available
-                    if fan.curve_enable:
-                        curve = fan.curve
-                        if curve:
-                            cp = Curve(curve)
-                            newSpeed = cp.evaluate(int(unit.temperature))
-
-                    # fallback to steps
-                    if not newSpeed:
-                        newSpeed = calculateStep(fan.min, fan.max, unit.fanSpeed, fan.target, unit.temperature, fan.up, fan.down)
-
-
-            if newSpeed and int(newSpeed) != int(unit.fanLevel):
-                try:
-                    status = 'success'
+            if fan and fan.enable and int(unit.temperature) != int(fan.target):
+                newSpeed = self.getSpeed(unit, fan)
+                if unit.isNotAtLevel('fan', unit.round(newSpeed)):
                     unit.tune(fan = newSpeed)
-                except:
-                    status = 'error'
-                finally:
-                    Logger.printLog('Set GPU:%s fan speed to %s%% [%sC]' % (unit.index, newSpeed, unit.temperature), status)
+                    Logger.printLog('Set GPU:%s fan speed to %s%% [%sC]' % (unit.index, newSpeed, unit.temperature), 'success')
