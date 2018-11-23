@@ -173,7 +173,7 @@ def getMaxLevel(device, type):
 
     if type not in ['gpu', 'mem']:
         print 'Invalid level type' + type
-        return ''
+        return False
 
     key = 'sclk'
     if type == 'mem':
@@ -181,7 +181,8 @@ def getMaxLevel(device, type):
 
     levels = getSysfsValue(device, key)
     if not levels:
-        return 0
+        return False
+
     return int(levels.splitlines()[-1][0])
 
 

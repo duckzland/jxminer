@@ -38,20 +38,9 @@ class AMD(GPU):
         self.supportLevels = True
         self.machineIndex = 'card%s' % (self.index)
 
-        try:
-            setPerformanceLevel([self.machineIndex], 'manual')
-        except:
-            pass
-
-        try:
-            self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
-            self.maxMemoryLevel = getMaxLevel(self.machineIndex, 'mem')
-
-        except:
-            self.maxCoreLevel = False
-            self.maxMemoryLevel = False
-            self.supportLevels = False
-
+        setPerformanceLevel([self.machineIndex], 'manual')
+        self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
+        self.maxMemoryLevel = getMaxLevel(self.machineIndex, 'mem')
         self.detect()
 
 
