@@ -64,7 +64,7 @@ class Main():
 
                     gpu = AMD(index)
                     if c.machine.settings.gpu_strict_power_mode:
-                        gpu.strictPowerMode = c.machine.settings.gpu_strict_power_mode
+                        gpu.strictMode = c.machine.settings.gpu_strict_power_mode
 
                     self.cards.append(gpu)
                     self.config.data.dynamic.detected.amd[index] = index
@@ -173,76 +173,77 @@ class Main():
 
         c = self.config.data.config
 
-        if self.cards:
-            if c.fans:
-                if self.fans:
-                    self.threads.process(
-                        'casing_fans',
-                        casingFansThread(False, self.fans, self.cards),
-                        c.fans.casing.enable)
+        if self.cards and c.fans and self.fans:
+            self.threads.process(
+                'casing_fans',
+                casingFansThread(False, self.fans, self.cards),
+                c.fans.casing.enable)
 
-                self.threads.process(
-                    'gpu_fans',
-                    gpuFansThread(False, self.cards),
-                    c.fans.gpu.enable)
+        if self.cards and c.fans:
+            self.threads.process(
+                'gpu_fans',
+                gpuFansThread(False, self.cards),
+                c.fans.gpu.enable)
 
-            if c.tuner:
-                self.threads.process(
-                    'gpu_tuner',
-                    gpuTunerThread(False, self.cards),
-                    c.tuner.settings.enable)
+        if self.cards and c.tuner:
+            self.threads.process(
+                'gpu_tuner',
+                gpuTunerThread(False, self.cards),
+                c.tuner.settings.enable)
 
-            if c.notification:
-                self.threads.process(
-                    'notification',
-                    notificationThread(False, self.threads, self.fans, self.cards),
-                    c.notification.settings.enable)
+        if self.cards and c.notification:
+            self.threads.process(
+                'notification',
+                notificationThread(False, self.threads, self.fans, self.cards),
+                c.notification.settings.enable)
 
+        if self.cards and c.machine:
+            self.threads.process(
+                'gpu_miner',
+                gpuMinerThread(False),
+                c.machine.gpu_miner.enable)
 
         if c.machine:
-            if self.cards:
-                self.threads.process(
-                    'gpu_miner',
-                    gpuMinerThread(False),
-                    c.machine.gpu_miner.enable)
-
             self.threads.process(
                 'cpu_miner',
                 cpuMinerThread(False),
                 c.machine.cpu_miner.enable)
 
-            if self.threads.has('gpu_miner'):
-                minerManager = self.threads.get('gpu_miner')
-                for miner in minerManager.miners:
-                    if miner.hasDevFee():
-                        self.threads.add(
-                            'gpu_miner_devfee_removal_%s' % (miner.miner),
-                            feeRemovalThread(False, miner))
-
-                    if c.watchdog.settings.enable:
-                        self.threads.add(
-                            'gpu_miner_watchdog_%s' % (miner.miner),
-                            watchdogThread(False, miner))
-
-            else:
-                self.threads.remove('gpu_miner_devfee_removal_')
-                self.threads.remove('gpu_miner_watchdog_')
-
-            if self.threads.has('cpu_miner'):
-                minerManager = self.threads.get('cpu_miner')
-                if minerManager.miner.hasDevFee():
+        if c.machine and self.threads.has('gpu_miner'):
+            minerManager = self.threads.get('gpu_miner')
+            for miner in minerManager.miners:
+                if miner.hasDevFee():
                     self.threads.add(
-                        'cpu_miner_devfee_removal_%s' % (minerManager.miner.miner),
-                        feeRemovalThread(False, minerManager.miner))
-
+                        'gpu_miner_devfee_removal_%s' % (miner.miner),
+                        feeRemovalThread(False, miner))
                 if c.watchdog.settings.enable:
                     self.threads.add(
-                        'cpu_miner_watchdog',
-                        watchdogThread(False, minerManager.miner))
+                        'gpu_miner_watchdog_%s' % (miner.miner),
+                        watchdogThread(False, miner))
 
-            else:
-                self.threads.remove('cpu_miner_devfee_removal_')
-                self.threads.remove('cpu_miner_watchdog')
+
+        if c.machine and self.threads.has('cpu_miner'):
+            minerManager = self.threads.get('cpu_miner')
+            if minerManager.miner.hasDevFee():
+                self.threads.add(
+                    'cpu_miner_devfee_removal_%s' % (minerManager.miner.miner),
+                    feeRemovalThread(False, minerManager.miner))
+
+            if c.watchdog.settings.enable:
+                self.threads.add(
+                    'cpu_miner_watchdog',
+                    watchdogThread(False, minerManager.miner))
+
+
+        if c.machine and not self.threads.has('gpu_miner'):
+            self.threads.remove('gpu_miner_devfee_removal_')
+            self.threads.remove('gpu_miner_watchdog_')
+
+                    
+        if c.machine and not self.threads.has('cpu_miner'):
+            self.threads.remove('cpu_miner_devfee_removal_')
+            self.threads.remove('cpu_miner_watchdog')
+
 
         if c.systemd:
             self.threads.process(
@@ -303,7 +304,7 @@ class Main():
 
 
     def version(self):
-        print '0.5.1'
+        print '0.5.2'
 
 
     def main(self):

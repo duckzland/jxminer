@@ -3,7 +3,6 @@ from thread import Thread
 from entities.job import *
 from entities.config import *
 from entities.logger import *
-
 from modules.utility import calculateStep
 
 class gpuTunerThread(Thread):
@@ -41,6 +40,32 @@ class gpuTunerThread(Thread):
         self.job = Job(self.tick, self.update)
 
 
+    def getSection(self, key, c, unit):
+        x = False
+        for section in [ '%s|%s|%s' % (key, unit.index, self.coin), '%s|%s' % (key, unit.index), '%s|%s' % (key, self.coin), key ] :
+            if c[section] :
+                x = section
+                break
+
+        unit.configSection = x
+
+        return c[x] if x else x
+
+
+    def getLevel(self, m, t, u, c, l):
+        if m == 'static':
+            x = t.max
+
+        elif m == 'time':
+            h = time.strftime('%H')
+            x = t.min if (h < c.settings.minhour or h >= c.settings.maxhour) else t.max
+
+        else:
+            x = calculateStep(t.min, t.max, l, u.temperature, t.target, t.up, t.down)
+
+        return x
+        
+
     def update(self, runner):
         for unit in self.units:
             self.tune(unit, 'core', self.mode)
@@ -54,39 +79,12 @@ class gpuTunerThread(Thread):
 
     def tune(self, unit, key, mode):
         c = self.config.data.config.tuner
-        levelKey = key + 'Level'
-        type = False
+        tuner = self.getSection(key, c, unit)
+        level = getattr(unit, '%sLevel' % key)
 
-        for section in [ '%s|%s|%s' % (key, unit.index, self.coin), '%s|%s' % (key, unit.index), '%s|%s' % (key, self.coin), key ] :
-            if c[section] and c[section]:
-                type = section
-                break
-
-        tuner = c[type]
-
-        if type and unit.supportLevels and getattr(unit, levelKey) and tuner.enable:
+        if tuner and level and unit.supportLevels and tuner.enable and (int(unit.temperature) != int(tuner.target) or mode == 'static'):
             unit.detect()
-            level = getattr(unit, levelKey)
-            modeText = mode
-            newLevel = False
-
-            if mode == 'static':
-                newLevel = tuner.max
-
-            elif int(unit.temperature) != int(tuner.target):
-                if mode == 'dynamic':
-                    newLevel = calculateStep(tuner.min, tuner.max, getattr(unit, levelKey), unit.temperature, tuner.target, tuner.up, tuner.down)
-
-                if mode == 'time':
-                    hour = time.strftime('%H')
-                    newLevel = tuner.min if (hour < c.settings.minHour or hour >= c.settings.maxHour) else tuner.max
-                    modeText = 'time based'
-
-            if newLevel and int(newLevel) != int(level):
-                try:
-                    unit.tune(**{ key : newLevel})
-                    status = 'success'
-                except:
-                    status = 'error'
-                finally:
-                    Logger.printLog('Tuning GPU %s:%s %s level to %s%%' % (unit.index, type, modeText, newLevel), status)
+            newLevel = self.getLevel(mode, tuner, unit, c, level)
+            if unit.isNotAtLevel(key, unit.round(newLevel)):
+                unit.tune(**{ key : newLevel})
+                Logger.printLog('Tuning GPU %s:%s %s level to %s%%' % (unit.index, unit.configSection, mode, newLevel), 'success')

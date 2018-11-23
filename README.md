@@ -9,14 +9,14 @@ Python script for managing crypto miner instance under Linux OS.
 - GPU Fan speed management for both AMD and Nvidia GPU
 - GPU Core speed level control for both AMD and Nvidia GPU
 - GPU Power level control for Nvidia GPU
-- GPU Memory level control for Nvidia GPU
+- GPU Memory level control for both AMD and Nvidia GPU
 - Systemd monitoring for rebooting server when GPU crashed
 - Notification system for sending json data to designated server
-- CPU miner using xmr-rig
-- GPU miner supported: ccminer, claymore, ethminer, ewbf, sgminer
+- CPU miner using xmrrig
+- GPU miner supported: ccminer, claymore, ethminer, ewbf, sgminer, xmrig-amd, xmrig-nvidia, cast-xmr
 - Notification to Slack
-- Casing and GPU fan control with curve
-- Detect if hashrate is lower than expected value and reboot the machine (or just reboot the miner) when it happens
+- Casing and GPU fan control with curve mode
+- Detect hash rate value and reboot the machine (or just reboot the miner) when it is low
 
 
 ## Requirement

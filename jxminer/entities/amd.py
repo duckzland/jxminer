@@ -26,31 +26,30 @@ class AMD(GPU):
     """
 
     def init(self):
+
         self.type = 'AMD'
-        self.strictPowerMode = False
-        self.strictMemoryMode = False
+        self.strictMode = False
         self.coreLevel = 100
-        self.memoryLevel = False
+        self.memoryLevel = 100
         self.powerLevel = False
         self.fanLevel = False
         self.fanSpeed = 0
         self.wattUsage = 0
-        self.supportLevels = True
+        self.supportLevels = False
         self.machineIndex = 'card%s' % (self.index)
 
-        setPerformanceLevel([self.machineIndex], 'manual')
-        self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
-        self.maxMemoryLevel = getMaxLevel(self.machineIndex, 'mem')
+        if (setPerfLevel(self.machineIndex, 'manual')):
+            self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
+            self.maxMemoryLevel = getMaxLevel(self.machineIndex, 'mem')
+            self.supportLevels = int(self.maxCoreLevel) + int(self.maxMemoryLevel) > 0;
+
         self.detect()
+
 
 
     def detect(self):
         self.temperature = getSysfsValue(self.machineIndex, 'temp')
-
-        try:
-            self.fanSpeed = self.round(int(getSysfsValue(self.machineIndex, 'fan')) / 2.55)
-        except:
-            self.fanSpeed = 0
+        self.fanSpeed = self.round(int(getSysfsValue(self.machineIndex, 'fan')) / 2.55)
 
         if self.fanLevel == False:
             self.fanLevel = self.fanSpeed
@@ -59,76 +58,40 @@ class AMD(GPU):
             self.wattUsage = getSysfsValue(self.machineIndex, 'power')
 
 
+
     def reset(self):
         resetFans([self.machineIndex])
         if self.supportLevels:
             resetClocks([self.machineIndex])
 
 
-    def tune(self, **kwargs):
-        if kwargs.get('fan', False):
-            speed = self.round(kwargs.get('fan'))
-            if speed != self.fanSpeed:
-                setFanSpeed([self.machineIndex], self.round(speed * 2.55))
-                self.fanSpeed = speed
-                self.fanLevel = speed
 
-        if self.supportLevels:
-            if kwargs.get('core', False):
-                level = self.round(kwargs.get('core'))
-                if self.coreLevel != level:
-                    self.coreLevel = level
-                    self.setCoreLevel(level)
+    def setFanLevel(self, level):
+        if level != self.fanSpeed:
+            setFanSpeed([self.machineIndex], self.round(level * 2.55))
+            self.fanSpeed = level
+            self.fanLevel = level
 
-            if kwargs.get('memory', False):
-                level = self.round(kwargs.get('memory'))
-                if self.memoryLevel != level:
-                    self.memoryLevel = level
-                    self.setMemoryLevel(level)
-
-            # Extend this to lower / increase power using power play?
-            if kwargs.get('power', False):
-                pass
 
 
     def setCoreLevel(self, level):
-        if self.supportLevels:
-            levels = self.round((level * self.maxCoreLevel) / 100)
-            if not self.strictPowerMode:
-                # Driver < 4.30 wants to allow level
-                levels = range(0, levels)
-
-                # Driver > 4.30 wants to mask level instead.
-                #if levels == self.maxCoreLevel:
-                #    levels = []
-                #else:
-                #    levels = range(levels + 1, self.maxCoreLevel)
-
-            else:
-                levels = [ levels ]
-
+        if self.supportLevels and self.coreLevel != level:
+            s = self.strictMode
+            m = self.maxCoreLevel
+            d = self.round((level / (100 / (m + 1))))
+            x = 0 if d < 0 else m if d > m else d
+            levels = [ x ] if s else range(0, x)
             setClocks([self.machineIndex], 'gpu', levels)
+            self.coreLevel = level
 
 
 
     def setMemoryLevel(self, level):
-        if self.supportLevels:
-            levels = self.round((level * self.maxMemoryLevel) / 100)
-            if not self.strictMemoryMode:
-                # Driver < 4.30 wants to allow level
-                levels = range(0, levels)
-
-                # Driver > 4.30 wants to mask level instead.
-                #if levels == self.maxMemoryLevel:
-                #    levels = []
-                #else:
-                #    levels = range(levels + 1, self.maxMemoryLevel)
-            else:
-                levels = [ levels ]
-
+        if self.supportLevels and self.memoryLevel != level:
+            s = self.strictMode
+            m = self.maxMemoryLevel
+            d = self.round( (level / (100 / (m + 1))))
+            x = 0 if d < 0 else m if d > m else d
+            levels = [ x ] if s else range(1, x)
             setClocks([self.machineIndex], 'mem', levels)
-
-
-    # Extend this to lower / increase power using power play?
-    def setPowerLevel(self, level):
-        pass
+            self.memoryLevel = level

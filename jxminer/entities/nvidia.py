@@ -59,33 +59,6 @@ class Nvidia(GPU):
         self.wattUsage = '%.2f' % (float(nvmlDeviceGetPowerUsage(self.handle)) / 1000)
 
 
-    def tune(self, **kwargs):
-        if kwargs.get('fan', False):
-            speed = self.round(kwargs.get('fan'))
-            if speed != self.fanLevel:
-                self.setFanSpeed(speed)
-                self.fanSpeed = speed
-                self.fanLevel = speed
-
-        if kwargs.get('core', False):
-            level = self.round(kwargs.get('core'))
-            if self.coreLevel != level:
-                self.setCoreLevel(level)
-                self.coreLevel = level
-
-        if kwargs.get('power', False):
-           level = self.round(kwargs.get('power'))
-           if self.powerLevel != level:
-                self.setPowerLevel(level)
-                self.powerLevel = level
-
-        if kwargs.get('memory', False):
-           level = self.round(kwargs.get('memory'))
-           if self.memoryLevel != level:
-                self.setMemoryLevel(level)
-                self.memoryLevel = level
-
-
     def reset(self):
         self.setCoreLevel(50)
         self.setLEDBrightness(100)
@@ -98,32 +71,43 @@ class Nvidia(GPU):
         nvmlShutdown()
 
 
+
     def setLEDBrightness(self, state):
-        self.brightness = state
-        p = self.call(['nvidia-settings', '-a', '[gpu:%s]/GPULogoBrightness=%s' % (self.index, self.brightness)], {'DISPLAY': ':0'})
-        p.wait()
+        if self.brightness != state:
+            self.brightness = state
+            p = self.call(['nvidia-settings', '-a', '[gpu:%s]/GPULogoBrightness=%s' % (self.index, self.brightness)], {'DISPLAY': ':0'})
+            p.wait()
 
 
-    def setFanSpeed(self, speed):
-        p = self.call(['nvidia-settings', '-a', '[fan:%s]/GPUTargetFanSpeed=%s' % (self.index, max(min(100, speed), 0))], {'DISPLAY': ':0'})
-        p.wait()
+    def setFanLevel(self, level):
+        if self.isNotAtLevel('fan', level):
+            self.fanSpeed = level
+            self.fanLevel = level
+            p = self.call(['nvidia-settings', '-a', '[fan:%s]/GPUTargetFanSpeed=%s' % (self.index, max(min(100, level), 0))], {'DISPLAY': ':0'})
+            p.wait()
 
 
     def setCoreLevel(self, level):
-        # Nvidia settings range for offset is between -200 up to +200
-        clock = max(min(200, self.round((level * 4) - 200)), -200)
-        if clock > 0:
-            clock = '+' + str(clock)
-        p = self.call(['nvidia-settings', '-a', '[gpu:%s]/GPUGraphicsClockOffset[3]=%s' % (self.index, max(min(200, self.round((level * 4) - 200)), -200))], {'DISPLAY': ':0'})
-        p.wait()
+        if self.isNotAtLevel('core', level):
+            self.coreLevel = level
+
+            # Nvidia settings range for offset is between -200 up to +200
+            clock = max(min(200, self.round((level * 4) - 200)), -200)
+            if clock > 0:
+                clock = '+' + str(clock)
+            p = self.call(['nvidia-settings', '-a', '[gpu:%s]/GPUGraphicsClockOffset[3]=%s' % (self.index, max(min(200, self.round((level * 4) - 200)), -200))], {'DISPLAY': ':0'})
+            p.wait()
 
 
     def setMemoryLevel(self, level):
-        # Nvidia settings range for offset is between -2000 up to +2000
-        p = self.call(['nvidia-settings', '-a', '[gpu:%s]/GPUMemoryTransferRateOffset[3]=%s' % (self.index, max(min(2000, self.round((level * 40) - 2000)), -2000))], {'DISPLAY': ':0'})
-        p.wait()
+        if self.isNotAtLevel('memory', level):
+            self.memoryLevel = level
+            # Nvidia settings range for offset is between -2000 up to +2000
+            p = self.call(['nvidia-settings', '-a', '[gpu:%s]/GPUMemoryTransferRateOffset[3]=%s' % (self.index, max(min(2000, self.round((level * 40) - 2000)), -2000))], {'DISPLAY': ':0'})
+            p.wait()
 
 
     def setPowerLevel(self, level):
-        # Limit the power level between 50% up to 100% of maximum power watt level (varies in different card model)
-        nvmlDeviceSetPowerManagementLimit(self.handle, max(min(self.maxPowerWattLevel, self.round(level * (self.maxPowerWattLevel / 100))), self.maxPowerWattLevel / 2))
+        if self.isNotAtLevel('power', level):
+            # Limit the power level between 50% up to 100% of maximum power watt level (varies in different card model)
+            nvmlDeviceSetPowerManagementLimit(self.handle, max(min(self.maxPowerWattLevel, self.round(level * (self.maxPowerWattLevel / 100))), self.maxPowerWattLevel / 2))

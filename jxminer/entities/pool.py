@@ -6,27 +6,24 @@ class Pool:
 
     """
         This is the class for a single Mining Pool instance
+
+        It will load Mining pool information from /pools/[pool_name].ini file
+
     """
 
     def __init__(self, pool):
         self.name = pool
         self.config = Config()
         self.config.load('pools', pool + '.ini', True)
-        self.init()
 
+        if self.name not in self.config.data.pools:
+            raise ValueError('No valid configuration for pool: %s' % self.name)
 
-    def init(self):
-        try:
-            self.pool = self.config.data.pools[self.name]
-            status = 'success'
-        except:
-            status = 'error'
-            raise
-        finally:
-            Logger.printLog("Loading %s pool configuration" % (self.name), status)
-
+        self.pool = self.config.data.pools[self.name]
         self.wallet = self.config.data.config.coins
         self.machine = self.config.data.config.machine
+
+        Logger.printLog("Loaded %s pool configuration" % (self.name), 'success')
 
 
     def replaceToken(self, text):
@@ -49,18 +46,16 @@ class Pool:
         self.coin = coin
         return self.pool[self.coin].url
 
+
     def getRawProtocol(self, coin):
         return self.pool[self.coin].protocol
+
 
     def getAddress(self, coin):
         self.coin = coin
         url = self.pool[self.coin].url
         format = self.pool.format.address
-        if format:
-            address = self.replaceToken(format).replace('{url}', url)
-        else:
-            address = url
-        return address
+        return self.replaceToken(format).replace('{url}', url) if format else url
 
 
     def getWallet(self, coin):

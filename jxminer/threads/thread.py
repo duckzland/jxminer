@@ -38,13 +38,9 @@ class Thread:
 
 
     def destroy(self):
-        try:
-            if self.job:
-                self.job.shutdown_flag.set()
-        except:
-            pass
-        finally:
-            self.active = False
+        if self.job:
+            self.job.shutdown_flag.set()
+        self.active = False
 
 
     def check(self):

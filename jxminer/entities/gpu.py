@@ -2,7 +2,9 @@ import math, subprocess
 
 class GPU:
 
-    "This is the base class for GPU instance"
+    """
+        This is the base class for GPU instance
+    """
 
     def __init__(self, index):
         self.index = index
@@ -32,5 +34,33 @@ class GPU:
         pass
 
 
+
     def tune(self, **kwargs):
+        if kwargs.get('fan', False):
+            self.setFanLevel(self.round(kwargs.get('fan')))
+
+        if kwargs.get('core', False):
+            self.setCoreLevel(self.round(kwargs.get('core')))
+
+        if kwargs.get('memory', False):
+            self.setMemoryLevel(self.round(kwargs.get('memory')))
+
+        if kwargs.get('power', False):
+            self.setPowerLevel(self.round(kwargs.get('power')))
+
+
+    def isNotAtLevel(self, type, level):
+        return getattr(self, "%sLevel" % type) != level
+
+
+    def setFanLevel(self, level):
+        pass
+
+    def setCoreLevel(self, level):
+        pass
+
+    def setMemoryLevel(self, level):
+        pass
+
+    def setPowerLevel(self, level):
         pass

@@ -49,21 +49,14 @@ class gpuMinerThread(Thread):
 
 
     def destroy(self):
-        try:
-            self.exiting = True
-            if self.job:
-                for miner in self.miners:
-                    miner.shutdown()
-                self.job.shutdown_flag.set()
+        self.exiting = True
+        if self.job:
+            for miner in self.miners:
+                miner.shutdown()
+            self.job.shutdown_flag.set()
 
-            self.started = False
-            status = 'success'
-
-        except:
-            status = 'error'
-
-        finally:
-            Logger.printLog("Stopping gpu miner manager", status)
+        self.started = False
+        Logger.printLog("Stopping gpu miner manager", 'success')
 
 
 
@@ -80,24 +73,17 @@ class gpuMinerThread(Thread):
         nvidiaGPU = d.server.GPU.nvidia
         miners = []
 
-        if doDual and dual:
+        # AMD miner
+        if amdGPU > 0 and amd:
+            miners.append(amd)
+
+        # Nvidia miner
+        if nvidiaGPU > 0 and nvidia and nvidia not in miners:
+            miners.append(nvidia)
+
+        # Dual Miner
+        if doDual and dual and dual not in miners:
             miners.append(dual)
-        else:
-            # Nvidia only
-            if amdGPU == 0 and nvidiaGPU > 0 and nvidia:
-                miners.append(nvidia)
-
-            # AMD only
-            elif amdGPU > 0 and nvidiaGPU == 0 and amd:
-                miners.append(amd)
-
-            # Mixed mode
-            elif amdGPU > 0 and nvidiaGPU > 0 and nvidia and amd:
-                if amd == nvidia:
-                    miners.append(amd)
-                else:
-                    miners.append(amd)
-                    miners.append(nvidia)
 
         for miner in miners:
             if miner in 'ccminer':
