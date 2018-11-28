@@ -38,6 +38,8 @@ class Nvidia(GPU):
             Nvidia.fanControlState = 'manual'
             p = self.call(['nvidia-settings', '-a', 'GPUFanControlState=%s' % ('1')], {'DISPLAY': ':0'})
             p.wait()
+
+        self.brightness = False
         self.setLEDBrightness(0)
 
         self.coreLevel = 100
