@@ -26,6 +26,7 @@ setup(
         ]),
         ('/etc/jxminer/miners', [
             'jxminer/data/miners/amdxmrig.ini',
+            'jxminer/data/miners/castxmr.ini',
             'jxminer/data/miners/ccminer.ini',
             'jxminer/data/miners/claymore.ini',
             'jxminer/data/miners/cpuminer.ini',
@@ -34,7 +35,6 @@ setup(
             'jxminer/data/miners/ewbf.ini',
             'jxminer/data/miners/nvidiaxmrig.ini',
             'jxminer/data/miners/sgminer.ini',
-            'jxminer/data/miners/castxmr.ini',
         ]),
         ('/etc/jxminer/pools', [
             'jxminer/data/pools/2miners.ini',
@@ -44,6 +44,7 @@ setup(
             'jxminer/data/pools/flypool.ini',
             'jxminer/data/pools/intensecoin.ini',
             'jxminer/data/pools/minepool.ini',
+            'jxminer/data/pools/minermorel.ini',
             'jxminer/data/pools/nanopool.ini',
             'jxminer/data/pools/pickaxe.ini',
             'jxminer/data/pools/ravenminer.ini',
