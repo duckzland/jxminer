@@ -44,7 +44,7 @@ setup(
             'jxminer/data/pools/flypool.ini',
             'jxminer/data/pools/intensecoin.ini',
             'jxminer/data/pools/minepool.ini',
-            'jxminer/data/pools/minermorel.ini',
+            'jxminer/data/pools/minermore.ini',
             'jxminer/data/pools/nanopool.ini',
             'jxminer/data/pools/pickaxe.ini',
             'jxminer/data/pools/ravenminer.ini',
