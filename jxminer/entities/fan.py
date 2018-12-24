@@ -35,7 +35,7 @@ class Fan:
 
 
     def setSpeed(self, speed):
-        if self.isNotAtLevel(level):
+        if self.isNotAtLevel(speed):
             self.level = speed
             speed = self.round(speed)
             self.sysfs.set('speed', self.round(speed * 2.55), [self.index])

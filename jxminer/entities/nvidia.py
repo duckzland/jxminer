@@ -38,6 +38,8 @@ class Nvidia(GPU):
             Nvidia.fanControlState = 'manual'
             p = self.call(['nvidia-settings', '-a', 'GPUFanControlState=%s' % ('1')], {'DISPLAY': ':0'})
             p.wait()
+
+        self.brightness = False
         self.setLEDBrightness(0)
 
         self.coreLevel = 100
@@ -109,5 +111,6 @@ class Nvidia(GPU):
 
     def setPowerLevel(self, level):
         if self.isNotAtLevel('power', level):
+            self.powerLevel = level
             # Limit the power level between 50% up to 100% of maximum power watt level (varies in different card model)
             nvmlDeviceSetPowerManagementLimit(self.handle, max(min(self.maxPowerWattLevel, self.round(level * (self.maxPowerWattLevel / 100))), self.maxPowerWattLevel / 2))

@@ -304,7 +304,7 @@ class Main():
 
 
     def version(self):
-        print '0.5.2'
+        print '0.5.4'
 
 
     def main(self):
