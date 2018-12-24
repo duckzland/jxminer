@@ -107,7 +107,7 @@ class Miner:
 
     def setupEnvironment(self):
         env = os.environ.copy()
-        #python env wants string instead of int!
+        # python env wants string instead of int!
         env['GPU_FORCE_64BIT_PTR'] = '1'
         env['GPU_MAX_HEAP_SIZE'] = '100'
         env['GPU_USE_SYNC_OBJECTS'] = '1'
@@ -126,29 +126,17 @@ class Miner:
                 path = c.machine.settings.executable_location
 
             command = findFile(path, self.executable)
+            self.process = pexpect.spawn(
+                command,
+                self.setupArgs(explode(self.option.replace(' #-# ', ' '), ' ')),
+                env=self.environment,
+                timeout=None,
+                cwd=os.path.dirname(command)
+            )
+            self.proc = psutil.Process(self.process.pid)
+            self.status = 'ready'
 
-            args = []
-            for arg in explode(self.option, ' #-# '):
-                for single in explode(arg, ' '):
-                    args.append(single)
-
-            try:
-                self.process = pexpect.spawn(
-                    command,
-                    self.setupArgs(args),
-                    env=self.environment,
-                    timeout=None,
-                    cwd=os.path.dirname(command)
-                )
-                self.proc = psutil.Process(self.process.pid)
-                self.status = 'ready'
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog('Initializing %s miner instance' % (self.miner), status)
+            Logger.printLog('Initializing %s miner instance' % (self.miner), 'success')
 
         if self.status == 'ready':
             self.monitor()
@@ -157,27 +145,20 @@ class Miner:
 
     def stop(self):
         if self.status == 'ready':
-            try:
-                self.process.terminate(True)
-                self.process.wait()
+            self.process.terminate(True)
+            self.process.wait()
 
-                # Maybe redundant
-                if psutil.pid_exists(self.process.pid):
-                    self.proc.terminate()
-                    self.proc.wait()
+            # Maybe redundant
+            if psutil.pid_exists(self.process.pid):
+                self.proc.terminate()
+                self.proc.wait()
 
-                # This is most probably redundant
-                if psutil.pid_exists(self.process.pid):
-                    os.kill(self.process.pid, signal.SIGINT)
+            # This is most probably redundant
+            if psutil.pid_exists(self.process.pid):
+                os.kill(self.process.pid, signal.SIGINT)
 
-                self.status = 'stop'
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog('Stopping %s miner instance' % (self.miner), status)
+            self.status = 'stop'
+            Logger.printLog('Stopping %s miner instance' % (self.miner), 'success')
 
 
 

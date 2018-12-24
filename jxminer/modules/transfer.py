@@ -2,6 +2,11 @@ import struct
 
 class Transfer:
 
+    """
+        Class for handling socket transfers
+        The package packet expected to have 4 bytes struct at the beginning
+    """
+
     def __init__(self, socket):
         self.sock = socket
 

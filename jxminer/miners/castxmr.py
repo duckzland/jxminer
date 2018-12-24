@@ -5,7 +5,7 @@ from modules.utility import explode
 class CastXmr(Miner):
 
     """
-        Single mining instance for invoking the castxmr and its variation
+        Single mining instance for invoking the castxmr
     """
 
     def init(self):
