@@ -309,25 +309,12 @@ class Main():
 
     def main(self):
 
-        # Only root please
-        if os.geteuid() != 0:
-            Logger.printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
-            os.execvp("sudo", ["sudo"] + sys.argv)
-
-
-        # Only one instance allowed
-        self.lockfile = open('/var/run/jxminer.pid', 'w+')
-        try:
-            fcntl.flock(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except:
-            sys.exit('Only one instance of jxminer allowed.')
-
-
         # Setup tools dont allow argument
         argv = sys.argv[1:]
         host = '127.0.0.1'
         port = 8129
         cPath = os.path.join('/home', 'jxminer', '.jxminer')
+
         try:
             opts, args = getopt.getopt(argv,"hi:m:s:p:vi:c",["--mode=", "--host=", "--port="])
 
@@ -362,6 +349,19 @@ class Main():
                 if action not in ('daemon'):
                     self.usage()
                     sys.exit(2)
+
+        # Only root please
+        if os.geteuid() != 0:
+            Logger.printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
+            os.execvp("sudo", ["sudo"] + sys.argv)
+
+
+        # Only one instance allowed
+        self.lockfile = open('/var/run/jxminer.pid', 'w+')
+        try:
+            fcntl.flock(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except:
+            sys.exit('Only one instance of jxminer allowed.')
 
         Process = Shutdown()
 

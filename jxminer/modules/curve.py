@@ -1,5 +1,9 @@
 class Curve():
 
+    """
+        Class for calculating fan curves
+    """
+
     def __init__(self, curve):
         self.cpa = []
         for ct in curve.strip().split(','):
