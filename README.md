@@ -8,7 +8,7 @@ Python script for managing crypto miner instance under Linux OS.
 - Casing Fan speed management, speed is calculated from GPU temperature.
 - GPU Fan speed management for both AMD and Nvidia GPU
 - GPU Core speed level control for both AMD and Nvidia GPU
-- GPU Power level control for Nvidia GPU
+- GPU Power level control for both AMD and Nvidia GPU
 - GPU Memory level control for both AMD and Nvidia GPU
 - Systemd monitoring for rebooting server when GPU crashed
 - Notification system for sending json data to designated server
