@@ -17,7 +17,9 @@ class AMD(GPU):
           to change memory level since mining operation usually will need to have the highest memory clocks available
 
         Power Level Tuning
-        - This is not supported yet by this class
+        - Newer AMDGPUPRO Linux kernel allows user to define custom power caps to limit the maximum power that
+          the gpu can draw. The value is from 0 - 100%, which will converted to the watt based on card maximum
+          power draw and card minimum power draw set in the card vbios.
 
         Fan Level Tuning
         - AMDGPUPRO Linux kernel driver will use 0 - 255 as the value for fan speed, while this class expect
@@ -31,7 +33,7 @@ class AMD(GPU):
         self.strictMode = False
         self.coreLevel = 100
         self.memoryLevel = 100
-        self.powerLevel = False
+        self.powerLevel = 100
         self.fanLevel = False
         self.fanSpeed = 0
         self.wattUsage = 0
@@ -41,6 +43,7 @@ class AMD(GPU):
         if (setPerfLevel(self.machineIndex, 'manual')):
             self.maxCoreLevel = getMaxLevel(self.machineIndex, 'gpu')
             self.maxMemoryLevel = getMaxLevel(self.machineIndex, 'mem')
+            self.maxPowerLevel = getPowerCapMax(self.machineIndex)
             self.supportLevels = int(self.maxCoreLevel) + int(self.maxMemoryLevel) > 0;
 
         self.detect()
@@ -75,7 +78,7 @@ class AMD(GPU):
 
 
     def setCoreLevel(self, level):
-        if self.supportLevels and self.coreLevel != level:
+        if self.supportLevels and self.isNotAtLevel('core', level):
             s = self.strictMode
             m = self.maxCoreLevel
             d = self.round((level / (100 / (m + 1))))
@@ -87,7 +90,7 @@ class AMD(GPU):
 
 
     def setMemoryLevel(self, level):
-        if self.supportLevels and self.memoryLevel != level:
+        if self.supportLevels and self.isNotAtLevel('memory', level):
             s = self.strictMode
             m = self.maxMemoryLevel
             d = self.round( (level / (100 / (m + 1))))
@@ -95,3 +98,10 @@ class AMD(GPU):
             levels = [ x ] if s else range(1, x)
             setClocks([self.machineIndex], 'mem', levels)
             self.memoryLevel = level
+
+
+
+    def setPowerLevel(self, level):
+        if self.supportLevels and self.isNotAtLevel('power', level):
+            setPowerCap(self.machineIndex, int(level) * int(self.maxPowerLevel) / int(100))
+            self.powerLevel = level

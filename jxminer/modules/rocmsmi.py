@@ -37,7 +37,10 @@ valuePaths = {
     'fanmax' : {'prefix' : hwmonprefix, 'filepath' : 'pwm1_max', 'needsparse' : False},
     'fanpwm' : {'prefix' : hwmonprefix, 'filepath' : 'pwm1_enable', 'needsparse' : False},
     'temp' : {'prefix' : hwmonprefix, 'filepath' : 'temp1_input', 'needsparse' : True},
-    'power' : {'prefix' : powerprefix, 'filepath' : 'amdgpu_pm_info', 'needsparse' : True}
+    'power' : {'prefix' : powerprefix, 'filepath' : 'amdgpu_pm_info', 'needsparse' : True},
+    'power_cap' : {'prefix' : hwmonprefix, 'filepath' : 'power1_cap', 'needsparse' : False},
+    'power_cap_max' : {'prefix' : hwmonprefix, 'filepath' : 'power1_cap_max', 'needsparse' : False},
+    'power_cap_min' : {'prefix' : hwmonprefix, 'filepath' : 'power1_cap_min', 'needsparse' : False}
 }
 
 
@@ -186,6 +189,35 @@ def getMaxLevel(device, type):
     return int(levels.splitlines()[-1][0])
 
 
+def getPowerCapMax(device):
+    hwmon = getHwmonFromDevice(device)
+    if hwmon:
+        power_cap = getSysfsValue(device, 'power_cap_max')
+        if power_cap:
+            return str(int(power_cap) / 1000000)
+    return False
+
+
+def getPowerCapMin(device):
+    hwmon = getHwmonFromDevice(device)
+    if hwmon:
+        power_cap = getSysfsValue(device, 'power_cap_min')
+        if power_cap:
+            return str(int(power_cap) / 1000000)
+
+    return False
+
+
+def getPowerCap(device):
+    hwmon = getHwmonFromDevice(device)
+    if hwmon:
+        power_cap = getSysfsValue(device, 'power_cap')
+        if power_cap:
+            return str(int(power_cap) / 1000000)
+
+    return False
+
+
 def findFile(prefix, file, device):
     pcPaths = glob.glob(os.path.join(prefix, '*', file))
     for path in pcPaths:
@@ -323,6 +355,24 @@ def setProfile(deviceList, profile):
         writeProfileSysfs(device, profile)
 
 
+def setPowerCap(device, cap):
+
+    max = getPowerCapMax(device)
+    min = getPowerCapMin(device)
+
+    if max is False or min is False:
+        return
+
+    if int(min) <= int(cap) <= int(max):
+        hwmon = getHwmonFromDevice(device)
+        power_cap_path = os.path.join(hwmon, 'power1_cap')
+        writeToSysfs(power_cap_path, str(int(cap) * 1000000))
+
+
+def resetPowerCap(device):
+    setPowerCap(device, getPowerCapMax(device))
+
+
 def resetProfile(deviceList):
     for device in deviceList:
         setPerfLevel(device, 'auto')
@@ -343,6 +393,7 @@ def resetOverDrive(deviceList):
 
 def resetClocks(deviceList):
     for device in deviceList:
+        resetPowerCap(device)
         resetOverDrive([device])
         setPerfLevel(device, 'auto')
 
