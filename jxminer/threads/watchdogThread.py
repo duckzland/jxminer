@@ -20,7 +20,7 @@ class watchdogThread(Thread):
         self.softRebootCount = 0
         self.loopCount = 0
         self.maxRetry = Config.data.config.watchdog.settings.maximum_retry
-        self.boxName = Config.data.config.watchdog.settings.box_name
+        self.boxName = Config.data.config.machine.settings.box_name
         self.tick = Config.data.config.watchdog.settings.tick
         self.init()
         if start:
