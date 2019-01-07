@@ -136,7 +136,6 @@ class socketActionThread(Thread):
 
             Logger.printLog("Destroying active thread", 'success')
             self.active = False
-            self.threads.clean()
 
 
 

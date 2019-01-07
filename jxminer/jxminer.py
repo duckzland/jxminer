@@ -36,6 +36,7 @@ class Main():
     """
 
     def detectGPU(self):
+        self.cards = []
         c = self.config.data.config
         try:
             nvmlInit()
@@ -261,6 +262,9 @@ class Main():
             self.config.scan()
             self.detectGPU()
             self.detectFans()
+            self.threads.remove('gpu_tuner')
+            self.threads.remove('gpu_fans')
+            self.threads.remove('casing_fans')
             self.loadThreads()
             Logger.printLog("Program updated", 'success')
 
