@@ -30,7 +30,6 @@ class gpuMinerThread(Thread):
             self.start()
 
 
-
     def init(self):
         self.job = Job(1, self.update)
 

@@ -36,20 +36,13 @@ class cpuMinerThread(Thread):
 
 
     def destroy(self):
-        try:
-            self.exiting = True
-            if self.job:
-                self.miner.shutdown()
-                self.job.shutdown_flag.set()
+        self.exiting = True
+        if self.job:
+            self.miner.shutdown()
+            self.job.shutdown_flag.set()
 
-            self.started = False
-            status = 'success'
-
-        except:
-            status = 'error'
-
-        finally:
-            Logger.printLog("Stopping cpu miner manager", status)
+        self.started = False
+        Logger.printLog("Stopping cpu miner manager", 'success')
 
 
     def selectMiner(self):

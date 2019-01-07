@@ -11,7 +11,6 @@ class gpuTunerThread(Thread):
         This is a class for managing threads for tuning gpu
     """
 
-
     def __init__(self, start, units):
 
         self.active = False
@@ -35,7 +34,8 @@ class gpuTunerThread(Thread):
         self.init()
         if start:
             self.start()
-            
+
+
     def init(self):
         self.job = Job(self.tick, self.update)
 

@@ -26,6 +26,7 @@ class notificationThread(Thread):
         if start:
             self.start()
 
+
     def init(self):
         self.active = True
         self.job = Job(self.tick, self.update)

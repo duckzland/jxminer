@@ -1,4 +1,4 @@
-import io, select, time, json, psutil, re
+import io, select, time, json, psutil, re, codecs
 
 from entities.job import *
 from entities.config import *
@@ -22,6 +22,7 @@ class socketActionThread(Thread):
         if start:
             self.start()
 
+
     def init(self):
         self.active = True
         self.job = Job(1, self.update)
@@ -29,292 +30,273 @@ class socketActionThread(Thread):
 
 
     def update(self, runner):
-        action = None
         try:
             action = self.transfer.recv()
         except:
-            self.stop()
+            action = None
 
-        if not action:
-            pass
-
-        elif action in ('server:status'):
-            try:
-                self.transfer.send('active')
-            except:
+        try:
+            if not action:
                 pass
 
-        elif action in ('server:shutdown', 'server:reboot', 'server:update'):
-            self.callback(action)
+            elif action in ('server:status'):
+                self.transfer.send('active')
 
 
-        elif action in ('monitor:miner:cpu'):
-            try:
-                miner = self.threads.get('cpu_miner').miner
+            elif action in ('server:shutdown', 'server:reboot', 'server:update'):
+                self.callback(action)
+
+
+            elif action in ('monitor:miner:cpu'):
+                miner = False
+                if self.threads.has('cpu_miner'):
+                    miner = self.threads.get('cpu_miner').miner
+
                 if miner:
                     self.readMinerBuffer(miner)
-            except:
+                else:
+                    self.transfer.send('Failed to retrieve miner')
+
+
+            elif 'monitor:miner:gpu' in action:
                 miner = False
-                self.transfer.send('Failed to retrieve miner')
-                self.stop()
+                if self.threads.has('gpu_miner'):
+                    miners = self.threads.get('gpu_miner').miners
+                    x, m, a, i = action.split(':')
+                    i = int(i)
+                    miner = miners[i]
+
+                if miner:
+                    self.readMinerBuffer(miner)
+                else:
+                    self.transfer.send('Failed to retrieve miner')
 
 
-        elif 'monitor:miner:gpu' in action:
-            try:
-                miners = self.threads.get('gpu_miner').miners
-                x, m, a, i = action.split(':')
-                i = int(i)
-                miner = miners[i]
-            except:
-                miner = False
-                self.transfer.send('Failed to retrieve miner')
-                self.stop()
-
-            if miner:
-                self.readMinerBuffer(miner)
-
-        elif 'monitor:server:snapshot' in action:
-            try:
+            elif 'monitor:server:snapshot' in action:
                 status = self.generateStatusOutput()
                 self.transfer.send(json.dumps(status))
-            except:
-                pass
 
-        elif 'monitor:server' in action:
-            while True and self.active:
-                try:
+
+            elif 'monitor:server' in action:
+                while True and self.active:
                     status = self.generateStatusOutput()
-                    self.transfer.send(json.dumps(status))
+                    self.transfer.send(json.dumps(status, codecs.getwriter('utf-8')(status), ensure_ascii=False))
                     time.sleep(0.5)
 
-                except:
-                    self.stop()
-                    break
 
-        elif 'config:load:json' in action:
-            self.config.scan(True);
-            data = json.dumps(self.config.extract()).replace('True', 'true').replace('False', 'false')
-            self.transfer.send(data)
+            elif 'config:load:json' in action:
+                self.config.scan(True);
+                data = json.dumps(self.config.extract()).replace('True', 'true').replace('False', 'false')
+                self.transfer.send(data)
 
-        elif 'config:save:json' in action:
-            payload = self.transfer.recv()
-            if payload:
-                self.config.insert(payload, True)
-                self.config.save()
 
-        elif action in ('close'):
-            self.stop()
+            elif 'config:save:json' in action:
+                payload = self.transfer.recv()
+                if payload:
+                    self.config.insert(payload, True)
+                    self.config.save()
 
-        self.stop()
+        except Exception as e:
+            Logger.printLog(str(e), 'error')
+
+        finally:
+            self.destroy()
 
 
     def stop(self):
         if self.active:
-            try:
+            if self.connection:
                 self.connection.close()
+
+            if self.parent:
                 self.parent.remove(self.name)
-                status = 'success'
-            except:
-                status = 'error'
-            finally:
-                self.active = False
-                Logger.printLog("Stopping active thread connection", status)
+
+            self.active = False
+            Logger.printLog("Stopping active thread connection", 'success')
 
 
 
     def destroy(self):
         if self.active:
-            try:
-                if self.transfer:
-                    try:
-                        self.transfer.send('Server closing...')
-                        self.transfer.wait()
-                    except:
-                        pass
+            if self.transfer:
+                try:
+                    self.transfer.send('Closing socket connection...')
+                    time.sleep(0.1)
+                except:
+                    pass
 
-                if self.connection:
-                    try:
-                        self.connection.close()
-                    except:
-                        pass
+            if self.connection:
+                try:
+                    self.connection.close()
+                except:
+                    pass
 
-                if self.job:
-                    self.job.shutdown_flag.set()
+            if self.job:
+                self.job.shutdown_flag.set()
 
-                status = 'success'
+            Logger.printLog("Destroying active thread", 'success')
+            self.active = False
+            self.threads.clean()
 
-            except:
-                status = 'error'
 
-            finally:
-                self.active = False
-                Logger.printLog("Destroying active thread", status)
+
+    def statusGPUMiner(self, st):
+        c = self.config.data.config
+        m = c.machine
+        s = c.settings
+        g = m.gpu_miner
+        gpu = self.gpu
+
+        if g and g.enable:
+            st['general:active:gpu:coin'] = g.coin
+            st['general:active:gpu:pool'] = g.pool
+
+            if g.dual:
+                st['general:active:gpu:second_coin'] = g.second_coin
+                st['general:active:gpu:second_pool'] = g.second_pool
+
+            if self.threads.has('gpu_miner'):
+                mn = self.threads.get('gpu_miner').miners
+                for i, mi in enumerate(mn):
+                    st['%s:%s:%s:%s' % ('miner', 'logs', 'gpu', i)] = mi.display('all')
+                    for k, v in mi.getStatus().iteritems():
+                        st['%s:%s:%s:%s' % ('miner', k, 'gpu', i)] = v
+
+            if gpu:
+                st['temperature:average'] = getAverageTemps(gpu)
+                st['temperature:highest'] = getHighestTemps(gpu)
+
+                t = float(0.00)
+                for u in gpu:
+                    st['%s:%s:%s:%s' % ('gpu', 'fan', u.type, u.index)]         = u.fanSpeed
+                    st['%s:%s:%s:%s' % ('gpu', 'core', u.type, u.index)]        = u.coreLevel
+                    st['%s:%s:%s:%s' % ('gpu', 'memory', u.type, u.index)]      = u.memoryLevel
+                    st['%s:%s:%s:%s' % ('gpu', 'power', u.type, u.index)]       = u.powerLevel
+                    st['%s:%s:%s:%s' % ('gpu', 'temperature', u.type, u.index)] = u.temperature
+                    st['%s:%s:%s:%s' % ('gpu', 'watt', u.type, u.index)]        = u.wattUsage
+                    t += float(u.wattUsage)
+
+                st['%s:%s' % ('gpu', 'total_watt')] = t
+
+
+    def statusCPUMiner(self, st):
+        c = self.config.data.config
+        m = c.machine
+        s = c.settings
+        g = m.cpu_miner
+
+        if g and g.enable:
+            st['general:active:cpu:coin'] = g.coin
+            st['general:active:cpu:pool'] = g.pool
+
+            if self.threads.has('cpu_miner'):
+                mn = self.threads.get('cpu_miner').miner
+                st['%s:%s:%s:%s' % ('miner', 'logs', 'cpu', i)] = mn.display('all')
+                for k, v in mn.getStatus().iteritems():
+                    st['%s:%s:%s:%s' % ('miner', k, 'cpu', i)] = v
+
+
+
+    def statusFans(self, st):
+        f = self.fans
+        if f:
+            for u in f:
+                st['%s:%s:%s' % ('fan', 'speed', u.index)] = u.speed
+
+
+
+    def statusCPU(self, st):
+        t = psutil.sensors_temperatures()
+        f = psutil.sensors_fans()
+        r = psutil.cpu_freq(True)
+        l = psutil.cpu_percent(1, True)
+
+        if 'coretemp' in t:
+            for x in t['coretemp']:
+                for k, v in x.__dict__.iteritems():
+                    st['%s:%s:%s:%s' % ('cpu', k, 'label', re.sub('[^0-9]','', x.label))] = v
+
+        if f:
+            for i, e in f.items():
+                for x in e:
+                    st['%s:%s:%s' % ('cpu', 'fans', x.label)] = x.current
+
+        if r:
+            for i, x in enumerate(r):
+                st['%s:%s:%s:%s' % ('cpu', 'freq', 'current', i)] = x.current
+                st['%s:%s:%s:%s' % ('cpu', 'freq', 'min', i)]     = x.min
+                st['%s:%s:%s:%s' % ('cpu', 'freq', 'max', i)]     = x.max
+
+        if l:
+            for i, x in enumerate(l):
+                st['%s:%s:%s' % ('cpu', 'usage', i)] = x
+
+
+
+    def statusMemory(self, st):
+        v = psutil.virtual_memory()
+        s = psutil.swap_memory()
+
+        if v:
+            for t, x in v.__dict__.iteritems():
+                st['%s:%s:%s' % ('memory', 'virtual', t)] = x
+
+        if s:
+            for t, x in s.__dict__.iteritems():
+                st['%s:%s:%s' % ('memory', 'swap', t)] = x
+
+
+
+    def statusNetwork(self, st):
+        n = psutil.net_io_counters()
+        if n:
+            for t, x in n.__dict__.iteritems():
+                st['%s:%s:%s' % ('network', 'status', t)] = x
+
+
+
+    def statusDisk(self, st):
+        d = psutil.disk_usage('/')
+        if d:
+            for t, x in d.__dict__.iteritems():
+                st['%s:%s:%s' % ('disk', 'usage', t)] = x
+
 
 
     def generateStatusOutput(self) :
         status = dict()
         c = self.config.data.config
-        try:
-            if c.machine.gpu_miner.enable:
-                status['general:active:gpu:coin'] = c.machine.gpu_miner.coin
-                status['general:active:gpu:pool'] = c.machine.gpu_miner.pool
-                if c.machine.gpu_miner.dual:
-                    status['general:active:gpu:second_coin'] = c.machine.gpu_miner.second_coin
-                    status['general:active:gpu:second_pool'] = c.machine.gpu_miner.second_pool
-        except:
-            pass
+        m = c.machine
+        s = c.settings
 
-        try:
-            if c.machine.cpu_miner.enable:
-                status['general:active:cpu:coin'] = c.machine.cpu_miner.coin
-                status['general:active:cpu:pool'] = c.machine.cpu_miner.pool
-        except:
-            pass
+        if s.box_name:
+            status['general:boxname'] = s.box_name
 
-        try:
-            status['general:boxname'] = c.machine.settings.box_name
-        except:
-            pass
+        ## GPU Miner ##
+        self.statusGPUMiner(status)
 
-        try:
-            status['temperature:average'] = getAverageTemps(self.gpu)
-            status['temperature:highest'] = getHighestTemps(self.gpu)
-        except:
-            pass
+        ## CPU Miner ##
+        self.statusCPUMiner(status)
 
-        try:
-            for unit in self.fans:
-                status['%s:%s:%s' % ('fan', 'speed', unit.index)] = unit.speed
-        except:
-            pass
+        ## Fans ##
+        self.statusFans(status)
 
-        try:
-            totalGPUWatt = float(0.00)
-            for unit in self.gpu:
-                status['%s:%s:%s:%s' % ('gpu', 'fan', unit.type, unit.index)]         = unit.fanSpeed
-                status['%s:%s:%s:%s' % ('gpu', 'core', unit.type, unit.index)]        = unit.coreLevel
-                status['%s:%s:%s:%s' % ('gpu', 'memory', unit.type, unit.index)]      = unit.memoryLevel
-                status['%s:%s:%s:%s' % ('gpu', 'power', unit.type, unit.index)]       = unit.powerLevel
-                status['%s:%s:%s:%s' % ('gpu', 'temperature', unit.type, unit.index)] = unit.temperature
-                status['%s:%s:%s:%s' % ('gpu', 'watt', unit.type, unit.index)]        = unit.wattUsage
-                totalGPUWatt += float(unit.wattUsage)
+        ## CPU Status ##
+        self.statusCPU(status)
 
-            status['%s:%s' % ('gpu', 'total_watt')] = totalGPUWatt
-        except:
-            pass
+        ## Memory Status ##
+        self.statusMemory(status)
 
-        try:
-            miners = self.threads.get('gpu_miner').miners
-            for index, miner in enumerate(miners):
-                status['%s:%s:%s:%s' % ('miner', 'logs', 'gpu', index)] = miner.display('all')
-                minerStats = miner.getStatus()
+        ## Network Status ##
+        self.statusNetwork(status)
 
-                if 'hashrate' in minerStats:
-                    status['%s:%s:%s:%s' % ('miner', 'hashrate', 'gpu', index)] = minerStats['hashrate']
+        ## Disk Status ##
+        self.statusDisk(status)
 
-                if 'diff' in minerStats:
-                    status['%s:%s:%s:%s' % ('miner', 'diff', 'gpu', index)] = minerStats['diff']
-
-                if 'shares' in minerStats:
-                    status['%s:%s:%s:%s' % ('miner', 'shares', 'gpu', index)] = minerStats['shares']
-
-        except:
-            pass
-
-        try:
-            miner = self.threads.get('cpu_miner').miner
-            status['%s:%s:%s' % ('miner', 'logs', 'cpu')] = miner.display('all')
-            minerStats = miner.getStatus()
-
-            if 'hashrate' in minerStats:
-                status['%s:%s:%s' % ('miner', 'hashrate', 'cpu')] = minerStats['hashrate']
-
-            if 'diff' in minerStats:
-                status['%s:%s:%s' % ('miner', 'diff', 'cpu')] = minerStats['diff']
-
-            if 'shares' in minerStats:
-                status['%s:%s:%s' % ('miner', 'shares', 'cpu')] = minerStats['shares']
-        except:
-            pass
-
-        try:
-            temperatures = psutil.sensors_temperatures()
-            if 'coretemp' in temperatures:
-                temps = temperatures['coretemp']
-                for temp in temps:
-                    key = re.sub('[^0-9]','', temp.label)
-                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'label', key)]    = temp.label
-                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'current', key)]  = temp.current
-                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'high', key)]     = temp.high
-                    status['%s:%s:%s:%s' % ('cpu', 'temp', 'critical', key)] = temp.critical
-        except:
-            pass
-
-        try:
-            fans = psutil.sensors_fans()
-            if fans:
-                for name, entries in fans.items():
-                    for entry in entries:
-                        status['%s:%s:%s' % ('cpu', 'fans', entry.label)] = entry.current
-        except:
-            pass
-
-        try:
-            frequencies = psutil.cpu_freq(True)
-            if frequencies:
-                for index, frequency in enumerate(frequencies):
-                    status['%s:%s:%s:%s' % ('cpu', 'freq', 'current', index)] = frequency.current
-                    status['%s:%s:%s:%s' % ('cpu', 'freq', 'min', index)]     = frequency.min
-                    status['%s:%s:%s:%s' % ('cpu', 'freq', 'max', index)]     = frequency.max
-        except:
-            pass
-
-        try:
-            percentages = psutil.cpu_percent(1, True)
-            if percentages:
-                for index, percentage in enumerate(percentages):
-                    status['%s:%s:%s' % ('cpu', 'usage', index)] = percentage
-        except:
-            pass
-
-        try:
-            virtualMemory = psutil.virtual_memory()
-            if virtualMemory:
-                for type, value in virtualMemory.__dict__.iteritems():
-                    status['%s:%s:%s' % ('memory', 'virtual', type)] = value
-        except:
-            pass
-
-        try:
-            swapMemory = psutil.swap_memory()
-            if swapMemory:
-                for type, value in swapMemory.__dict__.iteritems():
-                    status['%s:%s:%s' % ('memory', 'swap', type)] = value
-        except:
-            pass
-
-        try:
-            diskUsage = psutil.disk_usage('/')
-            if diskUsage:
-                for type, value in diskUsage.__dict__.iteritems():
-                    status['%s:%s:%s' % ('disk', 'usage', type)] = value
-        except:
-            pass
-
-        try:
-            networkStatus = psutil.net_io_counters()
-            if networkStatus:
-                for type, value in networkStatus.__dict__.iteritems():
-                    status['%s:%s:%s' % ('network', 'status', type)] = value
-        except:
-            pass
-
-        try:
-            status['serverlog'] = "\n".join(Logger.getLogBuffers())
-        except:
-            pass
+        status['serverlog'] = "\n".join(Logger.getLogBuffers())
 
         return status
+
 
 
     def readMinerBuffer(self, miner):
@@ -322,21 +304,14 @@ class socketActionThread(Thread):
         results = miner.display('all')
         if results:
             for output in results:
-                if output:
-                    if lastRead != output:
-                        self.transfer.send(output)
-                        lastRead = output
+                if output and lastRead != output:
+                    self.transfer.send(output)
+                    lastRead = output
 
             while True:
-                try:
-                    output = miner.display('last')
-                    if output:
-                        if lastRead != output:
-                            self.transfer.send(output)
-                            lastRead = output
+                output = miner.display('last')
+                if output and lastRead != output:
+                    self.transfer.send(output)
+                    lastRead = output
 
-                    time.sleep(0.5)
-
-                except:
-                    self.stop()
-                    break
+                time.sleep(0.5)
