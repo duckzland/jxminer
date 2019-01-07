@@ -11,7 +11,6 @@ class gpuFansThread(Thread):
         This is a class for managing threads for tuning gpu fans
     """
 
-
     def __init__(self, start, units):
         self.active = False
         self.job = False
@@ -22,6 +21,7 @@ class gpuFansThread(Thread):
         self.init()
         if start:
             self.start()
+
 
     def init(self):
         self.job = Job(self.config.data.config.fans.gpu.tick, self.update)

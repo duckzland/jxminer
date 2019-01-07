@@ -12,6 +12,7 @@ from miners.amdxmrig import *
 from miners.nvidiaxmrig import *
 from miners.castxmr import *
 from miners.cryptodredge import *
+from miners.phoenixminer import *
 
 from entities.logger import *
 
@@ -28,7 +29,6 @@ class gpuMinerThread(Thread):
         self.init()
         if start:
             self.start()
-
 
 
     def init(self):
@@ -122,6 +122,10 @@ class gpuMinerThread(Thread):
             elif miner in 'cryptodredge':
                 self.config.load('miners', 'cryptodredge.ini', True)
                 self.miners.append(CryptoDredge())
+
+            elif miner in 'phoenixminer':
+                self.config.load('miners', 'phoenixminer.ini', True)
+                self.miners.append(PhoenixMiner())
 
             else:
                 Logger.printLog('Refused to load invalid miner program type', 'error')

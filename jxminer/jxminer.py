@@ -36,6 +36,7 @@ class Main():
     """
 
     def detectGPU(self):
+        self.cards = []
         c = self.config.data.config
         try:
             nvmlInit()
@@ -258,38 +259,27 @@ class Main():
     def action(self, action):
 
         if action == 'server:update':
-            try:
-                self.config.scan()
-                self.detectGPU()
-                self.detectFans()
-                self.loadThreads()
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog("Program updated", status)
+            self.config.scan()
+            self.detectGPU()
+            self.detectFans()
+            self.threads.remove('gpu_tuner')
+            self.threads.remove('gpu_fans')
+            self.threads.remove('casing_fans')
+            self.loadThreads()
+            Logger.printLog("Program updated", 'success')
 
         elif action == 'server:shutdown':
             self.shutdown()
 
         elif action == 'server:reboot':
-            try:
-                self.threads.destroy()
-                self.config.reset()
-                self.detectGPU()
-                self.detectFans()
-                self.loadXorg()
-                self.config.scan()
-                self.loadThreads()
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog("Program rebooted", status)
+            self.threads.destroy()
+            self.config.reset()
+            self.detectGPU()
+            self.detectFans()
+            self.loadXorg()
+            self.config.scan()
+            self.loadThreads()
+            Logger.printLog("Program rebooted", 'success')
 
 
     def usage(self):
@@ -304,7 +294,7 @@ class Main():
 
 
     def version(self):
-        print '0.5.4'
+        print '0.5.5'
 
 
     def main(self):
@@ -399,16 +389,9 @@ class Main():
             self.loadThreads()
 
             # Program ready, listen to socket now
-            try:
-                socket_limit = 5
-                self.socket.listen(socket_limit)
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog("Listening to socket with maximum %s connection" % (socket_limit), status)
+            socket_limit = 5
+            self.socket.listen(socket_limit)
+            Logger.printLog("Listening to socket with maximum %s connection" % (socket_limit), 'success')
 
             # Keep the main thread running, otherwise signals are ignored.
             while True:
@@ -426,23 +409,16 @@ class Main():
                     if connection and address:
 
                         ip, port = str(address[0]), str(address[1])
-                        try:
-                            self.threads.add(
-                                'connection_' + str(uuid.uuid4()), 
-                                socketActionThread(True,
-                                    connection, 
-                                    self.action, 
-                                    self.threads, 
-                                    self.fans, 
-                                    self.cards
-                            ))
-                            status = 'success'
-
-                        except:
-                            status = 'error'
-
-                        finally:
-                            Logger.printLog("Connecting with %s:%s" % (ip, port), status)
+                        self.threads.add(
+                            'connection_' + str(uuid.uuid4()),
+                            socketActionThread(True,
+                                connection,
+                                self.action,
+                                self.threads,
+                                self.fans,
+                                self.cards
+                        ))
+                        Logger.printLog("Connecting with %s:%s" % (ip, port), 'success')
 
                 time.sleep(1)
 
@@ -460,45 +436,20 @@ class Main():
 
     def shutdown(self):
 
-        try:
-            self.socket.shutdown(socket.SHUT_WR)
-            self.socket.close()
-            status = 'success'
+        self.socket.shutdown(socket.SHUT_WR)
+        self.socket.close()
+        Logger.printLog("Closed open sockets", 'success')
 
-        except:
-            status = 'error'
-
-        finally:
-            Logger.printLog("Closing open sockets", status)
-
-        try:
-            self.threads.destroy()
-            status = 'success'
-
-        except:
-            status = 'error'
-
-        finally:
-            Logger.printLog("Stopping running threads", status)
+        self.threads.destroy()
+        Logger.printLog("Stopped running threads", 'success')
 
         if 'process' in self.xorg:
-            try:
-                self.xorg['process'].kill()
+            self.xorg['process'].kill()
+            if psutil.pid_exists(self.xorg['process'].pid):
+                self.xorg['proc'].terminate()
+                self.xorg['proc'].wait()
 
-                try:
-                    if psutil.pid_exists(self.xorg['process'].pid):
-                        self.xorg['proc'].terminate()
-                        self.xorg['proc'].wait()
-                except:
-                    pass
-
-                status = 'success'
-
-            except:
-                status = 'error'
-
-            finally:
-                Logger.printLog("Stopping Xorg server", status)
+            Logger.printLog("Stopped Xorg server", 'success')
 
 
 def start_miner():

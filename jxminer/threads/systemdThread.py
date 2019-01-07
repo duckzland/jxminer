@@ -20,6 +20,7 @@ class systemdThread(Thread):
         if start:
             self.start()
 
+
     def init(self):
         self.job = Job(self.tick, self.update)
 
@@ -30,42 +31,34 @@ class systemdThread(Thread):
 
         c = self.config.data.config
         self.journal.seek_realtime(time.time() - self.tick)
-        try:
-            for entry in self.journal:
-                for testWord in self.trackPhrases:
-                    if testWord in entry['MESSAGE']:
-                        try:
-                            sendSlack('%s is rebooting the system due to GPU crashed' % (c.machine.settings.box_name))
-                            sendSlack(entry['MESSAGE'])
-                            Logger.printLog('Notifying Slack for reboot schedule', 'info')
-                            time.sleep(1)
+        for entry in self.journal:
+            for testWord in self.trackPhrases:
+                if testWord in entry['MESSAGE']:
+                    sendSlack('%s is rebooting the system due to GPU crashed' % (c.machine.settings.box_name))
+                    sendSlack(entry['MESSAGE'])
+                    Logger.printLog('Notifying Slack for reboot schedule', 'info')
+                    self.destroy()
+                    os.system('sync')
+                    time.sleep(1)
 
-                        finally:
-                            Logger.printLog('Rebooting system due to GPU crashed', 'error')
+                    Logger.printLog('Rebooting system due to GPU crashed', 'error')
 
-                            ## Hard Reboot can corrupt data! ##
-                            if c.machine.settings.hard_reboot:
-                                # os.system('sync')
-                                # time.sleep(5)
-                                os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+                    ## Hard Reboot can corrupt data! ##
+                    if c.machine.settings.hard_reboot:
+                        # os.system('sync')
+                        # time.sleep(5)
+                        os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
 
-                            ## Soft safe reboot, This might not work on all machine ##
-                            else:
-                                os.system('reboot -f')
-        except:
-            pass
-
+                    ## Soft safe reboot, This might not work on all machine ##
+                    else:
+                        os.system('reboot -f')
 
 
     def destroy(self):
-        try:
-            if not self.journal.closed:
-                self.journal.close()
+        if not self.journal.closed:
+            self.journal.close()
 
-            if self.job:
-                self.job.shutdown_flag.set()
-        except:
-            pass
+        if self.job:
+            self.job.shutdown_flag.set()
 
-        finally:
-            self.active = False
+        self.active = False

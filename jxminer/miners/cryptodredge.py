@@ -27,6 +27,12 @@ class CryptoDredge(Miner):
         if miner_algo == 'cryptonight7-v8':
             miner_algo = 'cnv8'
 
+        if miner_algo == 'cryptonight-haven':
+            miner_algo = 'cnhaven'
+
+        if miner_algo == 'cryptonight-fast':
+            miner_algo = 'cnfast'
+
         if miner_algo not in allowed:
             raise ValueError('Invalid coin algo for CryptoDredge miner')
 
@@ -40,8 +46,14 @@ class CryptoDredge(Miner):
 
 
     def parse(self, text):
-        # todo: double check this!
-        if 'accepted:' in text:
+
+        ## Shorten the text ##
+        regex = r"\[\d+:\d+:\d+\] "
+        m = re.search(regex, text)
+        output = m.group(0)
+        text = text.replace(output, '')
+
+        if 'Accepted : ' in text:
             try:
                 regex = r"\d+\/\d+"
                 m = re.search(regex, text)
@@ -52,20 +64,20 @@ class CryptoDredge(Miner):
                 pass
 
             try:
-                regex = r"diff \d+.\d+"
+                regex = r"diff=\d+.\d+"
                 m = re.search(regex, text)
                 output = m.group(0)
                 if output:
-                    self.bufferStatus['diff'] = output.replace('diff ', '')
+                    self.bufferStatus['diff'] = output.replace('diff=', '')
             except:
                 pass
 
             try:
-                regex = r", \d+.\d+( M| k| )H"
+                regex = r": \d+.\d+(M|K)H\/s"
                 m = re.search(regex, text)
                 output = m.group(0)
                 if output:
-                    self.bufferStatus['hashrate'] = output.replace(', ', '')
+                    self.bufferStatus['hashrate'] = output.replace(': ', '')
 
             except:
                 pass

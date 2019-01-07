@@ -1,4 +1,3 @@
-
 from thread import Thread
 from entities.job import *
 from entities.config import *
@@ -12,7 +11,6 @@ class casingFansThread(Thread):
         This is a class for managing threads for tuning casing fans
     """
 
-
     def __init__(self, start, FanUnits, GPUUnits):
         self.active = False
         self.job = False
@@ -23,6 +21,7 @@ class casingFansThread(Thread):
         self.init()
         if start:
             self.start()
+
 
     def init(self):
         self.job = Job(self.config.data.config.fans.casing.tick, self.update)
