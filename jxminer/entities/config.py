@@ -50,6 +50,7 @@ class Config():
             'ethminer.ini',
             'ewbf.ini',
             'nvidiaxmrig.ini',
+            'phoenixminer.ini',
             'sgminer.ini',
         ],
         'pools': [

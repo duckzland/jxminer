@@ -35,6 +35,7 @@ setup(
             'jxminer/data/miners/ethminer.ini',
             'jxminer/data/miners/ewbf.ini',
             'jxminer/data/miners/nvidiaxmrig.ini',
+            'jxminer/data/miners/phoenixminer.ini',
             'jxminer/data/miners/sgminer.ini',
         ]),
         ('/etc/jxminer/pools', [
