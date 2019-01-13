@@ -10,7 +10,10 @@ class PhoenixMiner(Miner):
     def init(self):
         self.miner = 'phoenixminer'
         self.setupMiner('gpu')
-        self.checkKeywords = []
+        self.checkKeywords = [
+            'CUDART error',
+            'Allocating buffers failed with'
+        ]
 
         if self.algo not in ('ethash'):
             raise ValueError('Invalid coin algo for phoenix miner')
