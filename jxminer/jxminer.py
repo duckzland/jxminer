@@ -18,16 +18,7 @@ from entities.shutdown import *
 from entities.config import *
 from entities.logger import *
 
-from threads.casingFansThread import *
-from threads.gpuFansThread import *
-from threads.gpuTunerThread import *
-from threads.socketActionThread import *
-from threads.gpuMinerThread import *
-from threads.cpuMinerThread import *
-from threads.systemdThread import *
-from threads.feeRemovalThread import *
-from threads.notificationThread import *
-from threads.watchdogThread import *
+from threads import *
 
 class Main():
 
@@ -294,7 +285,7 @@ class Main():
 
 
     def version(self):
-        print '0.5.5'
+        print '0.5.6'
 
 
     def main(self):

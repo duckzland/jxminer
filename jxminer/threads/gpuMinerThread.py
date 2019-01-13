@@ -2,17 +2,7 @@ from thread import Thread
 from entities.job import *
 from entities.config import *
 
-from miners.ccminer import *
-from miners.claymore import *
-from miners.ethminer import *
-from miners.ewbf import *
-from miners.miner import *
-from miners.sgminer import *
-from miners.amdxmrig import *
-from miners.nvidiaxmrig import *
-from miners.castxmr import *
-from miners.cryptodredge import *
-from miners.phoenixminer import *
+from miners import *
 
 from entities.logger import *
 
@@ -126,6 +116,10 @@ class gpuMinerThread(Thread):
             elif miner in 'phoenixminer':
                 self.config.load('miners', 'phoenixminer.ini', True)
                 self.miners.append(PhoenixMiner())
+
+            elif miner in 'trex':
+                self.config.load('miners', 'trex.ini', True)
+                self.miners.append(TRex())
 
             else:
                 Logger.printLog('Refused to load invalid miner program type', 'error')
