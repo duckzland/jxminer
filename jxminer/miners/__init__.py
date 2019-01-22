@@ -10,3 +10,4 @@ from castxmr import *
 from cryptodredge import *
 from phoenixminer import *
 from trex import *
+from avermore import *

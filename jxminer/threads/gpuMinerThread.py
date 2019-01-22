@@ -121,5 +121,9 @@ class gpuMinerThread(Thread):
                 self.config.load('miners', 'trex.ini', True)
                 self.miners.append(TRex())
 
+            elif miner in 'avermore':
+                self.config.load('miners', 'avermore.ini', True)
+                self.miners.append(Avermore())
+
             else:
                 Logger.printLog('Refused to load invalid miner program type', 'error')
