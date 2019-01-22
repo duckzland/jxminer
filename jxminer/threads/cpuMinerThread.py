@@ -2,8 +2,7 @@ from thread import Thread
 from entities.job import *
 from entities.config import *
 from entities.logger import *
-from miners.cpuminer import *
-from miners.cpuxmrig import *
+from miners import *
 
 class cpuMinerThread(Thread):
 
@@ -14,14 +13,24 @@ class cpuMinerThread(Thread):
         self.miner = False
         self.started = False
         self.exiting = False
-        self.selectMiner()
-        self.init()
         if start:
             self.start()
 
 
     def init(self):
         self.job = Job(1, self.update)
+
+
+    def start(self):
+        try:
+            self.selectMiner()
+            self.init()
+            self.job.start()
+        except:
+            self.active = False
+
+        finally:
+            self.active = True
 
 
     def update(self, runner):
@@ -52,11 +61,11 @@ class cpuMinerThread(Thread):
         miner = c.miner[algo].cpu
 
         if miner in 'cpuminer':
-            self.config.load('miners', 'cpuminer.ini', True)
+            #self.config.load('miners', 'cpuminer.ini', True)
             self.miner = CpuMiner()
 
         elif miner in 'cpuxmrig':
-            self.config.load('miners', 'cpuxmrig.ini', True)
+            #self.config.load('miners', 'cpuxmrig.ini', True)
             self.miner = CpuXMRig()
 
         else:

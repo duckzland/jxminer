@@ -11,3 +11,5 @@ from cryptodredge import *
 from phoenixminer import *
 from trex import *
 from avermore import *
+from cpuminer import *
+from cpuxmrig import *

@@ -15,14 +15,24 @@ class gpuMinerThread(Thread):
         self.miners = []
         self.started = False
         self.exiting = False
-        self.selectMiner()
-        self.init()
         if start:
             self.start()
 
 
     def init(self):
         self.job = Job(1, self.update)
+
+
+    def start(self):
+        try:
+            self.selectMiner()
+            self.init()
+            self.job.start()
+        except:
+            self.active = False
+
+        finally:
+            self.active = True
 
 
     def update(self, runner):

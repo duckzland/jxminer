@@ -12,6 +12,8 @@ class ETHMiner(Miner):
     def init(self):
         self.miner = 'ethminer'
         self.setupMiner('gpu')
+        self.acceptedShares = 0
+        self.rejectedShares = 0
         self.checkKeywords = [
             "Error CUDA mining:"
         ]
@@ -41,24 +43,50 @@ class ETHMiner(Miner):
         # Ethminer produces weird ansi color text, remove them all!
         text = stripAnsi(text).encode('ascii', 'ignore')
 
-        if 'Speed:' in text:
+        # Cleanup text
+        try:
+            regex = r"(?:cl | m | i | X )"
+            m = re.search(regex, text)
+            output = m.group(0)
+            text = text.replace(output, '')
+        except:
+            pass
+
+        try:
+            regex = r"\d+:\d+:\d+ "
+            m = re.search(regex, text)
+            output = m.group(0)
+            text = text.replace(output, '')
+        except:
+            pass
+
+        try:
+            regex = r"(?:cl-\d+|ethminer|stratum|main) "
+            m = re.search(regex, text)
+            output = m.group(0)
+            text = text.replace(output, '')
+        except:
+            pass
+
+        text = text.lstrip()
+
+        if 'Speed ' in text:
             try:
-                regex = r" [A\d++\d+:R\d++\d+"
+                regex = r"Speed \d+.\d+ (?:Mh|H)/s"
                 m = re.search(regex, text)
                 output = m.group(0)
                 if output:
-                    self.bufferStatus['shares'] = output.replace(' [A', '').replace(':', '/').replace('R', '')
-            except:
-                pass
-
-            try:
-                regex = r"\d+.\d+ (?:Mh|H)/s"
-                m = re.search(regex, text)
-                output = m.group(0)
-                if output:
-                    self.bufferStatus['hashrate'] = output
+                    self.bufferStatus['hashrate'] = output.replace('Speed ', '')
 
             except:
                 pass
+
+        if 'Accepted' in text:
+            self.acceptedShares += 1
+
+        if 'Rejected' in text:
+            self.rejectedShares += 1
+
+        self.bufferStatus['shares'] = '%s/%s' % (self.acceptedShares, self.rejectedShares)
 
         return text
