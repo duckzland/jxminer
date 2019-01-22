@@ -5,18 +5,30 @@ Python script for managing crypto miner instance under Linux OS.
 ![Alt text](docs/jxminer.png?raw=true "JXMiner Screenshot")
 
 ## Features
-- Casing Fan speed management, speed is calculated from GPU temperature.
-- GPU Fan speed management for both AMD and Nvidia GPU
-- GPU Core speed level control for both AMD and Nvidia GPU
-- GPU Power level control for both AMD and Nvidia GPU
-- GPU Memory level control for both AMD and Nvidia GPU
+- Casing Fan speed management calculated from average|highest total GPU temperature.
+- GPU Fan speed management
+- GPU Core speed level control
+- GPU Power level control
+- GPU Memory level control
 - Systemd monitoring for rebooting server when GPU crashed
 - Notification system for sending json data to designated server
-- CPU miner using xmrrig
-- GPU miner supported: ccminer, claymore, ethminer, ewbf, sgminer, xmrig-amd, xmrig-nvidia, cast-xmr
 - Notification to Slack
 - Casing and GPU fan control with curve mode
 - Detect hash rate value and reboot the machine (or just reboot the miner) when it is low
+
+
+## Supported miner program
+- xmrrig : AMD, Nvidia and CPU
+- ccminer
+- claymore : ETH, XMR and ZEC
+- cpuminer
+- ethminer
+- ewbf
+- sgminer
+- cast-xmr
+- avermore
+- trex
+- cryptodredge
 
 
 ## Requirement
@@ -124,14 +136,12 @@ Patch or pull request for ironing out the todo list is welcomed.
 To test and iron out bugs for :
 1. Test Dual mining with claymore
 2. Test trully dual GPU miner running at once
-3. Test SGMiner and Ethminer integration
-4. Test running mixed AMD and Nvidia GPU in the same box
-5. Test with more GPU variant (1080ti, 1050ti, RXVega etc)
-6. Test with different kind of motherboard motherboard
+3. Test running mixed AMD and Nvidia GPU in the same box
+4. Test with more GPU variant (1080ti, 1050ti, RXVega etc)
+5. Test with different kind of motherboard
 
 Future improvement :
 1. Add more miner such as xmr-stak
-2. Add more sgminer variant to match ccminer supported algo
 
 
 
