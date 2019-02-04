@@ -29,6 +29,7 @@ Python script for managing crypto miner instance under Linux OS.
 - avermore
 - trex
 - cryptodredge
+- teamredminer
 
 
 ## Requirement
@@ -69,6 +70,22 @@ the `/etc/jxminer/config/coins.ini` to enter your own wallet address and the `/e
 to set what coin to mine.
 
 
+
+
+## Server Arguments
+The server has several command line arguments that can be used to modify the default value:
+
+```bash
+    jxminer -m|-h|-v|-s|-p|-c
+
+     -m Run the program as daemon, logging will be minimized
+     -h Prints the help message
+     -v Prints the server version
+     -s Specify the host this server should bind to, by default it will bind to 127.0.0.1 which can only be 
+        accessed from local loop
+     -p Specify the port to bind to
+     -c Path to configuration files directory
+```
 
 
 ## Monitoring
@@ -114,20 +131,6 @@ You can use [ JXDashboard ](https://github.com/duckzland/jxdashboard) to monitor
 ```bash
     jxdashboard
 ```
-
-## Server Arguments
-The server has several command line arguments that can be used to modify the default value:
-
-```bash
-    jxminer -m|-h|-v|-s|-p|-c
-```
-
--m <mode> Run the program as daemon, logging will be minimized
--h Prints the help message
--v Prints the server version
--s Specify the host this server should bind to, by default it will bind to 127.0.0.1 which can only be accessed from local loop
--p Specify the port to bind to
--c Path to configuration files directory
 
 
 ## TODO
