@@ -1,10 +1,9 @@
 from thread import Thread
 from entities.job import *
 from entities.config import *
+from entities.logger import *
 
 from miners import *
-
-from entities.logger import *
 
 class gpuMinerThread(Thread):
 
@@ -134,6 +133,10 @@ class gpuMinerThread(Thread):
             elif miner in 'avermore':
                 self.config.load('miners', 'avermore.ini', True)
                 self.miners.append(Avermore())
+
+            elif miner in 'teamredminer':
+                self.config.load('miners', 'teamredminer.ini', True)
+                self.miners.append(TeamRedMiner())
 
             else:
                 Logger.printLog('Refused to load invalid miner program type', 'error')
