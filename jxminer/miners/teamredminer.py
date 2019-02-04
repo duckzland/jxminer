@@ -47,7 +47,7 @@ class TeamRedMiner(Miner):
                 pass
 
             try:
-                regex = r" avg \d+.\d+ (?:mh|kh|h)/s"
+                regex = r" avg \d+.\d+(?:mh|kh| h)/s"
                 m = re.search(regex, text)
                 output = m.group(0)
                 if output:
