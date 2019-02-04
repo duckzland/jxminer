@@ -32,7 +32,11 @@ class TeamRedMiner(Miner):
 
     def parse(self, text):
         self.bufferStatus['diff'] = 'N/A'
-        if ' avg ' in text:
+        keyword = ' Total '
+        if self.config.data.dynamic.server.GPU.amd == 1:
+            keyword = ' GPU 0 '
+
+        if keyword in text:
             try:
                 regex = r" a:\d+ r:\d+"
                 m = re.search(regex, text)
