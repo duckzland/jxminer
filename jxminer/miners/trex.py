@@ -13,7 +13,8 @@ class TRex(Miner):
         self.miner = 'trex'
         self.setupMiner('gpu')
         self.checkKeywords = [
-            'the launch timed out and was terminated'
+            'the launch timed out and was terminated',
+            "WARN: Can't submit job"
         ]
 
         allowed = explode(self.miner_config.settings.algo)
