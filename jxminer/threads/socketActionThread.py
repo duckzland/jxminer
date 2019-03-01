@@ -266,10 +266,9 @@ class socketActionThread(Thread):
         status = dict()
         c = self.config.data.config
         m = c.machine
-        s = c.settings
 
-        if s.box_name:
-            status['general:boxname'] = s.box_name
+        if m.settings.box_name:
+            status['general:boxname'] = m.settings.box_name
 
         ## GPU Miner ##
         self.statusGPUMiner(status)
