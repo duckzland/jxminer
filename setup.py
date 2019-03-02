@@ -7,7 +7,7 @@ setup(
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
-    packages=['jxminer', 'jxminer.entities', 'jxminer.miners', 'jxminer.modules', 'jxminer.threads'],
+    packages=['jxminer', 'jxminer.entities', 'jxminer.miners', 'jxminer.modules', 'jxminer.threads',  'jxminer.gpu'],
     package_dir={'jxminer' : 'jxminer'},
     include_package_data=True,
     package_data={'': ['data/config/*.ini', 'data/miners/*.ini', 'data/pools/*.ini']},
