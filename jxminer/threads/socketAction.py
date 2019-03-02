@@ -187,9 +187,9 @@ class socketAction(Thread):
 
             if self.threads.has('cpu_miner'):
                 mn = self.threads.get('cpu_miner').miner
-                st['%s:%s:%s:%s' % ('miner', 'logs', 'cpu', i)] = mn.display('all')
+                st['%s:%s:%s' % ('miner', 'logs', 'cpu')] = mn.display('all')
                 for k, v in mn.getStatus().iteritems():
-                    st['%s:%s:%s:%s' % ('miner', k, 'cpu', i)] = v
+                    st['%s:%s:%s' % ('miner', k, 'cpu')] = v
 
 
 

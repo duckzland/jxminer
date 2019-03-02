@@ -117,26 +117,22 @@ class Miner:
         if self.status == 'stop':
             c       = self.config.data.config
             path    = os.path.join('/usr', 'local')
-	    command = False
 
-            if c.machine.settings.executable_location:
-                path = c.machine.settings.executable_location
+        if c.machine.settings.executable_location:
+            path = c.machine.settings.executable_location
 
-	    if self.executable:
-                command = findFile(path, self.executable)
+        command = findFile(path, self.executable)
+        self.process = pexpect.spawn(
+            command,
+            self.setupArgs(explode(self.option.replace(' #-# ', ' '), ' ')),
+            env=self.environment,
+            timeout=None,
+            cwd=os.path.dirname(command)
+        )
+        self.proc = psutil.Process(self.process.pid)
+        self.status = 'ready'
 
-	    if command:
-                self.process = pexpect.spawn(
-                    command,
-                    self.setupArgs(explode(self.option.replace(' #-# ', ' '), ' ')),
-                    env=self.environment,
-                    timeout=None,
-                    cwd=os.path.dirname(command)
-                )
-                self.proc = psutil.Process(self.process.pid)
-                self.status = 'ready'
-
-                Logger.printLog('Initializing %s miner instance' % (self.miner), 'success')
+        Logger.printLog('Initializing %s miner instance' % (self.miner), 'success')
 
         if self.status == 'ready':
             self.monitor()

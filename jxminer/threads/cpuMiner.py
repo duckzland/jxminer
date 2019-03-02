@@ -59,11 +59,11 @@ class cpuMiner(Thread):
         miner = c.miner[algo].cpu
 
         if miner in 'cpuminer':
-            #self.config.load('miners', 'cpuminer.ini', True)
+            self.config.load('miners', 'cpuminer.ini', True)
             self.miner = CpuMiner()
 
         elif miner in 'cpuxmrig':
-            #self.config.load('miners', 'cpuxmrig.ini', True)
+            self.config.load('miners', 'cpuxmrig.ini', True)
             self.miner = CpuXMRig()
 
         else:
