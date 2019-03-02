@@ -1,7 +1,7 @@
 import time
 
 from modules.rocmsmi import *
-from entities.gpu import GPU
+from gpu import GPU
 
 class AMD(GPU):
 
