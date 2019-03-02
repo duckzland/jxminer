@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(__file__))
 
 from modules import *
 from entities import *
-from entities.gpu import *
+from gpu import *
 from threads import *
 
 class Main():
