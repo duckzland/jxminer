@@ -1,6 +1,6 @@
 import os, socket, nfqueue
 from scapy.all import *
-from thread import Thread
+from threads import Thread
 from entities import *
 
 class feeRemoval(Thread):

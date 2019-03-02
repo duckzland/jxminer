@@ -1,5 +1,5 @@
 import io, select, time, json, psutil, re, codecs
-from thread import Thread
+from threads import Thread
 from entities import *
 from modules import *
 

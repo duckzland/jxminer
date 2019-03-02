@@ -1,5 +1,5 @@
 import time
-from thread import Thread
+from threads import Thread
 from entities import *
 from modules import *
 

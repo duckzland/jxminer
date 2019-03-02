@@ -1,6 +1,6 @@
 import os, time, json
 from systemd import journal
-from thread import Thread
+from threads import Thread
 from entities import *
 from modules import *
 
