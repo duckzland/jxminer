@@ -1,14 +1,12 @@
 import time, json, psutil
-from entities.job import *
-from entities.config import *
-from entities.logger import *
 from thread import Thread
-from modules.utility import getHighestTemps, getAverageTemps
+from entities import *
+from modules import *
 
 from addict import Dict
 from websocket import create_connection
 
-class notificationThread(Thread):
+class notification(Thread):
 
     def __init__(self, start, threads, fans, gpu):
         self.active = False

@@ -1,7 +1,7 @@
 import re
 
-from miners.miner import Miner
-from modules.utility import explode
+from miners import Miner
+from modules import *
 
 class CpuMiner(Miner):
 

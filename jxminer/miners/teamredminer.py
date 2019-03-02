@@ -1,6 +1,6 @@
 import re, os
-from miners.miner import Miner
-from modules.utility import explode
+from miners import Miner
+from modules import *
 
 class TeamRedMiner(Miner):
 
@@ -15,7 +15,6 @@ class TeamRedMiner(Miner):
         ]
 
         allowed = explode(self.miner_config.settings.algo)
-        print allowed
         if self.algo not in allowed:
             raise ValueError('Invalid coin algo for teamredminer miner')
 

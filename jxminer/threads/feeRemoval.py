@@ -1,10 +1,9 @@
 import os, socket, nfqueue
 from scapy.all import *
-from entities.job import *
 from thread import Thread
-from entities.logger import *
+from entities import *
 
-class feeRemovalThread(Thread):
+class feeRemoval(Thread):
 
     """
         Class for creating thread to alter the network package when miner dev fee is processed

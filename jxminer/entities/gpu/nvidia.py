@@ -1,6 +1,6 @@
 import subprocess, os, time, signal
 from modules.pynvml import *
-from gpu import GPU
+from entities.gpu import GPU
 
 class Nvidia(GPU):
 

@@ -1,5 +1,5 @@
 import re
-from miners.miner import Miner
+from miners import Miner
 
 class EWBF(Miner):
 

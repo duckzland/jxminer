@@ -1,13 +1,9 @@
 import io, select, time, json, psutil, re, codecs
-
-from entities.job import *
-from entities.config import *
-from entities.logger import *
 from thread import Thread
-from modules.transfer import *
-from modules.utility import getHighestTemps, getAverageTemps, calculateStep
+from entities import *
+from modules import *
 
-class socketActionThread(Thread):
+class socketAction(Thread):
 
     def __init__(self, start, connection, callback, threads, fans, cards):
         self.active = False
@@ -176,6 +172,7 @@ class socketActionThread(Thread):
                     t += float(u.wattUsage)
 
                 st['%s:%s' % ('gpu', 'total_watt')] = t
+
 
 
     def statusCPUMiner(self, st):

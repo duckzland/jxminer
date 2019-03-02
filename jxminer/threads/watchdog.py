@@ -1,12 +1,10 @@
 import os, time, re
 
-from entities.job import *
-from entities.config import *
-from entities.logger import *
 from thread import Thread
-from modules.utility import sendSlack
+from entities import *
+from modules import *
 
-class watchdogThread(Thread):
+class watchdog(Thread):
 
     def __init__(self, start, Miner):
         self.active = False

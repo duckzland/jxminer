@@ -1,10 +1,8 @@
 from thread import Thread
-from entities.job import *
-from entities.config import *
-from entities.logger import *
+from entities import *
 from miners import *
 
-class cpuMinerThread(Thread):
+class cpuMiner(Thread):
 
     def __init__(self, start):
         self.active = False

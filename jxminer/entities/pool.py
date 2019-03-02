@@ -1,6 +1,6 @@
-from entities.config import *
-from modules.utility import explode
-from entities.logger import *
+
+from modules import *
+from entities import Logger, Config
 
 class Pool:
 

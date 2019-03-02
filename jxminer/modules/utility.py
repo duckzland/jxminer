@@ -2,9 +2,7 @@ import os, fnmatch, re
 
 from datetime import datetime
 from slackclient import SlackClient
-from entities.logger import *
-from entities.config import *
-
+from entities import *
 
 def sendSlack(message):
 

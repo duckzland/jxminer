@@ -2,22 +2,11 @@
 
 import os, sys, socket, uuid, getopt, signal, time, fcntl
 
-# Registering main root path for sane building!
 sys.path.append(os.path.dirname(__file__))
 
-from modules.pynvml import *
-from modules.rocmsmi import *
-from modules.sysfs import *
-from modules.utility import sendSlack
-
-from entities.nvidia import *
-from entities.amd import *
-from entities.fan import *
-from entities.threads import *
-from entities.shutdown import *
-from entities.config import *
-from entities.logger import *
-
+from modules import *
+from entities import *
+from entities.gpu import *
 from threads import *
 
 class Main():
@@ -138,6 +127,7 @@ class Main():
             Logger.printLog('No casing fan found', 'info')
 
 
+
     def loadXorg(self):
 
         if 'process' in self.xorg or self.config.data.dynamic.server.GPU.nvidia < 1:
@@ -166,82 +156,49 @@ class Main():
         c = self.config.data.config
 
         if self.cards and c.fans and self.fans:
-            self.threads.process(
-                'casing_fans',
-                casingFansThread(False, self.fans, self.cards),
-                c.fans.casing.enable)
+            self.threads.process('casing_fans', casingFans(False, self.fans, self.cards), c.fans.casing.enable)
 
         if self.cards and c.fans:
-            self.threads.process(
-                'gpu_fans',
-                gpuFansThread(False, self.cards),
-                c.fans.gpu.enable)
+            self.threads.process('gpu_fans', gpuFans(False, self.cards), c.fans.gpu.enable)
 
         if self.cards and c.tuner:
-            self.threads.process(
-                'gpu_tuner',
-                gpuTunerThread(False, self.cards),
-                c.tuner.settings.enable)
+            self.threads.process('gpu_tuner', gpuTuner(False, self.cards), c.tuner.settings.enable)
 
         if self.cards and c.notification:
-            self.threads.process(
-                'notification',
-                notificationThread(False, self.threads, self.fans, self.cards),
-                c.notification.settings.enable)
+            self.threads.process('notification', notification(False, self.threads, self.fans, self.cards), c.notification.settings.enable)
 
         if self.cards and c.machine:
-            self.threads.process(
-                'gpu_miner',
-                gpuMinerThread(False),
-                c.machine.gpu_miner.enable)
+            self.threads.process('gpu_miner', gpuMiner(False), c.machine.gpu_miner.enable)
 
         if c.machine:
-            self.threads.process(
-                'cpu_miner',
-                cpuMinerThread(False),
-                c.machine.cpu_miner.enable)
+            self.threads.process('cpu_miner', cpuMiner(False), c.machine.cpu_miner.enable)
 
         if c.machine and self.threads.has('gpu_miner'):
             minerManager = self.threads.get('gpu_miner')
             for miner in minerManager.miners:
                 if miner.hasDevFee():
-                    self.threads.add(
-                        'gpu_miner_devfee_removal_%s' % (miner.miner),
-                        feeRemovalThread(False, miner))
+                    self.threads.add('gpu_miner_devfee_removal_%s' % (miner.miner), feeRemoval(False, miner))
                 if c.watchdog.settings.enable:
-                    self.threads.add(
-                        'gpu_miner_watchdog_%s' % (miner.miner),
-                        watchdogThread(False, miner))
-
+                    self.threads.add('gpu_miner_watchdog_%s' % (miner.miner), watchdog(False, miner))
 
         if c.machine and self.threads.has('cpu_miner'):
             minerManager = self.threads.get('cpu_miner')
             if minerManager.miner.hasDevFee():
-                self.threads.add(
-                    'cpu_miner_devfee_removal_%s' % (minerManager.miner.miner),
-                    feeRemovalThread(False, minerManager.miner))
+                self.threads.add('cpu_miner_devfee_removal_%s' % (minerManager.miner.miner), feeRemoval(False, minerManager.miner))
 
             if c.watchdog.settings.enable:
-                self.threads.add(
-                    'cpu_miner_watchdog',
-                    watchdogThread(False, minerManager.miner))
-
+                self.threads.add('cpu_miner_watchdog', watchdog(False, minerManager.miner))
 
         if c.machine and not self.threads.has('gpu_miner'):
             self.threads.remove('gpu_miner_devfee_removal_')
             self.threads.remove('gpu_miner_watchdog_')
 
-                    
         if c.machine and not self.threads.has('cpu_miner'):
             self.threads.remove('cpu_miner_devfee_removal_')
             self.threads.remove('cpu_miner_watchdog')
 
-
         if c.systemd:
-            self.threads.process(
-                'systemd',
-                systemdThread(False),
-                c.systemd.settings.enable)
+            self.threads.process('systemd', systemdWatchdog(False), c.systemd.settings.enable)
 
         self.threads.start()
 
@@ -273,6 +230,7 @@ class Main():
             Logger.printLog("Program rebooted", 'success')
 
 
+
     def usage(self):
         print 'jxminer -m|-h|-v|-s|-p|-c'
         print '   -m <mode>'
@@ -284,26 +242,21 @@ class Main():
         print '   -c Path to configuration files directory'
 
 
+
     def version(self):
-        print '0.5.10'
+        print '0.6.00'
 
 
-    def main(self):
 
-        # Setup tools dont allow argument
-        argv = sys.argv[1:]
-        host = '127.0.0.1'
-        port = 8129
-        cPath = os.path.join('/home', 'jxminer', '.jxminer')
-
+    def checkArgs(self):
         try:
-            opts, args = getopt.getopt(argv,"hi:m:s:p:vi:c",["--mode=", "--host=", "--port="])
+            opts, args = getopt.getopt(self.argv,"hi:m:s:p:vi:c",["--mode=", "--host=", "--port="])
 
         except getopt.GetoptError:
             self.usage()
             sys.exit(2)
 
-        action = False
+        self.action = False
         if opts:
             for opt, arg in opts:
                 if opt == '-h':
@@ -315,114 +268,55 @@ class Main():
                     sys.exit()
 
                 if opt in ['-m', '--mode']:
-                    action = arg
+                    self.action = arg
 
                 if opt in ['-s', '--host']:
-                    host = arg
+                    self.host = arg
 
                 if opt in ['-p', '--port']:
-                    port = int(arg)
+                    self.port = int(arg)
 
                 if opt in ['-c']:
-                    cPath = arg
+                    self.cPath = arg
 
-            if action:
-                if action not in ('daemon'):
+            if self.action:
+                if self.action not in ('daemon'):
                     self.usage()
                     sys.exit(2)
 
-        # Only root please
+
+
+    def checkRoot(self):
         if os.geteuid() != 0:
             Logger.printLog('JXMiner requires root access to modify GPU and Fans properties', 'info')
             os.execvp("sudo", ["sudo"] + sys.argv)
 
 
-        # Only one instance allowed
+
+    def checkInstance(self):
+        # Only one instance allowed check using pid file and socket
         self.lockfile = open('/var/run/jxminer.pid', 'w+')
         try:
             fcntl.flock(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except:
-            sys.exit('Only one instance of jxminer allowed.')
-
-        Process = Shutdown()
-
-        try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.socket.bind((host, port))
-
+            self.socket.bind((self.host, self.port))
         except:
             Logger.printLog('Another instance is running. exiting', 'error')
             os._exit(0)
 
-        finally:
-            self.logger = Logger(action)
-            self.config = Config(cPath)
-            self.config.data.dynamic.settings.mode = action
-            self.config.scan()
-            c = self.config.data.config
-            Logger.printLog('Starting Program', 'info')
-            sendSlack('%s started JXMiner' % (c.machine.settings.box_name))
 
-        try:
 
-            self.fans = []
-            self.cards = []
-            self.xorg = dict()
+    def checkConnection(self):
+        connection, address = self.socket.accept()
+        if connection and address:
+            ip, port = str(address[0]), str(address[1])
+            self.threads.add(
+                'connection_' + str(uuid.uuid4()),
+                socketAction(True, connection, self.action, self.threads, self.fans, self.cards)
+            )
+            Logger.printLog("Connecting with %s:%s" % (ip, port), 'success')
 
-            self.detectGPU()
-            self.checkTotalGPU()
-            self.detectFans()
-
-            self.loadXorg()
-
-            self.threads = Threads()
-            self.loadThreads()
-
-            # Program ready, listen to socket now
-            socket_limit = 5
-            self.socket.listen(socket_limit)
-            Logger.printLog("Listening to socket with maximum %s connection" % (socket_limit), 'success')
-
-            # Keep the main thread running, otherwise signals are ignored.
-            while True:
-
-                # Continuously check if Xorg available for Nvidia GPU
-                self.loadXorg()
-
-                if Process.isShuttingDown:
-                    raise Exception('Shutting Down')
-                    break
-
-                else:
-                    self.threads.clean()
-                    connection, address = self.socket.accept()
-                    if connection and address:
-
-                        ip, port = str(address[0]), str(address[1])
-                        self.threads.add(
-                            'connection_' + str(uuid.uuid4()),
-                            socketActionThread(True,
-                                connection,
-                                self.action,
-                                self.threads,
-                                self.fans,
-                                self.cards
-                        ))
-                        Logger.printLog("Connecting with %s:%s" % (ip, port), 'success')
-
-                time.sleep(1)
-
-        except Exception as e:
-            Logger.printLog(str(e), 'error')
-            Logger.printLog("Preparing to close program", 'info')
-
-        finally:
-            self.shutdown()
-            sendSlack('%s stopped JXMiner' % (c.machine.settings.box_name))
-            Logger.printLog('Exiting main program', 'success')
-            os._exit(1)
-            os.kill(os.getpid(), signal.SIGINT)
 
 
     def shutdown(self):
@@ -443,8 +337,76 @@ class Main():
             Logger.printLog("Stopped Xorg server", 'success')
 
 
+
+    def main(self):
+
+        # Default variables
+        self.argv = sys.argv[1:]
+        self.host = '127.0.0.1'
+        self.port = 8129
+        self.cPath = os.path.join('/home', 'jxminer', '.jxminer')
+        self.socket_limit = 5
+        self.main_tick = 1
+
+        self.checkArgs()
+        self.checkRoot()
+        self.checkInstance()
+
+        Process = Shutdown()
+
+        try:
+            self.logger = Logger(self.action)
+            self.config = Config(self.cPath)
+            self.config.data.dynamic.settings.mode = self.action
+            self.config.scan()
+            c = self.config.data.config
+
+            Logger.printLog('Starting Program', 'info')
+            sendSlack('%s started JXMiner' % (c.machine.settings.box_name))
+
+            self.fans = []
+            self.cards = []
+            self.xorg = dict()
+
+            self.detectGPU()
+            self.checkTotalGPU()
+            self.detectFans()
+
+            self.loadXorg()
+
+            self.threads = Threads()
+            self.loadThreads()
+
+            self.socket.listen(self.socket_limit)
+            Logger.printLog("Listening to socket with maximum %s connection" % (self.socket_limit), 'success')
+
+            while True:
+                if Process.isShuttingDown:
+                    Logger.printLog("Shutdown initializing", 'success')
+                    break
+
+                self.loadXorg()
+                self.threads.clean()
+                self.checkConnection()
+
+                time.sleep(self.main_tick)
+
+        except Exception as e:
+            Logger.printLog(str(e), 'error')
+            Logger.printLog("Preparing to close program", 'info')
+
+        finally:
+            self.shutdown()
+            sendSlack('%s stopped JXMiner' % (c.machine.settings.box_name))
+            Logger.printLog('Exiting main program', 'success')
+            os._exit(1)
+            os.kill(os.getpid(), signal.SIGINT)
+
+
+
 def start_miner():
     Main().main()
+
 
 
 if __name__ == "__main__":

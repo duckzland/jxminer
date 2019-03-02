@@ -1,5 +1,5 @@
 import re, os
-from miners.miner import Miner
+from miners import Miner
 
 class Claymore(Miner):
 

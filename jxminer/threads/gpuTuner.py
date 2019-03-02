@@ -1,11 +1,9 @@
 import time
 from thread import Thread
-from entities.job import *
-from entities.config import *
-from entities.logger import *
-from modules.utility import calculateStep
+from entities import *
+from modules import *
 
-class gpuTunerThread(Thread):
+class gpuTuner(Thread):
 
     """
         This is a class for managing threads for tuning gpu

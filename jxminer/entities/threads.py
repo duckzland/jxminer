@@ -1,4 +1,4 @@
-from entities.logger import *
+from entities import Logger
 
 class Threads:
 
@@ -35,7 +35,7 @@ class Threads:
         if not self.has(name):
             thread.register(name, self)
             Threads.threads[name] = thread
-            Logger.printLog('Started %s manager' % (name.replace('_', ' ')) , 'success')
+            Logger.printLog('Started %s' % (name.replace('_', ' ')) , 'success')
 
 
 
@@ -46,7 +46,7 @@ class Threads:
         if thread:
             thread.destroy()
             del Threads.threads[name]
-            Logger.printLog('Stopped %s manager' % (name.replace('_', ' ')) , 'success')
+            Logger.printLog('Stopped %s' % (name.replace('_', ' ')) , 'success')
 
 
     def clean(self):

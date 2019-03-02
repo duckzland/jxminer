@@ -1,13 +1,10 @@
 import os, time, json
 from systemd import journal
-
-from entities.job import *
-from entities.config import *
-from entities.logger import *
 from thread import Thread
-from modules.utility import sendSlack
+from entities import *
+from modules import *
 
-class systemdThread(Thread):
+class SystemdWatchdog(Thread):
 
     def __init__(self, start):
         self.active = False
