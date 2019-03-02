@@ -40,6 +40,7 @@ setup(
             'jxminer/data/miners/sgminer.ini',
             'jxminer/data/miners/trex.ini',
             'jxminer/data/miners/teamredminer.ini',
+            'jxminer/data/miners/wildrig.ini',
         ]),
         ('/etc/jxminer/pools', [
             'jxminer/data/pools/2miners.ini',

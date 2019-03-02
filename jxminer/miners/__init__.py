@@ -299,3 +299,4 @@ from phoenixminer import *
 from sgminer import *
 from teamredminer import *
 from trex import *
+from wildrig import *

@@ -135,5 +135,9 @@ class gpuMiner(Thread):
                 self.config.load('miners', 'teamredminer.ini', True)
                 self.miners.append(TeamRedMiner())
 
+            elif miner in 'wildrig':
+                self.config.load('miners', 'wildrig.ini', True)
+                self.miners.append(WildRig())
+
             else:
                 Logger.printLog('Refused to load invalid miner program type', 'error')
