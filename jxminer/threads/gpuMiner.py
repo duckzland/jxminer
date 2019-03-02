@@ -68,7 +68,7 @@ class gpuMiner(Thread):
         dual      = c.miner[algo].dual
         amdGPU    = d.server.GPU.amd
         nvidiaGPU = d.server.GPU.nvidia
-        miners = []
+        miners    = []
 
         # AMD miner
         if amdGPU > 0 and amd:
