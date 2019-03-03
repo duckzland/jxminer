@@ -23,6 +23,7 @@ class WildRig(Miner):
         if self.config.data.dynamic.server.GPU.amd == 0:
             raise ValueError('No AMD card found, WildRig only supports amd card')
 
+        self.option = self.option.replace('{wildrig_algo}', self.algo)
         self.setupEnvironment()
 
 
@@ -30,43 +31,42 @@ class WildRig(Miner):
     def parse(self, text):
 
         ## Shorten the text ##
-        try:
-            regex = r"\[\d+:\d+:\d+\] "
-            m = re.search(regex, text)
-        except:
-            pass
-
+        regex = r"\[\d+:\d+:\d+\] "
+        m = re.search(regex, text)
         output = m.group(0)
         text = text.replace(output, '')
+        tmp = stripAnsi(text);
 
-        if 'avg' in text:
+        if 'accepted' in tmp:
             try:
-                regex = r"\(avg\):\d+.\d+(M|K)h\/s"
-                m = re.search(regex, text)
+                regex = r"\d+\/\d+"
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
-                    self.bufferStatus['hashrate'] = output.replace('(avg):', '')
+                    self.bufferStatus['shares'] = output
 
             except:
                 pass
 
-        if ' Diff ' in text:
+        if 'speed ' in tmp:
             try:
-                regex = r"Diff \d+.\d+/\d+"
-                m = re.search(regex, text)
+                regex = r"\d+ (m|k)H\/s"
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
-                    self.bufferStatus['diff'] = output.replace('Diff ', '')
+                    self.bufferStatus['hashrate'] = output
+
             except:
                 pass
 
-        # Avermore shares count screwed up use simple counting instead
-        if 'Accepted' in text:
-            self.acceptedShares += 1
-
-        if 'Rejected' in text:
-            self.rejectedShares += 1
-
-        self.bufferStatus['shares'] = '%s/%s' % (self.acceptedShares, self.rejectedShares)
+        if 'diff ' in tmp:
+            try:
+                regex = r"diff \d+.\d+"
+                m = re.search(regex, tmp)
+                output = m.group(0)
+                if output:
+                    self.bufferStatus['diff'] = output.replace('diff ', '')
+            except:
+                pass
 
         return text
