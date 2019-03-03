@@ -30,6 +30,7 @@ Python script for managing crypto miner instance under Linux OS.
 - trex
 - cryptodredge
 - teamredminer
+- wildrig
 
 
 ## Requirement
