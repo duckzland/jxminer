@@ -3,7 +3,6 @@ import re
 from miners import Miner
 from modules import *
 from entities import *
-from pprint import pprint
 
 class AmdXMRig(Miner):
 

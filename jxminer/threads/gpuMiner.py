@@ -1,7 +1,6 @@
 from threads import Thread
 from entities import *
 from miners import *
-from pprint import pprint
 
 class gpuMiner(Thread):
 

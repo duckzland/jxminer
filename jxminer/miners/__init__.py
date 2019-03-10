@@ -1,9 +1,7 @@
 import os, subprocess, psutil, time, re, pexpect, signal
 from abc import ABCMeta, abstractmethod
-
 from entities import *
 from modules import *
-from pprint import pprint
 
 class Miner:
 
