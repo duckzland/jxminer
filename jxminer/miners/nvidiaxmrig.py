@@ -2,6 +2,7 @@ import re
 
 from miners import Miner
 from modules import *
+from entities import *
 
 class NvidiaXMRig(Miner):
 
@@ -12,34 +13,24 @@ class NvidiaXMRig(Miner):
     def init(self):
         self.miner = 'nvidiaxmrig'
         self.setupMiner('gpu')
-        self.checkKeywords = []
-
-        allowed = [
-            'cryptonight',
-            'cryptonight7',
-            'cryptonight7-v3',
-            'cryptonight7-v4',
-            'cryptonight7-v8',
-            'cryptonight-ipbc',
-            'cryptonight-lite',
-            'cryptonight-heavy',
-            'cryptonight-v1',
-            'cryptonight-lite-v1',
-            'cryptonight-heavy-v1'
-        ]
+        allowed = UtilExplode(self.miner_config.settings.algo)
 
         if self.algo not in allowed:
-            raise ValueError('Invalid coin algo for xmrig nvidia miner')
+            Logger.printLog('Invalid coin algo for xmrig nvidia miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.nvidia == 0:
-            raise ValueError('No AMD card found, Nvidia XMRig miner only support Nvidia card')
+            Logger.printLog('No Nvidia card found, Nvidia XMRig miner only support Nvidia card', 'error')
+            self.stop()
+            self.shutdown()
 
         self.setupEnvironment()
 
 
 
     def parse(self, text):
-        tmp = stripAnsi(text)
+        tmp = UtilStripAnsi(text)
         if 'accepted' in tmp:
             try:
                 regex = r"\d+\/\d+"

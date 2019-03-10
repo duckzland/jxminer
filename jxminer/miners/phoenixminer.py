@@ -1,6 +1,8 @@
 import re, os
 
 from miners import Miner
+from modules import *
+from entities import *
 
 class PhoenixMiner(Miner):
 
@@ -11,23 +13,22 @@ class PhoenixMiner(Miner):
     def init(self):
         self.miner = 'phoenixminer'
         self.setupMiner('gpu')
-        self.checkKeywords = [
-            'CUDART error',
-            'Allocating buffers failed with'
-        ]
 
         if self.algo not in ('ethash'):
-            raise ValueError('Invalid coin algo for phoenix miner')
+            Logger.printLog('Invalid coin algo for phoenix miner', 'error')
+            self.stop()
+            self.shutdown()
 
         self.setupEnvironment()
 
 
     def parse(self, text):
         self.bufferStatus['diff'] = 'N/A'
-        if ' speed: ' in text:
+        tmp = UtilStripAnsi(text)
+        if ' speed: ' in tmp:
             try:
                 regex = r"shares: \d+/\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['shares'] = output.replace('shares: ', '')
@@ -36,7 +37,7 @@ class PhoenixMiner(Miner):
 
             try:
                 regex = r"speed: \d+.\d*|\d* (?:MH|H)/s"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output.replace('speed: ', '')

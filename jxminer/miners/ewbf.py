@@ -1,5 +1,7 @@
 import re
 from miners import Miner
+from modules import *
+from entities import *
 
 class EWBF(Miner):
 
@@ -10,13 +12,16 @@ class EWBF(Miner):
     def init(self):
         self.miner = 'ewbf'
         self.setupMiner('gpu')
-        self.checkKeywords = []
 
         if self.algo not in ('equihash'):
-            raise ValueError('Invalid coin algo for ewbf miner')
+            Logger.printLog('Invalid coin algo for ewbf miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.nvidia == 0:
-            raise ValueError('No Nvidia card,  ewbf miner only support Nvidia card')
+            Logger.printLog('No Nvidia card,  ewbf miner only support Nvidia card', 'error')
+            self.stop()
+            self.shutdown()
 
         self.hasFee = True
         self.listening_ports = []
@@ -26,20 +31,21 @@ class EWBF(Miner):
 
 
     def parse(self, text):
-        if 'Accepted share' in text:
+        tmp = UtilStripAnsi(text)
+        if 'Accepted share' in tmp:
             try:
                 regex = r"[A:\d+, R:\d+]"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['shares'] = output.replace('[A:', '').replace(', ', '/').replace('R:', '').replace(']', '')
             except:
                 pass
 
-        if 'Total speed:' in text:
+        if 'Total speed:' in tmp:
             try:
                 regex = r"\d+.\d+ Sol/s"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output

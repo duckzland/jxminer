@@ -71,16 +71,16 @@ class Main():
                 if int(limit) > 0:
                     if totalTest == 0:
                         Logger.printLog('%s %s gpu initialized properly' % (str(detected), gpuType), 'success')
-                        sendSlack('%s %s gpu initialized properly at %s' % (str(detected), gpuType, box_name))
+                        UtilSendSlack('%s %s gpu initialized properly at %s' % (str(detected), gpuType, box_name))
 
                     else:
                         Logger.printLog('%s %s gpu failed to initialize' % (str(totalTest), gpuType), 'error')
-                        sendSlack('%s %s gpu failed to initialize at %s' % (str(totalTest), gpuType, box_name))
+                        UtilSendSlack('%s %s gpu failed to initialize at %s' % (str(totalTest), gpuType, box_name))
 
                         if c.machine.gpu_check_total.reboot_when_failed:
                             try:
                                 Logger.printLog('Rebooting in %d seconds due to %s %s gpu is not initializing properly' % (rebootDelay, str(totalTest), gpuType), 'error')
-                                sendSlack('Rebooting %s in %d seconds due to %s %s gpu is not initializing properly' % (rebootDelay, box_name, str(totalTest), gpuType))
+                                UtilSendSlack('Rebooting %s in %d seconds due to %s %s gpu is not initializing properly' % (rebootDelay, box_name, str(totalTest), gpuType))
 
                                 time.sleep(rebootDelay)
                                 os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
@@ -88,7 +88,7 @@ class Main():
                             # Allow user to cancel the rebooting process
                             except:
                                 Logger.printLog('Rebooting cancelled', 'info')
-                                sendSlack('Rebooting %s cancelled' % (box_name))
+                                UtilSendSlack('Rebooting %s cancelled' % (box_name))
 
 
 
@@ -362,7 +362,7 @@ class Main():
             c = self.config.data.config
 
             Logger.printLog('Starting Program', 'info')
-            sendSlack('%s started JXMiner' % (c.machine.settings.box_name))
+            UtilSendSlack('%s started JXMiner' % (c.machine.settings.box_name))
 
             self.fans = []
             self.cards = []
@@ -397,7 +397,7 @@ class Main():
 
         finally:
             self.shutdown()
-            sendSlack('%s stopped JXMiner' % (c.machine.settings.box_name))
+            UtilSendSlack('%s stopped JXMiner' % (c.machine.settings.box_name))
             Logger.printLog('Exiting main program', 'success')
             os._exit(1)
             os.kill(os.getpid(), signal.SIGINT)

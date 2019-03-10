@@ -73,8 +73,8 @@ class notification(Thread):
 
             status.gpu.total_unit = len(self.gpu)
             status.gpu.total_watt = totalGPUWatt
-            status.gpu.temperature.average = getAverageTemps(self.gpu)
-            status.gpu.temperature.highest = getHighestTemps(self.gpu)
+            status.gpu.temperature.average = UtilGetAverageTemps(self.gpu)
+            status.gpu.temperature.highest = UtilGetHighestTemps(self.gpu)
 
         except:
             pass

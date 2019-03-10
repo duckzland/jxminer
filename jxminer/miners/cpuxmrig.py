@@ -2,6 +2,7 @@ import re
 
 from miners import Miner
 from modules import *
+from entities import *
 
 class CpuXMRig(Miner):
 
@@ -12,28 +13,15 @@ class CpuXMRig(Miner):
     def init(self):
         self.miner = 'cpuxmrig'
         self.setupMiner('cpu')
-        self.checkKeywords = []
-
-        allowed = [
-            'cryptonight',
-            'cryptonight7',
-            'cryptonight7-v3',
-            'cryptonight7-v4',
-            'cryptonight7-v8',
-            'cryptonight-ipbc',
-            'cryptonight-lite',
-            'cryptonight-heavy',
-            'cryptonight-v1',
-            'cryptonight-lite-v1',
-            'cryptonight-heavy-v1'
-        ]
-
+        allowed = UtilExplode(self.miner_config.settings.algo)
         if self.algo not in allowed:
-            raise ValueError('Invalid coin algo for xmrig cpu miner')
+            Logger.printLog('Invalid coin algo for xmrig cpu miner', 'error')
+            self.stop()
+            self.shutdown()
 
 
     def parse(self, text):
-        tmp = stripAnsi(text)
+        tmp = UtilStripAnsi(text)
         if 'accepted' in tmp:
             try:
                 regex = r"\d+\/\d+"

@@ -31,8 +31,8 @@ class SystemdWatchdog(Thread):
         for entry in self.journal:
             for testWord in self.trackPhrases:
                 if testWord in entry['MESSAGE']:
-                    sendSlack('%s is rebooting the system due to GPU crashed' % (c.machine.settings.box_name))
-                    sendSlack(entry['MESSAGE'])
+                    UtilSendSlack('%s is rebooting the system due to GPU crashed' % (c.machine.settings.box_name))
+                    UtilSendSlack(entry['MESSAGE'])
                     Logger.printLog('Notifying Slack for reboot schedule', 'info')
                     self.destroy()
                     os.system('sync')

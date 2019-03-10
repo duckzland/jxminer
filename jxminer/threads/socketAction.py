@@ -158,8 +158,8 @@ class socketAction(Thread):
                         st['%s:%s:%s:%s' % ('miner', k, 'gpu', i)] = v
 
             if gpu:
-                st['temperature:average'] = getAverageTemps(gpu)
-                st['temperature:highest'] = getHighestTemps(gpu)
+                st['temperature:average'] = UtilGetAverageTemps(gpu)
+                st['temperature:highest'] = UtilGetHighestTemps(gpu)
 
                 t = float(0.00)
                 for u in gpu:

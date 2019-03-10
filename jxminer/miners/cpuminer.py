@@ -2,6 +2,7 @@ import re
 
 from miners import Miner
 from modules import *
+from entities import *
 
 class CpuMiner(Miner):
 
@@ -21,21 +22,17 @@ class CpuMiner(Miner):
     def init(self):
         self.miner = 'cpuminer'
         self.setupMiner('cpu')
-        self.checkKeywords = []
+        allowed = UtilExplode(self.miner_config.settings.algo)
+        if self.algo not in allowed:
+            Logger.printLog('Invalid coin algo for cpuminer miner', 'error')
+            self.stop()
+            self.shutdown()
 
-        allowed = explode(self.miner_config.settings.algo)
-        miner_algo = self.algo
-        if 'cryptonight' in miner_algo:
-            miner_algo = 'cryptonight'
-
-        if miner_algo not in allowed:
-            raise ValueError('Invalid coin algo for cpuminer miner')
-
-        self.option = self.option.replace('{cpuminer_algo}', miner_algo)
+        self.option = self.option.replace('{cpuminer_algo}', self.algo)
 
 
     def parse(self, text):
-        tmp = stripAnsi(text)
+        tmp = UtilStripAnsi(text)
         self.bufferStatus['diff'] = ''
         if 'Accepted' in tmp:
             try:

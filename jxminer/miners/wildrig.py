@@ -2,6 +2,7 @@ import re
 
 from miners import Miner
 from modules import *
+from entities import *
 
 class WildRig(Miner):
 
@@ -15,13 +16,17 @@ class WildRig(Miner):
         self.acceptedShares = 0
         self.rejectedShares = 0
 
-        allowed = explode(self.miner_config.settings.algo)
+        allowed = UtilExplode(self.miner_config.settings.algo)
 
         if self.algo not in allowed:
-            raise ValueError('Invalid coin algo for wildrig miner')
+            Logger.printLog('Invalid coin algo for wildrig miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.amd == 0:
-            raise ValueError('No AMD card found, WildRig only supports amd card')
+            Logger.printLog('No AMD card found, WildRig only supports amd card', 'error')
+            self.stop()
+            self.shutdown()
 
         self.option = self.option.replace('{wildrig_algo}', self.algo)
         self.setupEnvironment()
@@ -35,7 +40,7 @@ class WildRig(Miner):
         m = re.search(regex, text)
         output = m.group(0)
         text = text.replace(output, '')
-        tmp = stripAnsi(text);
+        tmp = UtilStripAnsi(text);
 
         if 'accepted' in tmp:
             try:

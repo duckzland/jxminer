@@ -1,6 +1,7 @@
 import re
 from miners import Miner
 from modules import *
+from entities import *
 
 class CryptoDredge(Miner):
 
@@ -12,34 +13,19 @@ class CryptoDredge(Miner):
 
         self.miner = 'cryptodredge'
         self.setupMiner('gpu')
-        self.checkKeywords = []
+        allowed = UtilExplode(self.miner_config.settings.algo)
 
-        allowed = explode(self.miner_config.settings.algo)
-
-        miner_algo = self.algo
-
-        if 'cryptonight7' in miner_algo:
-            miner_algo = 'cnv7'
-
-        if 'cryptonight-heavy' in miner_algo:
-            miner_algo = 'cnheavy'
-
-        if miner_algo == 'cryptonight7-v8':
-            miner_algo = 'cnv8'
-
-        if miner_algo == 'cryptonight-haven':
-            miner_algo = 'cnhaven'
-
-        if miner_algo == 'cryptonight-fast':
-            miner_algo = 'cnfast'
-
-        if miner_algo not in allowed:
-            raise ValueError('Invalid coin algo for CryptoDredge miner')
+        if self.algo not in allowed:
+            Logger.printLog('Invalid coin algo for CryptoDredge miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.nvidia == 0:
-            raise ValueError('No Nvidia card found, CryptoDredge only supports Nvidia card')
+            Logger.printLog('No Nvidia card found, CryptoDredge only supports Nvidia card', 'error')
+            self.stop()
+            self.shutdown()
 
-        self.option = self.option.replace('{cryptodredge_algo}', miner_algo)
+        self.option = self.option.replace('{cryptodredge_algo}', self.algo)
         self.setupEnvironment()
 
 
@@ -52,11 +38,12 @@ class CryptoDredge(Miner):
         m = re.search(regex, text)
         output = m.group(0)
         text = text.replace(output, '')
+        tmp = UtilStripAnsi(text)
 
-        if 'Accepted : ' in text:
+        if 'Accepted : ' in tmp:
             try:
                 regex = r"\d+\/\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['shares'] = output
@@ -65,7 +52,7 @@ class CryptoDredge(Miner):
 
             try:
                 regex = r"diff=\d+.\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['diff'] = output.replace('diff=', '')
@@ -74,7 +61,7 @@ class CryptoDredge(Miner):
 
             try:
                 regex = r": \d+.\d+(M|K)H\/s"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output.replace(': ', '')

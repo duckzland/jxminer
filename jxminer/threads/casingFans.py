@@ -41,10 +41,10 @@ class casingFans(Thread):
     def getTemperature(self, s):
         t = None
         if s == 'highest':
-            t = getHighestTemps(self.GPUUnits)
+            t = UtilGetHighestTemps(self.GPUUnits)
 
         elif s == 'average':
-            t = getAverageTemps(self.GPUUnits)
+            t = UtilGetAverageTemps(self.GPUUnits)
 
         return t
 
@@ -54,7 +54,7 @@ class casingFans(Thread):
             cp = Curve(f.curve)
             s = cp.evaluate(int(t))
         else:
-            s = calculateStep(f.min, f.max, u.speed, f.target, t, f.up, f.down)
+            s = UtilCalculateStep(f.min, f.max, u.speed, f.target, t, f.up, f.down)
 
         return s
 

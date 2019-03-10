@@ -1,5 +1,7 @@
 import re, os
 from miners import Miner
+from modules import *
+from entities import *
 
 class Claymore(Miner):
 
@@ -10,20 +12,21 @@ class Claymore(Miner):
     def init(self):
         self.miner = 'claymore'
         self.setupMiner('gpu')
-        self.checkKeywords = [
-            "need to restart miner",
-            "hangs in OpenCL call, exit",
-            "Quit, please wait..."
-        ]
 
         if self.algo not in ('ethash', 'equihash', 'cryptonight7', 'cryptonight'):
-            raise ValueError('Invalid coin algo for claymore miner')
+            Logger.printLog('Invalid coin algo for claymore miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if hasattr(self, 'second_algo') and self.second_algo not in ('blake2s'):
-            raise ValueError('Invalid secondary coin algo for claymore dual miner')
+            Logger.printLog('Invalid secondary coin algo for claymore dual miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.algo in ('equihash', 'cryptonight', 'cryptonight7') and self.config.data.dynamic.server.GPU.amd == 0:
-            raise ValueError('No AMD card found, Claymore miner for % only support AMD card' % (self.algo))
+            Logger.printLog('No AMD card found, Claymore miner for % only support AMD card', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.coin not in 'eth':
             self.option = (
@@ -48,10 +51,11 @@ class Claymore(Miner):
 
     def parse(self, text):
         self.bufferStatus['diff'] = 'N/A'
-        if 'Total' in text:
+        tmp = UtilStripAnsi(text)
+        if 'Total' in tmp:
             try:
                 regex = r"Total Shares: \d+, Rejected: \d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['shares'] = output.replace('Total Shares: ', '').replace(', ', '/').replace('Rejected: ', '')
@@ -60,7 +64,7 @@ class Claymore(Miner):
 
             try:
                 regex = r"Total Speed: \d+.\d*|\d* (?:Mh|H)/s"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output.replace('Total Speed: ', '')

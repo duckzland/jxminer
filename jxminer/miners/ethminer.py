@@ -2,6 +2,7 @@ import re
 
 from miners import Miner
 from modules import *
+from entities import *
 
 class ETHMiner(Miner):
 
@@ -14,15 +15,14 @@ class ETHMiner(Miner):
         self.setupMiner('gpu')
         self.acceptedShares = 0
         self.rejectedShares = 0
-        self.checkKeywords = [
-            "Error CUDA mining:"
-        ]
 
         amdGPU = self.config.data.dynamic.server.GPU.amd
         nvidiaGPU = self.config.data.dynamic.server.GPU.nvidia
 
         if self.algo not in ('ethash'):
-            raise ValueError('Invalid coin algo for ethminer miner')
+            Logger.printLog('Invalid coin algo for ethminer miner', 'error')
+            self.stop()
+            self.shutdown()
 
         # Nvidia only - use Cuda
         if amdGPU == 0 and nvidiaGPU > 0:
@@ -41,7 +41,7 @@ class ETHMiner(Miner):
 
     def parse(self, text):
         # Ethminer produces weird ansi color text, remove them all!
-        text = stripAnsi(text).encode('ascii', 'ignore')
+        text = UtilStripAnsi(text).encode('ascii', 'ignore')
 
         # Cleanup text
         try:

@@ -2,6 +2,8 @@ import os, subprocess, psutil, time, re, pexpect, signal
 from abc import ABCMeta, abstractmethod
 
 from entities import *
+from modules import *
+from pprint import pprint
 
 class Miner:
 
@@ -69,14 +71,23 @@ class Miner:
 
             default = self.miner_config.settings
             try:
-                extra = self.miner_config[self.miner_mode]
+                extra = self.miner_config[self.miner_mode.lower()]
             # Put exception notice here later
             except:
                 extra = False
 
-            self.executable = getOption('executable', default, extra)
+            self.checkKeywords = UtilGetOption('check_keywords', default, extra)
+            if self.checkKeywords:
+                try:
+                    self.checkKeywords = UtilExplode(self.checkKeywords)
+                except Exception as e:
+                    Logger.printLog(str(e), 'error')
+            else:
+                self.checkKeywords = []
+
+            self.executable = UtilGetOption('executable', default, extra)
             self.option = (
-                str(getOption('options', default, extra))
+                str(UtilGetOption('options', default, extra))
                     .replace('\n',              ' #-# ')
                     .replace('{raw_url}',       self.raw_url)
                     .replace('{raw_protocol}',  self.raw_protocol)
@@ -123,10 +134,10 @@ class Miner:
         if c.machine.settings.executable_location:
             path = c.machine.settings.executable_location
 
-        command = findFile(path, self.executable)
+        command = UtilFindFile(path, self.executable)
         self.process = pexpect.spawn(
             command,
-            self.setupArgs(explode(self.option.replace(' #-# ', ' '), ' ')),
+            self.setupArgs(UtilExplode(self.option.replace(' #-# ', ' '), ' ')),
             env=self.environment,
             timeout=None,
             cwd=os.path.dirname(command)

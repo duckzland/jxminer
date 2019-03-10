@@ -1,6 +1,7 @@
 from threads import Thread
 from entities import *
 from miners import *
+from pprint import pprint
 
 class gpuMiner(Thread):
 
@@ -53,7 +54,7 @@ class gpuMiner(Thread):
             self.job.shutdown_flag.set()
 
         self.started = False
-        Logger.printLog("Stopping gpu miner manager", 'success')
+        Logger.printLog("Stopping gpu miner", 'success')
 
 
 
@@ -61,7 +62,7 @@ class gpuMiner(Thread):
         c         = self.config.data.config
         d         = self.config.data.dynamic
         coin      = c.machine.gpu_miner.coin
-        algo      = c.coins[coin].algo
+        algo      = c.coins[coin].algo.lower()
         doDual    = c.machine.gpu_miner.dual
         amd       = c.miner[algo].amd
         nvidia    = c.miner[algo].nvidia

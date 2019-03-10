@@ -1,6 +1,7 @@
 import re, os
 from miners import Miner
 from modules import *
+from entities import *
 
 class TeamRedMiner(Miner):
 
@@ -11,21 +12,18 @@ class TeamRedMiner(Miner):
     def init(self):
         self.miner = 'teamredminer'
         self.setupMiner('gpu')
-        self.checkKeywords = [
-        ]
-
-        allowed = explode(self.miner_config.settings.algo)
+        allowed = UtilExplode(self.miner_config.settings.algo)
         if self.algo not in allowed:
-            raise ValueError('Invalid coin algo for teamredminer miner')
-
-        if self.algo == 'cryptonight7':
-            self.algo = 'cnv8'
+            Logger.printLog('Invalid coin algo for teamredminer miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.amd == 0:
-            raise ValueError('No AMD card found, TeamRedMiner only supports amd card')
+            Logger.printLog('No AMD card found, TeamRedMiner only supports amd card', 'error')
+            self.stop()
+            self.shutdown()
 
         self.option = self.option.replace('{teamredminer_algo}', self.algo)
-
         self.setupEnvironment()
 
 
@@ -35,10 +33,11 @@ class TeamRedMiner(Miner):
         if self.config.data.dynamic.server.GPU.amd == 1:
             keyword = ' GPU 0 '
 
-        if keyword in text:
+        tmp = UtilStripAnsi(text)
+        if keyword in tmp:
             try:
                 regex = r" a:\d+ r:\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['shares'] = output.replace(' a:', '').replace(' r:', '/')
@@ -47,7 +46,7 @@ class TeamRedMiner(Miner):
 
             try:
                 regex = r" avg \d+.\d+(?:mh|kh| h)/s"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output.replace(' avg ', '')

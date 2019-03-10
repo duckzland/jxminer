@@ -2,6 +2,7 @@ import re
 
 from miners import Miner
 from modules import *
+from entities import *
 
 class Avermore(Miner):
 
@@ -15,13 +16,17 @@ class Avermore(Miner):
         self.acceptedShares = 0
         self.rejectedShares = 0
 
-        allowed = explode(self.miner_config.settings.algo)
+        allowed = UtilExplode(self.miner_config.settings.algo)
 
         if self.algo not in allowed:
-            raise ValueError('Invalid coin algo for avermore miner')
+            Logger.printLog('Invalid coin algo for avermore', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.amd == 0:
-            raise ValueError('No AMD card found, Avermore only supports amd card')
+            Logger.printLog('No AMD card found, Avermore only supports amd card', 'error')
+            self.stop()
+            self.shutdown()
 
         self.setupEnvironment()
 
@@ -39,10 +44,11 @@ class Avermore(Miner):
         output = m.group(0)
         text = text.replace(output, '')
 
-        if 'avg' in text:
+        tmp = UtilStripAnsi(text)
+        if 'avg' in tmp:
             try:
                 regex = r"\(avg\):\d+.\d+(M|K)h\/s"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output.replace('(avg):', '')
@@ -50,10 +56,10 @@ class Avermore(Miner):
             except:
                 pass
 
-        if ' Diff ' in text:
+        if ' Diff ' in tmp:
             try:
                 regex = r"Diff \d+.\d+/\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['diff'] = output.replace('Diff ', '')
@@ -61,10 +67,10 @@ class Avermore(Miner):
                 pass
 
         # Avermore shares count screwed up use simple counting instead
-        if 'Accepted' in text:
+        if 'Accepted' in tmp:
             self.acceptedShares += 1
 
-        if 'Rejected' in text:
+        if 'Rejected' in tmp:
             self.rejectedShares += 1
 
         self.bufferStatus['shares'] = '%s/%s' % (self.acceptedShares, self.rejectedShares)

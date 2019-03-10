@@ -53,14 +53,14 @@ class watchdog(Thread):
             if countdown == self.delay:
                 if self.softRebootCount == self.maxRetry and self.isRebooting:
                     Logger.printLog(rebootMessage % (self.boxName, 'hard', message), 'info')
-                    sendSlack(rebootMessage % (self.boxName, 'hard', message))
+                    UtilSendSlack(rebootMessage % (self.boxName, 'hard', message))
                     time.sleep(3)
                     os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
 
                 else:
                     self.softRebootCount += 1
                     Logger.printLog(rebootMessage % (self.boxName, 'soft', message), 'info')
-                    sendSlack(rebootMessage % (self.boxName, 'soft', message))
+                    UtilSendSlack(rebootMessage % (self.boxName, 'soft', message))
                     self.miner.reboot()
 
                 self.isRebooting = False

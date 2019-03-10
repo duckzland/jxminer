@@ -1,6 +1,7 @@
 import re
 from miners import Miner
 from modules import *
+from entities import *
 
 class TRex(Miner):
 
@@ -12,22 +13,18 @@ class TRex(Miner):
 
         self.miner = 'trex'
         self.setupMiner('gpu')
-        self.checkKeywords = [
-            'the launch timed out and was terminated',
-            "WARN: Can't submit job"
-        ]
-
-        allowed = explode(self.miner_config.settings.algo)
-
-        miner_algo = self.algo
-
-        if miner_algo not in allowed:
-            raise ValueError('Invalid coin algo for T-Rex miner')
+        allowed = UtilExplode(self.miner_config.settings.algo)
+        if self.algo not in allowed:
+            Logger.printLog('Invalid coin algo for T-Rex miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.nvidia == 0:
-            raise ValueError('No Nvidia card found, T-Rex miner only supports Nvidia card')
+            Logger.printLog('No Nvidia card found, T-Rex miner only supports Nvidia card', 'error')
+            self.stop()
+            self.shutdown()
 
-        self.option = self.option.replace('{trex_algo}', miner_algo)
+        self.option = self.option.replace('{trex_algo}',self.algo)
         self.setupEnvironment()
 
 
@@ -39,11 +36,11 @@ class TRex(Miner):
         m = re.search(regex, text)
         output = m.group(0)
         text = text.replace(output, '')
-
-        if 'OK' in text:
+        tmp = UtilStripAnsi(text)
+        if 'OK' in tmp:
             try:
                 regex = r"\d+\/\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['shares'] = output
@@ -52,7 +49,7 @@ class TRex(Miner):
 
             try:
                 regex = r"- \d+.\d+ (M|k)H\/s"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output.replace('- ', '')
@@ -60,10 +57,10 @@ class TRex(Miner):
             except:
                 pass
 
-        if ', diff ' in text:
+        if ', diff ' in tmp:
             try:
                 regex = r", diff \d+.\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['diff'] = output.replace(', diff ', '')

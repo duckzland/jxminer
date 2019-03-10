@@ -4,7 +4,7 @@ from datetime import datetime
 from slackclient import SlackClient
 from entities import *
 
-def sendSlack(message):
+def UtilSendSlack(message):
 
     c = False
     try:
@@ -26,7 +26,7 @@ def sendSlack(message):
 
 
 
-def getHighestTemps(GPUUnits):
+def UtilGetHighestTemps(GPUUnits):
     temps = []
     for unit in GPUUnits:
         unit.detect()
@@ -36,7 +36,7 @@ def getHighestTemps(GPUUnits):
 
 
 
-def getAverageTemps(GPUUnits):
+def UtilGetAverageTemps(GPUUnits):
     temps = []
     for unit in GPUUnits:
         unit.detect()
@@ -46,7 +46,7 @@ def getAverageTemps(GPUUnits):
 
 
 
-def calculateStep(minStep, maxStep, currentStep, targetTemp, currentTemp, stepUp=None, stepDown=None):
+def UtilCalculateStep(minStep, maxStep, currentStep, targetTemp, currentTemp, stepUp=None, stepDown=None):
     if not stepUp:
         stepUp = 7
 
@@ -64,11 +64,11 @@ def calculateStep(minStep, maxStep, currentStep, targetTemp, currentTemp, stepUp
     return int(max(min(int(maxStep), currentStep), int(minStep)))
 
 
-def explode(option, sep=',', chars=None):
+def UtilExplode(option, sep=',', chars=None):
     return [ chunk.strip(chars) for chunk in option.split(sep) ]
 
 
-def which(name):
+def UtilWhich(name):
     found = None
     for path in os.getenv("PATH").split(os.path.pathsep):
         full_path = os.path.join(path,name)
@@ -78,8 +78,8 @@ def which(name):
     return found
 
 
-def findFile(directory, search):
-    files = recursive_glob(directory, search)
+def UtilFindFile(directory, search):
+    files = UtilRecursiveGlob(directory, search)
     file = False
     if files and len(files):
         file = files[0]
@@ -87,7 +87,7 @@ def findFile(directory, search):
     return file
 
 
-def recursive_glob(treeroot, pattern):
+def UtilRecursiveGlob(treeroot, pattern):
     results = []
     for base, dirs, files in os.walk(treeroot):
         try:
@@ -97,7 +97,7 @@ def recursive_glob(treeroot, pattern):
             pass
     return results
 
-def getOption(name, default, extra):
+def UtilGetOption(name, default, extra):
     if extra and name in extra:
         return extra[name]
     elif name in default:
@@ -106,6 +106,6 @@ def getOption(name, default, extra):
         return None
 
 
-def stripAnsi(line):
+def UtilStripAnsi(line):
     ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
     return ansi_escape.sub('', line)

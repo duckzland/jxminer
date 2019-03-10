@@ -1,6 +1,7 @@
 import re
 from miners import Miner
 from modules import *
+from entities import *
 
 class CCMiner(Miner):
 
@@ -12,39 +13,30 @@ class CCMiner(Miner):
 
         self.miner = 'ccminer'
         self.setupMiner('gpu')
-        self.checkKeywords = [
-            "watchdog: BUG: soft lockup",
-            "Cuda error",
-            "illegal memory",
-        ]
 
-        allowed = explode(self.miner_config.settings.algo)
-
-        miner_algo = self.algo
-
-        if 'cryptonight' in miner_algo:
-            miner_algo = 'cryptonight'
-
-        if 'cryptonight7' in miner_algo:
-            miner_algo = 'monero'
-
-        if miner_algo not in allowed:
-            raise ValueError('Invalid coin algo for ccminer miner')
+        allowed = UtilExplode(self.miner_config.settings.algo)
+        if self.algo not in allowed:
+            Logger.printLog('Invalid coin algo for ccminer miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.nvidia == 0:
-            raise ValueError('No Nvidia card found, CCMiner only supports Nvidia card')
+            Logger.printLog('No Nvidia card found, CCMiner only supports Nvidia card', 'error')
+            self.stop()
+            self.shutdown()
 
-        self.option = self.option.replace('{ccminer_algo}', miner_algo)
+        self.option = self.option.replace('{ccminer_algo}', self.algo)
         self.setupEnvironment()
 
 
 
 
     def parse(self, text):
-        if 'accepted:' in text:
+        tmp = UtilStripAnsi(text)
+        if 'accepted:' in tmp:
             try:
                 regex = r"\d+\/\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['shares'] = output
@@ -53,7 +45,7 @@ class CCMiner(Miner):
 
             try:
                 regex = r"diff \d+.\d+"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['diff'] = output.replace('diff ', '')
@@ -62,7 +54,7 @@ class CCMiner(Miner):
 
             try:
                 regex = r", \d+.\d+( M| k| )H"
-                m = re.search(regex, text)
+                m = re.search(regex, tmp)
                 output = m.group(0)
                 if output:
                     self.bufferStatus['hashrate'] = output.replace(', ', '')

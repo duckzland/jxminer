@@ -59,7 +59,7 @@ class gpuTuner(Thread):
             x = t.min if (h < c.settings.minhour or h >= c.settings.maxhour) else t.max
 
         else:
-            x = calculateStep(t.min, t.max, l, u.temperature, t.target, t.up, t.down)
+            x = UtilCalculateStep(t.min, t.max, l, u.temperature, t.target, t.up, t.down)
 
         return x
         

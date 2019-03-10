@@ -2,6 +2,8 @@ import re
 
 from miners import Miner
 from modules import *
+from entities import *
+from pprint import pprint
 
 class AmdXMRig(Miner):
 
@@ -12,27 +14,17 @@ class AmdXMRig(Miner):
     def init(self):
         self.miner = 'amdxmrig'
         self.setupMiner('gpu')
-        self.checkKeywords = []
 
-        allowed = [
-            'cryptonight',
-            'cryptonight7',
-            'cryptonight7-v3',
-            'cryptonight7-v4',
-            'cryptonight7-v8',
-            'cryptonight-ipbc',
-            'cryptonight-lite',
-            'cryptonight-heavy',
-            'cryptonight-v1',
-            'cryptonight-lite-v1',
-            'cryptonight-heavy-v1'
-        ]
-
+        allowed = UtilExplode(self.miner_config.settings.algo)
         if self.algo not in allowed:
-            raise ValueError('Invalid coin algo for xmrig amd miner')
+            Logger.printLog('Invalid coin algo for xmrig amd miner', 'error')
+            self.stop()
+            self.shutdown()
 
         if self.config.data.dynamic.server.GPU.amd == 0:
-            raise ValueError('No AMD card found, AMD XMRig miner only support AMD card')
+            Logger.printLog('No AMD card found, AMD XMRig miner only support AMD card', 'error')
+            self.stop()
+            self.shutdown()
 
         devices = []
         for i in range(0, int(self.config.data.dynamic.server.GPU.amd)):
@@ -49,7 +41,7 @@ class AmdXMRig(Miner):
 
 
     def parse(self, text):
-        tmp = stripAnsi(text)
+        tmp = UtilStripAnsi(text)
         if 'accepted' in tmp:
             try:
                 regex = r"\d+\/\d+"

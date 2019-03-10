@@ -39,7 +39,7 @@ class gpuFans(Thread):
             cp = Curve(f.curve)
             s = cp.evaluate(int(u.temperature))
         else:
-            s = calculateStep(f.min, f.max, u.fanSpeed, f.target, u.temperature, f.up, f.down)
+            s = UtilCalculateStep(f.min, f.max, u.fanSpeed, f.target, u.temperature, f.up, f.down)
             
         return s
 
