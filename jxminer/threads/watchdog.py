@@ -3,6 +3,7 @@ import os, time, re
 from threads import Thread
 from entities import *
 from modules import *
+from pprint import pprint
 
 class watchdog(Thread):
 
@@ -75,7 +76,8 @@ class watchdog(Thread):
             shareCount = False
             hashRate = False
             if status and 'shares' in status:
-                shareCount = status['shares']
+                tails = re.compile(r"/\d+")
+                shareCount = tails.sub('', str(status['shares']))
 
             if status and 'hashrate' in status:
                 non_decimal = re.compile(r'[^\d.]+')

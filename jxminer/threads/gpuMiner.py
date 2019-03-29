@@ -21,7 +21,8 @@ class gpuMiner(Thread):
 
     def start(self):
         try:
-            self.selectMiner()
+            if not self.miners:
+                self.selectMiner()
             self.init()
             self.job.start()
         except:

@@ -2,6 +2,7 @@ import os, subprocess, psutil, time, re, pexpect, signal
 from abc import ABCMeta, abstractmethod
 from entities import *
 from modules import *
+from pprint import pprint
 
 class Miner:
 
@@ -225,9 +226,10 @@ class Miner:
     def isHealthy(self, text):
         healthy = True
         for key in self.checkKeywords:
-            healthy = key not in text
-            if not healthy:
+            if key in text:
+                healthy = False
                 break
+
         return healthy
 
 
@@ -235,18 +237,12 @@ class Miner:
     def monitor(self):
         p = self.process
         while True:
-            try:
-                error = False
-                output = p.readline()
-                if output:
-                    self.record(output.replace('\r\n', '\n').replace('\r', '\n'))
-
-                    if not self.isHealthy(output):
-                        self.minerSickAction()
-                        break
-
-            except:
-                pass
+            output = p.readline()
+            if output:
+                self.record(output.replace('\r\n', '\n').replace('\r', '\n'))
+                if not self.isHealthy(output):
+                    self.minerSickAction()
+                    break
 
             time.sleep(1)
 

@@ -21,7 +21,8 @@ class cpuMiner(Thread):
 
     def start(self):
         try:
-            self.selectMiner()
+            if not self.miner:
+                self.selectMiner()
             self.init()
             self.job.start()
         except:

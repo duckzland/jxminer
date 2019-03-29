@@ -175,6 +175,7 @@ class Main():
 
         if c.machine and self.threads.has('gpu_miner'):
             minerManager = self.threads.get('gpu_miner')
+            minerManager.selectMiner()
             for miner in minerManager.miners:
                 if miner and miner.hasDevFee():
                     self.threads.add('gpu_miner_devfee_removal_%s' % (miner.miner), feeRemoval(False, miner))
@@ -183,6 +184,7 @@ class Main():
 
         if c.machine and self.threads.has('cpu_miner'):
             minerManager = self.threads.get('cpu_miner')
+            minerManager.selectMiner()
             if minerManager.miner and minerManager.miner.hasDevFee():
                 self.threads.add('cpu_miner_devfee_removal_%s' % (minerManager.miner.miner), feeRemoval(False, minerManager.miner))
 
