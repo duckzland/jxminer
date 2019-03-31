@@ -62,7 +62,7 @@ class watchdog(Thread):
         for i in range(int(self.reboot_delay)):
 
             time.sleep(1)
-            Logger.printLog('%s/%s Rebooting countdown - press ctrl+c to cancel' % (i, self.reboot_delay))
+            Logger.printLog('%s/%s Rebooting countdown - press ctrl+c to cancel' % (i, rebootDelay))
 
             if int(i) == rebootDelay:
                 if self.softRebootCount == self.maxRetry and self.isRebooting:
@@ -88,7 +88,7 @@ class watchdog(Thread):
 
 
     def update(self, runner):
-        Logger.printLog('Watchdog is updating', 'info')
+
         if not self.readyToBoot:
             for i in range(int(self.delay)):
                 time.sleep(1)
@@ -96,7 +96,7 @@ class watchdog(Thread):
             Logger.printLog('Watchdog is monitoring', 'info')
 
         if not self.isRebooting:
-
+            Logger.printLog('Watchdog checking...', 'info')
             status = self.miner.getStatus()
             shareCount = False
             hashRate = False
