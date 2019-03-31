@@ -62,7 +62,7 @@ class watchdog(Thread):
         for i in range(int(self.reboot_delay)):
 
             time.sleep(1)
-            Logger.printLog('%s/%s Rebooting countdown' % (i, self.reboot_delay))
+            Logger.printLog('%s/%s Rebooting countdown - press ctrl+c to cancel' % (i, self.reboot_delay))
 
             if int(i) == rebootDelay:
                 if self.softRebootCount == self.maxRetry and self.isRebooting:

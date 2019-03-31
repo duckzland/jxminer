@@ -246,7 +246,7 @@ class Main():
 
 
     def version(self):
-        print '0.6.3'
+        print '0.6.4'
 
 
 
