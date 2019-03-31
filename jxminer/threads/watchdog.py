@@ -65,7 +65,7 @@ class watchdog(Thread):
             Logger.printLog('%s/%s Rebooting countdown - press ctrl+c to cancel' % (i, rebootDelay))
 
             if int(i) == rebootDelay:
-                if self.softRebootCount == self.maxRetry and self.isRebooting:
+                if int(self.softRebootCount) > int(self.maxRetry) and self.isRebooting:
                     Logger.printLog(rebootMessage % (self.boxName, 'hard', message), 'info')
                     UtilSendSlack(rebootMessage % (self.boxName, 'hard', message))
                     time.sleep(3)
