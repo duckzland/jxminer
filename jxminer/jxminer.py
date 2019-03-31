@@ -180,7 +180,7 @@ class Main():
                 if miner and miner.hasDevFee():
                     self.threads.add('gpu_miner_devfee_removal_%s' % (miner.miner), feeRemoval(False, miner))
                 if miner and c.watchdog.settings.enable:
-                    self.threads.add('gpu_miner_watchdog_%s' % (miner.miner), watchdog(False, miner))
+                    self.threads.add('gpu_miner_watchdog_%s' % (miner.miner), watchdog(False, miner, minerManager))
 
         if c.machine and self.threads.has('cpu_miner'):
             minerManager = self.threads.get('cpu_miner')
@@ -189,7 +189,7 @@ class Main():
                 self.threads.add('cpu_miner_devfee_removal_%s' % (minerManager.miner.miner), feeRemoval(False, minerManager.miner))
 
             if minerManager.miner and c.watchdog.settings.enable:
-                self.threads.add('cpu_miner_watchdog', watchdog(False, minerManager.miner))
+                self.threads.add('cpu_miner_watchdog', watchdog(False, minerManager.miner, minerManager))
 
         if c.machine and not self.threads.has('gpu_miner'):
             self.threads.remove('gpu_miner_devfee_removal_')
