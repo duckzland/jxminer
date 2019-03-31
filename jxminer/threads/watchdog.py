@@ -96,7 +96,6 @@ class watchdog(Thread):
             Logger.printLog('Watchdog is monitoring', 'info')
 
         if not self.isRebooting:
-            Logger.printLog('Watchdog checking...', 'info')
             status = self.miner.getStatus()
             shareCount = False
             hashRate = False
