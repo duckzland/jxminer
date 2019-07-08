@@ -116,7 +116,7 @@ class socketAction(Thread):
         if self.active:
             if self.transfer:
                 try:
-                    self.transfer.send('Closing socket connection...')
+                    #self.transfer.send('Closing socket connection...')
                     time.sleep(0.1)
                 except:
                     pass
