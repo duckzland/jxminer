@@ -4,7 +4,7 @@ from threads import Thread
 from entities import *
 from modules import *
 
-class SystemdWatchdog(Thread):
+class systemdWatchdog(Thread):
 
     def __init__(self, start):
         self.active = False

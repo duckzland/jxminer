@@ -246,7 +246,7 @@ class Main():
 
 
     def version(self):
-        print '0.6.4'
+        print '0.6.5'
 
 
 
@@ -323,9 +323,15 @@ class Main():
 
     def shutdown(self):
 
-        self.socket.shutdown(socket.SHUT_WR)
-        self.socket.close()
-        Logger.printLog("Closed open sockets", 'success')
+        try:
+            self.socket.shutdown(socket.SHUT_WR)
+            self.socket.close()
+
+        except:
+            pass
+
+        finally:
+            Logger.printLog("Closed open sockets", 'success')
 
         self.threads.destroy()
         Logger.printLog("Stopped running threads", 'success')
