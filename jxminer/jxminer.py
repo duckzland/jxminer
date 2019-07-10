@@ -391,6 +391,7 @@ class Main():
             while True:
                 if Process.isShuttingDown:
                     Logger.printLog("Shutdown initializing", 'success')
+                    self.threads.clean()
                     break
 
                 self.loadXorg()

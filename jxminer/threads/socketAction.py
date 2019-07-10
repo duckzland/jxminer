@@ -15,7 +15,7 @@ class socketAction(Thread):
         self.fans = fans
         self.gpu = cards
         self.init()
-        print callback
+
         if start:
             self.start()
 
@@ -36,6 +36,12 @@ class socketAction(Thread):
             if not action:
                 pass
 
+            elif 'server:status:live' in action:
+                while True and self.active:
+                    self.transfer.send('active')
+                    time.sleep(5)
+
+
             elif action in ('server:status'):
                 self.transfer.send('active')
 
@@ -46,7 +52,6 @@ class socketAction(Thread):
                 except Exception as e:
                     Logger.printLog(str(e), 'error')
                     Logger.printLog("Failed calling server action", 'error')
-
 
 
             elif action in ('monitor:miner:cpu'):
@@ -87,7 +92,7 @@ class socketAction(Thread):
 
 
             elif 'config:load:json' in action:
-                self.config.scan(True);
+                #self.config.scan(True);
                 data = json.dumps(self.config.extract()).replace('True', 'true').replace('False', 'false')
                 self.transfer.send(data)
 
@@ -129,6 +134,7 @@ class socketAction(Thread):
 
             if self.connection:
                 try:
+                    self.connection.shutdown()
                     self.connection.close()
                 except:
                     pass
