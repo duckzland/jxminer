@@ -92,7 +92,7 @@ class socketAction(Thread):
 
 
             elif 'config:load:json' in action:
-                #self.config.scan(True);
+                self.config.scan(True);
                 data = json.dumps(self.config.extract()).replace('True', 'true').replace('False', 'false')
                 self.transfer.send(data)
 
