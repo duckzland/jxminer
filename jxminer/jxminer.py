@@ -206,7 +206,7 @@ class Main():
 
 
 
-    def action(self, action):
+    def doAction(self, action):
 
         if action == 'server:update':
             self.config.scan()
@@ -246,7 +246,7 @@ class Main():
 
 
     def version(self):
-        print '0.6.5'
+        print '0.6.6'
 
 
 
@@ -315,7 +315,7 @@ class Main():
             ip, port = str(address[0]), str(address[1])
             self.threads.add(
                 'connection_' + str(uuid.uuid4()),
-                socketAction(True, connection, self.action, self.threads, self.fans, self.cards)
+                socketAction(True, connection, self.doAction, self.threads, self.fans, self.cards)
             )
             Logger.printLog("Connecting with %s:%s" % (ip, port), 'success')
 

@@ -15,6 +15,7 @@ class socketAction(Thread):
         self.fans = fans
         self.gpu = cards
         self.init()
+        print callback
         if start:
             self.start()
 
@@ -40,7 +41,12 @@ class socketAction(Thread):
 
 
             elif action in ('server:shutdown', 'server:reboot', 'server:update'):
-                self.callback(action)
+                try:
+                    self.callback(action)
+                except Exception as e:
+                    Logger.printLog(str(e), 'error')
+                    Logger.printLog("Failed calling server action", 'error')
+
 
 
             elif action in ('monitor:miner:cpu'):
