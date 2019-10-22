@@ -83,12 +83,10 @@ class watchdog(Thread):
                     self.lastShareCount = False
                     self.readyToBoot = False
 
-                    # Don't use miner instance to reboot, instead reboot the miner threads directly
-                    # @todo split the GPU miner thread so we can reboot them individualy
-                    self.threads.destroy()
+                    self.miner.stop()
 
-                    time.sleep(1)
-                    self.threads.start()
+                    time.sleep(10)
+                    self.miner.start()
 
 
 
