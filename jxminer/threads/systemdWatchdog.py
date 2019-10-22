@@ -44,7 +44,10 @@ class systemdWatchdog(Thread):
                     if c.machine.settings.hard_reboot:
                         # os.system('sync')
                         # time.sleep(5)
-                        os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+                        try:
+                            os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+                        except:
+                            os.system("reboot -f")
 
                     ## Soft safe reboot, This might not work on all machine ##
                     else:

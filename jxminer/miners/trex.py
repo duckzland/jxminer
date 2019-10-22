@@ -32,11 +32,17 @@ class TRex(Miner):
     def parse(self, text):
 
         ## Shorten the text ##
-        regex = r"\d+ \d+:\d+:\d+\ "
-        m = re.search(regex, text)
-        output = m.group(0)
-        text = text.replace(output, '')
+        try:
+            regex = r"\d+ \d+:\d+:\d+\ "
+            m = re.search(regex, text)
+            output = m.group(0)
+            if output:
+                text = text.replace(output, '')
+        except:
+            pass
+
         tmp = UtilStripAnsi(text)
+
         if 'OK' in tmp:
             try:
                 regex = r"\d+\/\d+"

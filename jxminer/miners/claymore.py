@@ -88,7 +88,10 @@ class Claymore(Miner):
         # AMD need full server reboot when hang
         if self.config.data.dynamic.server.GPU.amd > 0:
             # If we are here probably server crashed badly, invoke hard reboot
-            os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+            try:
+                os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+            except:
+                os.system("reboot -f")
         else:
             self.stop()
             self.start()

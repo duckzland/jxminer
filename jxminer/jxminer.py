@@ -78,12 +78,18 @@ class Main():
                         UtilSendSlack('%s %s gpu failed to initialize at %s' % (str(totalTest), gpuType, box_name))
 
                         if c.machine.gpu_check_total.reboot_when_failed:
+                            # First try block is for cancelable by user interaction
                             try:
                                 Logger.printLog('Rebooting in %d seconds due to %s %s gpu is not initializing properly' % (rebootDelay, str(totalTest), gpuType), 'error')
                                 UtilSendSlack('Rebooting %s in %d seconds due to %s %s gpu is not initializing properly' % (rebootDelay, box_name, str(totalTest), gpuType))
 
                                 time.sleep(rebootDelay)
-                                os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+
+                                # second try is to ensure we got reboot
+                                try:
+                                    os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+                                except:
+                                    os.system("reboot -f")
 
                             # Allow user to cancel the rebooting process
                             except:
@@ -163,7 +169,7 @@ class Main():
 
         if self.cards and c.tuner:
             self.threads.process('gpu_tuner', gpuTuner(False, self.cards), c.tuner.settings.enable)
-	
+
         if self.cards and c.notification:
             self.threads.process('notification', notification(False, self.threads, self.fans, self.cards), c.notification.settings.enable)
 
@@ -246,7 +252,7 @@ class Main():
 
 
     def version(self):
-        print '0.6.6'
+        print '0.6.7'
 
 
 

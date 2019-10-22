@@ -126,27 +126,23 @@ class Miner:
 
 
     def start(self):
-        if self.status == 'stop':
-            c       = self.config.data.config
-            path    = os.path.join('/usr', 'local')
-
-        if c.machine.settings.executable_location:
-            path = c.machine.settings.executable_location
-
+        c       = self.config.data.config
+        path    = c.machine.settings.executable_location or os.path.join('/usr', 'local')
         command = UtilFindFile(path, self.executable)
-        self.process = pexpect.spawn(
-            command,
-            self.setupArgs(UtilExplode(self.option.replace(' #-# ', ' '), ' ')),
-            env=self.environment,
-            timeout=None,
-            cwd=os.path.dirname(command)
-        )
-        self.proc = psutil.Process(self.process.pid)
-        self.status = 'ready'
 
-        Logger.printLog('Initializing %s miner instance' % (self.miner), 'success')
+        if self.status == 'stop' and command:
+            self.process = pexpect.spawn(
+                command,
+                self.setupArgs(UtilExplode(self.option.replace(' #-# ', ' '), ' ')),
+                env=self.environment,
+                timeout=None,
+                cwd=os.path.dirname(command)
+            )
+            self.proc = psutil.Process(self.process.pid)
+            self.status = 'ready'
 
-        if self.status == 'ready':
+            Logger.printLog('Initializing %s miner instance at %s' % (self.miner, command), 'success')
+
             self.monitor()
 
 
@@ -173,21 +169,13 @@ class Miner:
     def check(self):
         if self.status == 'ready':
             if hasattr(self, 'proc'):
-                try:
-                    if psutil.pid_exists(self.process.pid) and self.proc.status() != psutil.STATUS_ZOMBIE:
-                        alive = True
+                if psutil.pid_exists(self.process.pid) and self.proc.status() != psutil.STATUS_ZOMBIE:
+                    self.max_retries = 3
 
-                except:
-                    alive = False
-
-                finally:
-                    if not alive:
-                        self.reboot()
-                        self.max_retries = self.max_retries - 1
-                        Logger.printLog('Restarting crashed %s miner instance' % (self.miner), 'info')
-                    else:
-                        self.max_retries = 3
-
+                else:
+                    self.reboot()
+                    self.max_retries = self.max_retries - 1
+                    Logger.printLog('Restarting crashed %s miner instance' % (self.miner), 'info')
 
             if self.max_retries < 0:
                 Logger.printLog('Maximum retry of -#%s#- reached' % 3, 'info')

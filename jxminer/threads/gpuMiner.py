@@ -25,11 +25,9 @@ class gpuMiner(Thread):
                 self.selectMiner()
             self.init()
             self.job.start()
+            self.active = True
         except:
             self.active = False
-
-        finally:
-            self.active = True
 
 
     def update(self, runner):

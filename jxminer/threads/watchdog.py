@@ -69,7 +69,10 @@ class watchdog(Thread):
                     Logger.printLog(rebootMessage % (self.boxName, 'hard', message), 'info')
                     UtilSendSlack(rebootMessage % (self.boxName, 'hard', message))
                     time.sleep(3)
-                    os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+                    try:
+                        os.system('echo 1 > /proc/sys/kernel/sysrq && echo b > /proc/sysrq-trigger')
+                    except:
+                        os.system("reboot -f")
 
                 else:
                     self.softRebootCount += 1
@@ -83,6 +86,8 @@ class watchdog(Thread):
                     # Don't use miner instance to reboot, instead reboot the miner threads directly
                     # @todo split the GPU miner thread so we can reboot them individualy
                     self.threads.destroy()
+
+                    time.sleep(1)
                     self.threads.start()
 
 
@@ -109,4 +114,3 @@ class watchdog(Thread):
                 hashRate = non_decimal.sub('', str(status['hashrate']))
 
             self.check(shareCount, hashRate)
-
