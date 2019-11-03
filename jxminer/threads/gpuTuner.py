@@ -9,33 +9,48 @@ class gpuTuner(Thread):
         This is a class for managing threads for tuning gpu
     """
 
-    def __init__(self, start, units):
+    def __init__(self, **kwargs):
+        super(gpuTuner, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
 
-        self.active = False
-        self.job = False
-        self.config = Config()
-        self.units = units
+
+    def init(self):
+        self.units = self.args.get('cards')
         self.mode = self.config.data.config.tuner.settings.mode
         self.coin = self.config.data.config.machine.gpu_miner.coin
         self.settings = self.config.data.config.tuner.settings
 
-        self.tick = 20
+        ticks = 20
         if (self.mode == 'dynamic' and 'tick' in self.settings):
-            self.tick = self.settings.tick
+            ticks = self.settings.tick
 
         if (self.mode == 'static'):
-            self.tick = 999999
+            ticks = 999999
 
         if (self.mode == 'time'):
-            self.tick = 3600
+            ticks = 3600
 
-        self.init()
-        if start:
+        self.setPauseTime(ticks)
+
+        if self.args.get('start', False):
             self.start()
 
 
-    def init(self):
-        self.job = Job(self.tick, self.update)
+    def update(self):
+        for unit in self.units:
+            self.tune(unit, 'core', self.mode)
+            self.tune(unit, 'memory', self.mode)
+            self.tune(unit, 'power', self.mode)
+
+        # only tune once in static mode
+        if self.mode == 'static':
+            self.destroy()
+
+
+    def destroy(self):
+        self.stop()
+        Logger.printLog("Stopping GPU tuner manager", 'success')
 
 
     def getSection(self, key, c, unit):
@@ -62,17 +77,7 @@ class gpuTuner(Thread):
             x = UtilCalculateStep(t.min, t.max, l, u.temperature, t.target, t.up, t.down)
 
         return x
-        
 
-    def update(self, runner):
-        for unit in self.units:
-            self.tune(unit, 'core', self.mode)
-            self.tune(unit, 'memory', self.mode)
-            self.tune(unit, 'power', self.mode)
-
-        # only tune once in static mode
-        if self.mode == 'static':
-            self.destroy()
 
 
     def tune(self, unit, key, mode):

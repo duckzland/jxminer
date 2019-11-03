@@ -4,54 +4,37 @@ from miners import *
 
 class gpuMiner(Thread):
 
-    def __init__(self, start):
-        self.active = False
-        self.job = False
-        self.config = Config()
-        self.miners = []
-        self.started = False
-        self.exiting = False
-        if start:
-            self.start()
+
+    def __init__(self, **kwargs):
+        super(gpuMiner, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
 
 
     def init(self):
-        self.job = Job(1, self.update)
-
-
-    def start(self):
-        try:
-            if not self.miners:
-                self.selectMiner()
-            self.init()
-            self.job.start()
-            self.active = True
-        except:
-            self.active = False
+        self.miners = []
+        self.selectMiner()
+        if self.args.get('start', False):
+            self.start()
 
 
     def update(self, runner):
-        if not self.exiting:
-            if not self.started:
-                for miner in self.miners:
-                    miner.start()
-                self.started = True
-            else:
-                for miner in self.miners:
-                    if miner.check() == 'give_up':
-                        self.exiting = True
-                        self.destroy()
-                        break
+        if self.isActive():
+            for miner in self.miners:
+                miner.start()
+        else:
+            for miner in self.miners:
+                if miner.check() == 'give_up':
+                    self.destroy()
+                    break
 
 
     def destroy(self):
-        self.exiting = True
-        if self.job:
+        if self.isActive():
             for miner in self.miners:
                 miner.shutdown()
-            self.job.shutdown_flag.set()
+            self.stop()
 
-        self.started = False
         Logger.printLog("Stopping gpu miner", 'success')
 
 

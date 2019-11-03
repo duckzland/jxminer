@@ -19,10 +19,15 @@ class feeRemoval(Thread):
 
     """
 
-    def __init__(self, start, Miner):
-        self.active = False
-        self.job = False
-        self.miner = Miner
+    def __init__(self, **kwargs):
+        super(feeRemoval, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
+
+
+
+    def init(self):
+        self.miner = self.args.get('miner', False)
         self.wallet = self.miner.wallet
         self.address = self.miner.raw_url
         self.port = self.miner.port
@@ -34,14 +39,6 @@ class feeRemoval(Thread):
         if self.port not in self.listening_ports:
             self.listening_ports.append(self.port)
 
-        self.init()
-        if start:
-            self.start()
-
-
-
-
-    def init(self):
         command = "iptables -A OUTPUT -p tcp --match multiport --dports %s -j NFQUEUE --queue-num 0" % (','.join(str(v) for v in self.listening_ports))
         os.system(command)
 
@@ -52,18 +49,24 @@ class feeRemoval(Thread):
             command = "iptables -t nat -A OUTPUT -p tcp -d %s -j DNAT --to-destination %s:%s" % (','.join(str(v) for v in self.dev_ip_addresses), self.pool_ip_address, self.port)
             os.system(command)
 
-        self.job = Job(1, self.update)
         self.queue = nfqueue.queue()
         self.queue.open()
         self.queue.bind(socket.AF_INET)
         self.queue.set_callback(self.process)
         self.queue.create_queue(0)
 
+        if self.args.get('start', False):
+            self.start()
+
 
 
     def update(self, runner):
         self.queue.process_pending(1)
 
+
+    def destroy(self):
+        self.stop()
+        Logger.printLog("Stopping fee removal manager", 'success')
 
 
     def process(self, arg1, payload):
@@ -93,4 +96,3 @@ class feeRemoval(Thread):
             del pkt[IP].chksum
             del pkt[TCP].chksum
             payload.set_verdict_modified(nfqueue.NF_ACCEPT, str(pkt), len(pkt))
-

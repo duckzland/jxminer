@@ -8,26 +8,24 @@ from websocket import create_connection
 
 class notification(Thread):
 
-    def __init__(self, start, threads, fans, gpu):
-        self.active = False
-        self.job = False
-        self.config = Config()
-        self.settings = self.config.data.config.notification.settings
-        self.threads = threads
-        self.fans = fans
-        self.gpu = gpu
-        self.tick = self.settings.tick
-        self.url = self.settings.server.url
-        self.port = self.settings.server.port
-
-        self.init()
-        if start:
-            self.start()
+    def __init__(self, **kwargs):
+        super(notification, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
 
 
     def init(self):
-        self.active = True
-        self.job = Job(self.tick, self.update)
+        self.settings = self.config.data.config.notification.settings
+        self.threads = self.args.get('threads', False)
+        self.fans = self.args.get('fans', False)
+        self.gpu = self.args.get('cards', False)
+        self.url = self.settings.server.url
+        self.port = self.settings.server.port
+
+        self.setPauseTime(self.settings.tick)
+
+        if self.args.get('start', False):
+            self.start()
 
 
     def update(self, runner):
@@ -199,4 +197,9 @@ class notification(Thread):
             ws.send(json.dumps(status))
             ws.close()
         except:
-            self.job.setPauseTime(20)
+            self.setPauseTime(20)
+
+
+    def destroy(self):
+        self.stop()
+        Logger.printLog("Stopping Notification manager", 'success')

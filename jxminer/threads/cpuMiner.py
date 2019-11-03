@@ -2,52 +2,34 @@ from threads import Thread
 from entities import *
 from miners import *
 
-class cpuMiner(Thread):
 
-    def __init__(self, start):
-        self.active = False
-        self.job = False
-        self.config = Config()
-        self.miner = False
-        self.started = False
-        self.exiting = False
-        if start:
-            self.start()
+class cpuMiner(Thread, threading.Thread):
+
+    def __init__(self, **kwargs):
+        super(cpuMiner, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
 
 
     def init(self):
-        self.job = Job(1, self.update)
+        self.selectMiner()
+        if self.args.get('start', False):
+            self.start()
 
 
-    def start(self):
-        try:
-            if not self.miner:
-                self.selectMiner()
-            self.init()
-            self.job.start()
-            self.active = True
-        except:
-            self.active = False
-
-
-    def update(self, runner):
-        if not self.exiting:
-            if not self.started:
-                self.miner.start()
-                self.started = True
-            else:
-                if self.miner.check() == 'give_up':
-                    self.exiting = True
-                    self.destroy()
+    def update(self):
+        if self.isActive():
+            self.miner.start()
+        else:
+            if self.miner.check() == 'give_up':
+                self.destroy()
 
 
     def destroy(self):
-        self.exiting = True
-        if self.job:
+        if self.isActive():
             self.miner.shutdown()
-            self.job.shutdown_flag.set()
+            self.stop()
 
-        self.started = False
         Logger.printLog("Stopping cpu miner manager", 'success')
 
 

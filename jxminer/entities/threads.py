@@ -51,7 +51,7 @@ class Threads:
 
     def clean(self):
         for threadName, thread in Threads.threads.items():
-            if not thread.active:
+            if not thread.isActive():
                 self.remove(threadName, thread)
 
 
@@ -64,4 +64,3 @@ class Threads:
     def start(self):
         for threadName, thread in Threads.threads.items():
             thread.start()
-

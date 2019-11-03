@@ -1,24 +1,16 @@
+import time, threading, signal
 from abc import ABCMeta, abstractmethod
+#from entities import *
 
-class Thread:
+class Thread(threading.Thread):
 
     """
         This is the base class for all of the thread instance
     """
 
-    def __init__(self, start, config):
-        self.active = False
-        self.job = False
-        self.config = config
-        self.buffers = dict()
-        self.init()
-        if start:
-            self.start()
-
-
-    def register(self, name, parent):
-        self.name = name
-        self.parent = parent
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.shutdown_flag = threading.Event()
 
 
     @abstractmethod
@@ -27,37 +19,52 @@ class Thread:
 
 
     @abstractmethod
-    def update(self, runner):
+    def update(self):
         pass
 
 
-    def start(self):
-        try:
-            if self.job:
-                self.job.start()
-        except:
-            self.active = False
-
-        finally:
-            self.active = True
-
-
+    @abstractmethod
     def destroy(self):
-        if self.job:
-            self.job.shutdown_flag.set()
-        self.active = False
+        pass
 
 
-    def check(self):
-        try:
-            if self.job:
-                self.active = self.job.shutdown_flag.is_set()
+    def configure(self, **kwargs):
 
-        except:
-            self.active = false
+        self.function = self.update
+        self.args = kwargs
+        self.config = Config()
+        self.buffers = dict()
+        self.init()
 
-        finally:
-            return self.active
+
+    def run(self):
+        while not self.shutdown_flag.is_set():
+            self.function()
+
+            for i in range(self.ticks):
+                if not self.shutdown_flag.is_set():
+                    time.sleep(1)
+
+
+    def setPauseTime(self, tick):
+        self.ticks = int(tick)
+
+
+    def register(self, name, parent):
+        self.name = name
+        self.parent = parent
+
+
+    def isActive(self):
+        return not self.shutdown_flag.is_set()
+
+
+    def isStopped(self):
+        return self.shutdown_flag.is_set()
+
+
+    def stop(self):
+        self.shutdown_flag.set()
 
 
 # Registering all available thread instances

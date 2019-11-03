@@ -6,23 +6,21 @@ from modules import *
 
 class systemdWatchdog(Thread):
 
-    def __init__(self, start):
-        self.active = False
-        self.job = False
-        self.tick = 60
-        self.journal = journal.Reader()
-        self.config = Config()
-        self.trackPhrases = [e.strip() for e in self.config.data.config.systemd.settings.reboot_phrases.split("\n")]
-        self.init()
-        if start:
-            self.start()
+    def __init__(self, **kwargs):
+        super(systemdWatchdog, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
 
 
     def init(self):
-        self.job = Job(self.tick, self.update)
+        self.journal = journal.Reader()
+        self.trackPhrases = [e.strip() for e in self.config.data.config.systemd.settings.reboot_phrases.split("\n")]
+        self.setPauseTime(60)
+        if self.args.get('start', False):
+            self.start()
 
 
-    def update(self, runner):
+    def update(self):
         if not self.journal:
             self.journal = journal.Reader()
 
@@ -57,8 +55,5 @@ class systemdWatchdog(Thread):
     def destroy(self):
         if not self.journal.closed:
             self.journal.close()
-
-        if self.job:
-            self.job.shutdown_flag.set()
-
-        self.active = False
+        self.stop()
+        Logger.printLog("Stopping SystemD Watcher manager", 'success')

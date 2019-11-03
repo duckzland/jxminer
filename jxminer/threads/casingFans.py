@@ -8,24 +8,44 @@ class casingFans(Thread):
         This is a class for managing threads for tuning casing fans
     """
 
-    def __init__(self, start, FanUnits, GPUUnits):
-        self.active = False
-        self.job = False
-        self.config = Config()
-        self.GPUUnits = GPUUnits
-        self.FanUnits = FanUnits
-        self.coin = self.config.data.config.machine.gpu_miner.coin
-        self.init()
-        if start:
-            self.start()
+
+    def __init__(self, **kwargs):
+        super(casingFans, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
 
 
     def init(self):
-        self.job = Job(self.config.data.config.fans.casing.tick, self.update)
+        self.GPUUnits = self.args.get('cards', False)
+        self.FanUnits = self.args.get('fans', False)
+        self.coin = self.config.data.config.machine.gpu_miner.coin
+        self.setPauseTime(self.config.data.config.fans.casing.tick)
 
         for unit in self.FanUnits:
             unit.disablePWM()
 
+        if self.args.get('start', False):
+            self.start()
+
+
+    def update(self):
+        c = self.config.data.config.fans
+        temp = self.getTemperature(c.casing.strategy)
+
+        for unit in self.FanUnits:
+            unit.detect()
+            fan = self.getFan(c, unit)
+
+            if fan and int(temp) != int(fan.target):
+                newSpeed = self.getSpeed(unit, fan, temp)
+                if unit.isNotAtLevel(unit.round(newSpeed)):
+                    unit.setSpeed(newSpeed)
+                    Logger.printLog('Set PWM:%s fan speed to %s%% [%sC]' % (unit.index.replace('pwm', ''), newSpeed, temp), 'success')
+
+
+    def destroy(self):
+        self.stop()
+        Logger.printLog("Stopping casing fans manager", 'success')
 
 
     def getFan(self, c, unit):
@@ -57,18 +77,3 @@ class casingFans(Thread):
             s = UtilCalculateStep(f.min, f.max, u.speed, f.target, t, f.up, f.down)
 
         return s
-
-
-    def update(self, runner):
-        c = self.config.data.config.fans
-        temp = self.getTemperature(c.casing.strategy)
-
-        for unit in self.FanUnits:
-            unit.detect()
-            fan = self.getFan(c, unit)
-
-            if fan and int(temp) != int(fan.target):
-                newSpeed = self.getSpeed(unit, fan, temp)
-                if unit.isNotAtLevel(unit.round(newSpeed)):
-                    unit.setSpeed(newSpeed)
-                    Logger.printLog('Set PWM:%s fan speed to %s%% [%sC]' % (unit.index.replace('pwm', ''), newSpeed, temp), 'success')

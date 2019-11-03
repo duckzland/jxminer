@@ -157,45 +157,46 @@ class Main():
 
 
 
+
     def loadThreads(self):
 
         c = self.config.data.config
 
         if self.cards and c.fans and self.fans:
-            self.threads.process('casing_fans', casingFans(False, self.fans, self.cards), c.fans.casing.enable)
+            self.threads.process('casing_fans', casingFans(start = False, fans = self.fans, cards = self.cards), c.fans.casing.enable)
 
         if self.cards and c.fans:
-            self.threads.process('gpu_fans', gpuFans(False, self.cards), c.fans.gpu.enable)
+            self.threads.process('gpu_fans', gpuFans(start = False, cards = self.cards), c.fans.gpu.enable)
 
         if self.cards and c.tuner:
-            self.threads.process('gpu_tuner', gpuTuner(False, self.cards), c.tuner.settings.enable)
+            self.threads.process('gpu_tuner', gpuTuner(start = False, cards = self.cards), c.tuner.settings.enable)
 
         if self.cards and c.notification:
-            self.threads.process('notification', notification(False, self.threads, self.fans, self.cards), c.notification.settings.enable)
+            self.threads.process('notification', notification(start = False, threads = self.threads, fans = self.fans, cards = self.cards), c.notification.settings.enable)
 
         if self.cards and c.machine:
-            self.threads.process('gpu_miner', gpuMiner(False), c.machine.gpu_miner.enable)
+            self.threads.process('gpu_miner', gpuMiner(start = False), c.machine.gpu_miner.enable)
 
         if c.machine:
-            self.threads.process('cpu_miner', cpuMiner(False), c.machine.cpu_miner.enable)
+            self.threads.process('cpu_miner', cpuMiner(start = False), c.machine.cpu_miner.enable)
 
         if c.machine and self.threads.has('gpu_miner'):
             minerManager = self.threads.get('gpu_miner')
             minerManager.selectMiner()
             for miner in minerManager.miners:
                 if miner and miner.hasDevFee():
-                    self.threads.add('gpu_miner_devfee_removal_%s' % (miner.miner), feeRemoval(False, miner))
+                    self.threads.add('gpu_miner_devfee_removal_%s' % (miner.miner), feeRemoval(start = False, miner = miner))
                 if miner and c.watchdog.settings.enable:
-                    self.threads.add('gpu_miner_watchdog_%s' % (miner.miner), watchdog(False, miner, minerManager))
+                    self.threads.add('gpu_miner_watchdog_%s' % (miner.miner), watchdog(start = False, miner = miner, manager = minerManager))
 
         if c.machine and self.threads.has('cpu_miner'):
             minerManager = self.threads.get('cpu_miner')
             minerManager.selectMiner()
             if minerManager.miner and minerManager.miner.hasDevFee():
-                self.threads.add('cpu_miner_devfee_removal_%s' % (minerManager.miner.miner), feeRemoval(False, minerManager.miner))
+                self.threads.add('cpu_miner_devfee_removal_%s' % (minerManager.miner.miner), feeRemoval(start = False, miner = minerManager.miner))
 
             if minerManager.miner and c.watchdog.settings.enable:
-                self.threads.add('cpu_miner_watchdog', watchdog(False, minerManager.miner, minerManager))
+                self.threads.add('cpu_miner_watchdog', watchdog(start = False, miner = minerManager.miner, manager = minerManager))
 
         if c.machine and not self.threads.has('gpu_miner'):
             self.threads.remove('gpu_miner_devfee_removal_')
@@ -206,7 +207,7 @@ class Main():
             self.threads.remove('cpu_miner_watchdog')
 
         if c.systemd:
-            self.threads.process('systemd', systemdWatchdog(False), c.systemd.settings.enable)
+            self.threads.process('systemd', systemdWatchdog(start = False), c.systemd.settings.enable)
 
         self.threads.start()
 
@@ -221,7 +222,8 @@ class Main():
             self.threads.remove('gpu_tuner')
             self.threads.remove('gpu_fans')
             self.threads.remove('casing_fans')
-            self.loadThreads()
+            #self.loadThreads()
+            self.loadThread();
             Logger.printLog("Program updated", 'success')
 
         elif action == 'server:shutdown':
@@ -321,7 +323,7 @@ class Main():
             ip, port = str(address[0]), str(address[1])
             self.threads.add(
                 'connection_' + str(uuid.uuid4()),
-                socketAction(True, connection, self.doAction, self.threads, self.fans, self.cards)
+                socketAction(start = True, connection = connection, callback = self.doAction, threads = self.threads, fans = self.fans, cards = self.cards)
             )
             Logger.printLog("Connecting with %s:%s" % (ip, port), 'success')
 

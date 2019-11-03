@@ -5,28 +5,24 @@ from modules import *
 
 class socketAction(Thread):
 
-    def __init__(self, start, connection, callback, threads, fans, cards):
-        self.active = False
-        self.job = False
-        self.config = Config()
-        self.connection = connection
-        self.callback = callback
-        self.threads = threads
-        self.fans = fans
-        self.gpu = cards
-        self.init()
-
-        if start:
-            self.start()
+    def __init__(self, **kwargs):
+        super(socketAction, self).__init__()
+        self.setPauseTime(1)
+        self.configure(**kwargs)
 
 
     def init(self):
-        self.active = True
-        self.job = Job(1, self.update)
+        self.connection = self.args.get('connection', False)
+        self.callback = self.args.get('callback', False)
+        self.threads = self.args.get('threads', False)
+        self.fans = self.args.get('fans', False)
+        self.gpu = self.args.get('cards', False)
         self.transfer = Transfer(self.connection)
+        if self.args.get('start', False):
+            self.start()
 
 
-    def update(self, runner):
+    def update(self):
         try:
             action = self.transfer.recv()
         except:
@@ -37,7 +33,7 @@ class socketAction(Thread):
                 pass
 
             elif 'server:status:live' in action:
-                while True and self.active:
+                while True and self.isActive():
                     self.transfer.send('active')
                     time.sleep(5)
 
@@ -85,7 +81,7 @@ class socketAction(Thread):
 
 
             elif 'monitor:server' in action:
-                while True and self.active:
+                while True and self.isActive():
                     status = self.generateStatusOutput()
                     self.transfer.send(json.dumps(status, codecs.getwriter('utf-8')(status), ensure_ascii=False))
                     time.sleep(0.5)
@@ -111,26 +107,22 @@ class socketAction(Thread):
 
 
     def stop(self):
-        if self.active:
+        if self.isActive():
             if self.connection:
                 self.connection.close()
 
             if self.parent:
                 self.parent.remove(self.name)
 
-            self.active = False
+            self.shutdown_flag.set()
             Logger.printLog("Stopping active thread connection", 'success')
 
 
 
     def destroy(self):
-        if self.active:
+        if self.isActive():
             if self.transfer:
-                try:
-                    #self.transfer.send('Closing socket connection...')
-                    time.sleep(0.1)
-                except:
-                    pass
+                time.sleep(0.1)
 
             if self.connection:
                 try:
@@ -139,11 +131,10 @@ class socketAction(Thread):
                 except:
                     pass
 
-            if self.job:
-                self.job.shutdown_flag.set()
+
+            self.shutdown_flag.set()
 
             Logger.printLog("Destroying active thread", 'success')
-            self.active = False
 
 
 
