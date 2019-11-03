@@ -39,11 +39,11 @@ class cpuMiner(Thread, threading.Thread):
         coin = c.machine.cpu_miner.coin
 
         algo = False
-        if c.coins[coin] and c.coins[coin].algo
+        if c.coins[coin] and c.coins[coin].algo:
             algo = c.coins[coin].algo
 
         miner = False
-        if algo and c.miner[algo] and c.miner[algo].cpu
+        if algo and c.miner[algo] and c.miner[algo].cpu:
             miner = c.miner[algo].cpu
 
         if miner in 'cpuminer':
