@@ -12,7 +12,6 @@ class gpuMiner(Thread):
 
 
     def init(self):
-        self.miners = []
         self.selectMiner()
         if self.args.get('start', False):
             self.start()
@@ -40,6 +39,7 @@ class gpuMiner(Thread):
 
 
     def selectMiner(self):
+        self.miners = []
         c         = self.config.data.config
         d         = self.config.data.dynamic
         coin      = c.machine.gpu_miner.coin
@@ -61,8 +61,8 @@ class gpuMiner(Thread):
             miners.append(nvidia)
 
         # Dual Miner
-        #if doDual and dual and dual not in miners:
-        #    miners.append(dual)
+        if doDual and dual and dual not in miners:
+            miners.append(dual)
 
         for miner in miners:
             if miner in 'ccminer':
