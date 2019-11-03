@@ -221,8 +221,7 @@ class Main():
             self.threads.remove('gpu_tuner')
             self.threads.remove('gpu_fans')
             self.threads.remove('casing_fans')
-            #self.loadThreads()
-            self.loadThread();
+            self.loadThreads()
             Logger.printLog("Program updated", 'success')
 
         elif action == 'server:shutdown':
@@ -353,6 +352,10 @@ class Main():
 
 
 
+    def setShutdown(self, signum, frame):
+        self.isShuttingDown = True
+
+
     def main(self):
 
         # Default variables
@@ -362,12 +365,14 @@ class Main():
         self.cPath = os.path.join('/home', 'jxminer', '.jxminer')
         self.socket_limit = 5
         self.main_tick = 1
+        self.isShuttingDown = False
 
         self.checkArgs()
         self.checkRoot()
         self.checkInstance()
 
-        Process = Shutdown()
+        signal.signal(signal.SIGINT, self.setShutdown)
+        signal.signal(signal.SIGTERM, self.setShutdown)
 
         try:
             self.logger = Logger(self.action)
@@ -396,7 +401,7 @@ class Main():
             Logger.printLog("Listening to socket with maximum %s connection" % (self.socket_limit), 'success')
 
             while True:
-                if Process.isShuttingDown:
+                if self.isShuttingDown:
                     Logger.printLog("Shutdown initializing", 'success')
                     self.threads.clean()
                     break

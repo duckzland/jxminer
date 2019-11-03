@@ -186,13 +186,8 @@ class Miner:
 
 
     def shutdown(self):
-        try:
-            self.stop()
-            status = 'success'
-        except:
-            status = 'error'
-        finally:
-            Logger.printLog('Shutting down %s miner' % (self.miner), status)
+        self.stop()
+        Logger.printLog('Shutting down %s miner' % (self.miner), 'success')
 
 
 
@@ -200,6 +195,7 @@ class Miner:
         self.stop()
         time.sleep(5)
         self.start()
+        Logger.printLog('Rebooting %s miner' % (self.miner), status)
 
 
 
