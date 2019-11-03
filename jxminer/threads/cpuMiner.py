@@ -36,15 +36,16 @@ class cpuMiner(Thread, threading.Thread):
     def selectMiner(self):
 
         c = self.config.data.config
-        print c
         coin = c.machine.cpu_miner.coin
-        print coin
-        print c.coins
-        algo = c.coins[coin].algo
-        print algo
-        miner = c.miner[algo].cpu
-        print miner
-        return
+
+        algo = False
+        if c.coins[coin] and c.coins[coin].algo
+            algo = c.coins[coin].algo
+
+        miner = False
+        if algo and c.miner[algo] and c.miner[algo].cpu
+            miner = c.miner[algo].cpu
+
         if miner in 'cpuminer':
             self.config.load('miners', 'cpuminer.ini', True)
             self.miner = CpuMiner()
