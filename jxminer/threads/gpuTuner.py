@@ -11,7 +11,6 @@ class gpuTuner(Thread):
 
     def __init__(self, **kwargs):
         super(gpuTuner, self).__init__()
-        self.setPauseTime(1)
         self.configure(**kwargs)
 
 

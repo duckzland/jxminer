@@ -11,7 +11,6 @@ class gpuFans(Thread):
 
     def __init__(self, **kwargs):
         super(gpuFans, self).__init__()
-        self.setPauseTime(1)
         self.configure(**kwargs)
 
 

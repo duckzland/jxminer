@@ -11,7 +11,6 @@ class casingFans(Thread):
 
     def __init__(self, **kwargs):
         super(casingFans, self).__init__()
-        self.setPauseTime(1)
         self.configure(**kwargs)
 
 

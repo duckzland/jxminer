@@ -9,7 +9,6 @@ class watchdog(Thread):
 
     def __init__(self, **kwargs):
         super(watchdog, self).__init__()
-        self.setPauseTime(1)
         self.configure(**kwargs)
 
 

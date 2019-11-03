@@ -8,7 +8,6 @@ class systemdWatchdog(Thread):
 
     def __init__(self, **kwargs):
         super(systemdWatchdog, self).__init__()
-        self.setPauseTime(1)
         self.configure(**kwargs)
 
 
