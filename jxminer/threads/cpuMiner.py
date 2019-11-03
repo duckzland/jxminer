@@ -34,6 +34,7 @@ class cpuMiner(Thread, threading.Thread):
 
 
     def selectMiner(self):
+        return
         c = self.config.data.config
         coin = c.machine.cpu_miner.coin
         algo = c.coins[coin].algo
