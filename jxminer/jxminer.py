@@ -157,7 +157,6 @@ class Main():
 
 
 
-
     def loadThreads(self):
 
         c = self.config.data.config
@@ -254,7 +253,7 @@ class Main():
 
 
     def version(self):
-        print '0.6.7'
+        print '0.7.0'
 
 
 

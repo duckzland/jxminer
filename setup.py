@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "jxminer",
-    version = "0.6.7",
+    version = "0.7.0",
     author = "Jason Xie",
     author_email = "jason.xie@victheme.com",
     description = "Python script for managing mining server",
@@ -48,6 +48,7 @@ setup(
             'jxminer/data/pools/coinmine.ini',
             'jxminer/data/pools/dwarfpool.ini',
             'jxminer/data/pools/flypool.ini',
+            'jxminer/data/pools/hashvault.ini',
             'jxminer/data/pools/lethean.ini',
             'jxminer/data/pools/minepool.ini',
             'jxminer/data/pools/minermore.ini',

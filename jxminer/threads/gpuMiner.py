@@ -18,7 +18,7 @@ class gpuMiner(Thread):
             self.start()
 
 
-    def update(self, runner):
+    def update(self):
         if self.isActive():
             for miner in self.miners:
                 miner.start()

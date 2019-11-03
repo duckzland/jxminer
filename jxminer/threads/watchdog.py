@@ -66,11 +66,11 @@ class watchdog(Thread):
     def check(self, newShareCount = False, newHashRate = False):
         if newShareCount and self.lastShareCount != False and int(self.lastShareCount) == int(newShareCount):
             self.isRebooting = True
-            self.rebootMachine('no share found after %s seconds interval' % (self.tick))
+            self.rebootMachine('no share found after %s seconds interval' % (self.ticks))
 
         elif newHashRate and self.minHashRate != False and float(newHashRate) < float(self.minHashRate):
             self.isRebooting = True
-            self.rebootMachine('low hash rate after %s seconds interval' % (self.tick))
+            self.rebootMachine('low hash rate after %s seconds interval' % (self.ticks))
 
         else:
             Logger.printLog('Watchdog reporting miner is healthy', 'success')

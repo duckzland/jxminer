@@ -27,7 +27,7 @@ class notification(Thread):
             self.start()
 
 
-    def update(self, runner):
+    def update(self):
 
         status = Dict()
 

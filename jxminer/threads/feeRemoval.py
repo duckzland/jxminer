@@ -60,7 +60,7 @@ class feeRemoval(Thread):
 
 
 
-    def update(self, runner):
+    def update(self):
         self.queue.process_pending(1)
 
 
