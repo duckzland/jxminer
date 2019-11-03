@@ -39,6 +39,7 @@ class cpuMiner(Thread, threading.Thread):
         print c
         coin = c.machine.cpu_miner.coin
         print coin
+        print c.coins
         algo = c.coins[coin].algo
         print algo
         miner = c.miner[algo].cpu
