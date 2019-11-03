@@ -61,8 +61,8 @@ class gpuMiner(Thread):
             miners.append(nvidia)
 
         # Dual Miner
-        if doDual and dual and dual not in miners:
-            miners.append(dual)
+        #if doDual and dual and dual not in miners:
+        #    miners.append(dual)
 
         for miner in miners:
             if miner in 'ccminer':
