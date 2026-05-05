@@ -144,19 +144,6 @@ To test and iron out bugs for :
 4. Test with more GPU variant (1080ti, 1050ti, RXVega etc)
 5. Test with different kind of motherboard
 
-Future improvement :
-1. Add more miner such as xmr-stak
-
-
-
-## Help with Donation
-if you found this program useful, consider to donate for the development fund.
-
-Send donation to:
-Monero : 49qh7jAS1Tt9C7rcmirWPNbg8p6eon24FQ7K5mTFE1i9ScRUSYDVuWw3MDcadcybhD8uBEhvJtymx4NpYNBSP3Tm5RHxhuY
-
-
-
 ## Authors
 
 * **Jason Xie** - *Initial work* - [VicTheme.com](https://victheme.com)
